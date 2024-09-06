@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>StudioElevenLib</RootNamespace>
+    <AssemblyName>StudioElevenLib</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Level5\Animation\AnimationManager.cs" />
+    <Compile Include="Level5\Animation\AnimationSupport.cs" />
+    <Compile Include="Level5\Animation\Logic\BoneLocation.cs" />
+    <Compile Include="Level5\Animation\Logic\BoneRotation.cs" />
+    <Compile Include="Level5\Animation\Logic\BoneScale.cs" />
+    <Compile Include="Level5\Animation\Logic\Node.cs" />
+    <Compile Include="Level5\Animation\Logic\TextureBrightness.cs" />
+    <Compile Include="Level5\Animation\Logic\TextureUnk.cs" />
+    <Compile Include="Level5\Animation\Logic\Track.cs" />
+    <Compile Include="Level5\Animation\Logic\Unk.cs" />
+    <Compile Include="Level5\Animation\Logic\UVMove.cs" />
+    <Compile Include="Level5\Animation\Logic\UVScale.cs" />
+    <Compile Include="Level5\Archive\IArchive.cs" />
+    <Compile Include="Level5\Archive\XPCK\XPCK.cs" />
+    <Compile Include="Level5\Archive\XPCK\XPCKSupport.cs" />
+    <Compile Include="Level5\Camera\CMR1\CMR1.cs" />
+    <Compile Include="Level5\Camera\CMR1\CMR1Support.cs" />
+    <Compile Include="Level5\Camera\CMR2\CMR2.cs" />
+    <Compile Include="Level5\Camera\CMR2\CMR2Support.cs" />
+    <Compile Include="Level5\Compression\Compressor.cs" />
+    <Compile Include="Level5\Compression\ETC1\ETC1.cs" />
+    <Compile Include="Level5\Compression\ETC1\ETC1Decoder.cs" />
+    <Compile Include="Level5\Compression\ETC1\RGB.cs" />
+    <Compile Include="Level5\Compression\Huffman\Huffman.cs" />
+    <Compile Include="Level5\Compression\Huffman\HuffmanDecoder.cs" />
+    <Compile Include="Level5\Compression\ICompression.cs" />
+    <Compile Include="Level5\Compression\LZ10\LZ10.cs" />
+    <Compile Include="Level5\Compression\NoCompression\NoCompression.cs" />
+    <Compile Include="Level5\Compression\RLE\RLE.cs" />
+    <Compile Include="Level5\Compression\ZLib\ZLib.cs" />
+    <Compile Include="Level5\Image\Color Formats\ColorFormats.cs" />
+    <Compile Include="Level5\Image\Color Formats\IColorFormat.cs" />
+    <Compile Include="Level5\Image\IMGC.cs" />
+    <Compile Include="Level5\Image\IMGCSupport.cs" />
+    <Compile Include="Level5\Image\IMGCSwizzle.cs" />
+    <Compile Include="Level5\Material\MTRC.cs" />
+    <Compile Include="Level5\Material\MTRCSupport.cs" />
+    <Compile Include="Level5\Resource\IResource.cs" />
+    <Compile Include="Level5\Resource\RESType.cs" />
+    <Compile Include="Level5\Resource\RES\RES.cs" />
+    <Compile Include="Level5\Resource\RES\RESSupport.cs" />
+    <Compile Include="Level5\Resource\XRES\XRES.cs" />
+    <Compile Include="Level5\Resource\XRES\XRESSupport.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tools\BinaryDataReader.cs" />
+    <Compile Include="Tools\BinaryDataWriter.cs" />
+    <Compile Include="Tools\Crc32.cs" />
+    <Compile Include="Tools\SubMemoryStream.cs" />
+    <Compile Include="Tools\VirtualDirectory.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

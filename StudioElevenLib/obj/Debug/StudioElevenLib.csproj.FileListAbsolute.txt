@@ -1,0 +1,6 @@
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\obj\Debug\StudioElevenLib.csproj.AssemblyReference.cache
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\obj\Debug\StudioElevenLib.csproj.CoreCompileInputs.cache
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\bin\Debug\StudioElevenLib.dll
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\bin\Debug\StudioElevenLib.pdb
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\obj\Debug\StudioElevenLib.dll
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\obj\Debug\StudioElevenLib.pdb
