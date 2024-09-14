@@ -86,6 +86,7 @@ namespace StudioElevenLib.Level5.Animation
             {3, "BoneScale" },
             {4, "UVMove" },
             {5, "UVScale" },
+            {6, "UVRotation" },
             {7, "TextureBrightness" },
             {8, "TextureUnk" },
             {9, "Unk" },
@@ -98,8 +99,35 @@ namespace StudioElevenLib.Level5.Animation
             {"BoneScale", 3 },
             {"UVMove", 2 },
             {"UVScale", 2 },
+            {"UVRotation", 1 },
             {"TextureBrightness", 1 },
             {"TextureUnk", 3 },
+            {"Unk", 1 },
+        };
+
+        public static Dictionary<string, int> TrackDataType = new Dictionary<string, int>
+        {
+            {"BoneLocation", 2 },
+            {"BoneRotation", 2 },
+            {"BoneScale", 2 },
+            {"UVMove", 2 },
+            {"UVScale", 2 },
+            {"UVRotation", 3 },
+            {"TextureBrightness", 2 },
+            {"TextureUnk", 2 },
+            {"Unk", 4 },
+        };
+
+        public static Dictionary<string, int> TrackDataSize = new Dictionary<string, int>
+        {
+            {"BoneLocation", 4 },
+            {"BoneRotation", 4 },
+            {"BoneScale", 4 },
+            {"UVMove", 4 },
+            {"UVScale", 4 },
+            {"UVRotation", 4 },
+            {"TextureBrightness", 4 },
+            {"TextureUnk", 4 },
             {"Unk", 1 },
         };
     }

@@ -30,5 +30,19 @@ namespace StudioElevenLib.Level5.Animation.Logic
 
             return bytes;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is UVScale other)
+            {
+                return X == other.X && Y == other.Y;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return X.GetHashCode() + Y.GetHashCode();
+        }
     }
 }

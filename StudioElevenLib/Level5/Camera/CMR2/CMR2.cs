@@ -56,10 +56,21 @@ namespace StudioElevenLib.Level5.Camera.CMR2
                 FrameCount = header2.FramesCount;
                 CameraSpeed = header2.CameraSpeed;
 
-                ReadCamData(data, 3);
-                ReadCamData(data, 3);
-                ReadCamData(data, 1);
-                ReadCamData(data, 1);
+                try
+                {
+                    ReadCamData(data, 3);
+                    ReadCamData(data, 3);
+                    ReadCamData(data, 1);
+                    ReadCamData(data, 1);
+                }
+                catch
+                {
+                    CamValues.Clear();
+                    CamValues.Add(0, new Dictionary<int, float[]>());
+                    CamValues.Add(1, new Dictionary<int, float[]>());
+                    CamValues.Add(2, new Dictionary<int, float[]>());
+                    CamValues.Add(3, new Dictionary<int, float[]>());
+                }
             }
         }
 

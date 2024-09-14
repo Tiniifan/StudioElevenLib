@@ -12,15 +12,26 @@ namespace StudioElevenLib.Level5.Animation.Logic
 
         public bool IsInMainTrack { get; set; }
 
+        public List<Frame> Frames { get; set; }
+
         public Node(string name)
         {
             Name = name;
+            Frames = new List<Frame>();
         }
 
         public Node(string name, bool isInMainTrack)
         {
             Name = name;
             IsInMainTrack = isInMainTrack;
+            Frames = new List<Frame>();
+        }
+
+        public Node(string name, bool isInMainTrack, List<Frame> frames)
+        {
+            Name = name;
+            IsInMainTrack = isInMainTrack;
+            Frames = frames;
         }
     }
 }

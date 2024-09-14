@@ -56,6 +56,14 @@ namespace StudioElevenLib.Level5.Animation
                     header.Track4Count = -1;
                 }
 
+                // Track 9 case
+                int maxNodeBeforeTrack4 = 0;
+                if (header.NameOffset == 0x28 && header.CompDataOffset == 0x58)
+                {
+                    reader.Seek(0x24);
+                    maxNodeBeforeTrack4 = reader.ReadValue<int>();
+                }
+
                 // Get animation name
                 reader.Seek(header.NameOffset);
                 int animHash = reader.ReadValue<int>();
@@ -75,7 +83,7 @@ namespace StudioElevenLib.Level5.Animation
                     if (hashOffset == 0x0C)
                     {
                         Version = "V2";
-                        GetAnimationDataV2(header, decompReader);
+                        GetAnimationDataV2(header, decompReader, maxNodeBeforeTrack4);
                     }
                     else
                     {
@@ -84,6 +92,15 @@ namespace StudioElevenLib.Level5.Animation
                     }
                 }
             }
+        }
+
+        private int CountInTrack(int searchIndex)
+        {
+            return Tracks.Any(x => x.Index == searchIndex)
+                ? Tracks.FirstOrDefault(x => x.Index == searchIndex).Nodes.Count()
+                    : (Tracks.Count > searchIndex && Tracks[searchIndex].Index == -1)
+                        ? Tracks[searchIndex].Nodes.Count()
+                            : 0;
         }
 
         public byte[] Save()
@@ -104,23 +121,10 @@ namespace StudioElevenLib.Level5.Animation
                     Track4Count = 0,
                 };
 
-                if (Tracks.Count(x => x.Name == "UVMove") == 2)
-                {
-                    header.Track1Count = Tracks[0].Value.Count();
-                    header.Track4Count = Tracks[1].Value.Count();
-                }
-                else if (Tracks.Any(x => x.Name == "UVMove") && Tracks.Any(x => x.Name == "UVScale"))
-                {
-                    header.Track1Count = Tracks[0].Value.Count();
-                    header.Track3Count = Tracks[1].Value.Count();
-                }
-                else
-                {
-                    header.Track1Count = Tracks.Count() >= 1 ? Tracks.ElementAt(0).Value.Count() : 0;
-                    header.Track2Count = Tracks.Count() >= 2 ? Tracks.ElementAt(1).Value.Count() : 0;
-                    header.Track3Count = Tracks.Count() >= 3 ? Tracks.ElementAt(2).Value.Count() : 0;
-                    header.Track4Count = Tracks.Count() >= 4 ? Tracks.ElementAt(3).Value.Count() : 0;
-                }
+                header.Track1Count = CountInTrack(0);
+                header.Track2Count = CountInTrack(1);
+                header.Track3Count = CountInTrack(2);
+                header.Track4Count = CountInTrack(3);
 
                 // Don't exceed 40 characters
                 if (AnimationName.Length > 40)
@@ -138,6 +142,7 @@ namespace StudioElevenLib.Level5.Animation
                 // Write animation data
                 if (Version == "V1")
                 {
+                    //Tracks.RemoveAll(x => x.Name == "Unk");
                     SaveAnimationDataV1(ref header, writer);
                 }
                 else
@@ -156,8 +161,8 @@ namespace StudioElevenLib.Level5.Animation
                         DecompSize = header.DecompSize,
                         NameOffset = 0x24,
                         CompDataOffset = 0x54,
-                        Track1Count = Tracks.Count() >= 1 ? Tracks.ElementAt(0).Value.Count() : 0,
-                        Track2Count = Tracks.Count() >= 2 ? Tracks.ElementAt(1).Value.Count() : 0,
+                        Track1Count = CountInTrack(0),
+                        Track2Count = CountInTrack(1),
                     };
 
                     writer.WriteStruct(header2);
@@ -180,7 +185,7 @@ namespace StudioElevenLib.Level5.Animation
             {
                 for (int i = 0; i < header.Track1Count; i++)
                 {
-                    ReadFrameDataV1(decompReader, tableOffset, trackIndex);
+                    ReadFrameDataV1(decompReader, ref tableOffset, 0, trackIndex);
                 }
 
                 trackIndex++;
@@ -190,7 +195,7 @@ namespace StudioElevenLib.Level5.Animation
             {
                 for (int i = 0; i < header.Track2Count; i++)
                 {
-                    ReadFrameDataV1(decompReader, tableOffset, trackIndex);
+                    ReadFrameDataV1(decompReader, ref tableOffset, 1, trackIndex);
                 }
 
                 trackIndex++;
@@ -200,7 +205,7 @@ namespace StudioElevenLib.Level5.Animation
             {
                 for (int i = 0; i < header.Track3Count; i++)
                 {
-                    ReadFrameDataV1(decompReader, tableOffset, trackIndex);
+                    ReadFrameDataV1(decompReader, ref tableOffset, 2, trackIndex);
                 }
 
                 trackIndex++;
@@ -210,14 +215,14 @@ namespace StudioElevenLib.Level5.Animation
             {
                 for (int i = 0; i < header.Track4Count; i++)
                 {
-                    ReadFrameDataV1(decompReader, tableOffset, trackIndex);
+                    ReadFrameDataV1(decompReader, ref tableOffset, 3, trackIndex);
                 }
 
                 trackIndex++;
             }
         }
 
-        private void GetAnimationDataV2(AnimationSupport.Header header, BinaryDataReader decompReader)
+        private void GetAnimationDataV2(AnimationSupport.Header header, BinaryDataReader decompReader, int maxNodeBeforeTrack4)
         {
             AnimationSupport.DataHeader dataHeader = decompReader.ReadStruct<AnimationSupport.DataHeader>();
 
@@ -225,10 +230,19 @@ namespace StudioElevenLib.Level5.Animation
             decompReader.Seek(dataHeader.HashOffset);
             int elementCount = (dataHeader.TrackOffset - dataHeader.HashOffset) / 4;
             int[] nameHashes = decompReader.ReadMultipleValue<int>(elementCount);
-            int[] followNameHashes = nameHashes.Skip(header.Track1Count).Take(nameHashes.Length- header.Track1Count).ToArray();
+
+            // Name information
+            int pos = 0;
+            Dictionary<int, int[]> nameDict = new Dictionary<int, int[]>();
+            nameDict.Add(0, nameHashes);
+            nameDict.Add(1, nameHashes);
+            nameDict.Add(2, nameHashes);
+            nameDict.Add(3, nameHashes);
 
             // Track Information
+            int[] trackCountList = new int[] { header.Track1Count, header.Track2Count, header.Track3Count, header.Track4Count };
             int trackCount = Convert.ToInt32(header.Track1Count != -1) + Convert.ToInt32(header.Track2Count != -1) + Convert.ToInt32(header.Track3Count != -1) + Convert.ToInt32(header.Track4Count != -1);
+
             List<AnimationSupport.Track> tracks = new List<AnimationSupport.Track>();
             for (int i = 0; i < trackCount; i++)
             {
@@ -238,8 +252,31 @@ namespace StudioElevenLib.Level5.Animation
 
                 if (tracks[i].Type != 0)
                 {
-                    Tracks.Add(new Track(AnimationSupport.TrackType[tracks[i].Type]));
+                    Tracks.Add(new Track(AnimationSupport.TrackType[tracks[i].Type], i));
+
+                    if (i < 3 && trackCountList[i+1] == 0 && i+1 != 3)
+                    {
+                        if (maxNodeBeforeTrack4 < 1)
+                        {
+                            pos += trackCountList[i] * 4;
+
+                            for (int j = i + 1; j < trackCount; j++)
+                            {
+                                nameDict[j] = null;
+                            }
+                        }
+                    } else if (tracks[i].Type == 9 && maxNodeBeforeTrack4 > 0)
+                    {
+                        nameDict[i] = null;
+                        pos += maxNodeBeforeTrack4 * 4;
+                    }
                 }
+
+                if (nameDict[i] == null)
+                {
+                    decompReader.Seek(dataHeader.HashOffset + pos);
+                    nameDict[i] = decompReader.ReadMultipleValue<int>(trackCountList[i]);
+                }         
             }
 
             int offset = 0;
@@ -248,7 +285,7 @@ namespace StudioElevenLib.Level5.Animation
 
             if (header.Track1Count > 0)
             {
-                ReadFrameDataV2(decompReader, offset, header.Track1Count, dataHeader.DataOffset, nameHashes, followNameHashes, tracks[0], trackIndex);
+                ReadFrameDataV2(decompReader, offset, header.Track1Count, dataHeader.DataOffset, nameDict[0], tracks[0], trackIndex);
                 trackIndex++;
             }
             offset += header.Track1Count;
@@ -256,7 +293,7 @@ namespace StudioElevenLib.Level5.Animation
 
             if (header.Track2Count > 0)
             {
-                ReadFrameDataV2(decompReader, offset, header.Track2Count, dataHeader.DataOffset, nameHashes, followNameHashes, tracks[1], trackIndex);
+                ReadFrameDataV2(decompReader, offset, header.Track2Count, dataHeader.DataOffset, nameDict[1], tracks[1], trackIndex);
                 trackIndex++;
             }
             offset += header.Track2Count;
@@ -264,7 +301,7 @@ namespace StudioElevenLib.Level5.Animation
 
             if (header.Track3Count > 0)
             {
-                ReadFrameDataV2(decompReader, offset, header.Track3Count, dataHeader.DataOffset, nameHashes, followNameHashes, tracks[2], trackIndex);
+                ReadFrameDataV2(decompReader, offset, header.Track3Count, dataHeader.DataOffset, nameDict[2], tracks[2], trackIndex);
                 trackIndex++;
             }
             offset += header.Track3Count;
@@ -272,12 +309,14 @@ namespace StudioElevenLib.Level5.Animation
 
             if (header.Track4Count > 0)
             {
-                ReadFrameDataV2(decompReader, offset, header.Track4Count, dataHeader.DataOffset, nameHashes, followNameHashes, tracks[3], trackIndex);
+                ReadFrameDataV2(decompReader, offset, header.Track4Count, dataHeader.DataOffset, nameDict[3], tracks[3], trackIndex);
             }
         }
 
         private void SaveAnimationDataV1(ref AnimationSupport.Header header, BinaryDataWriter writer)
         {
+            if (Tracks == null || Tracks.Count() == 0) return;
+
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 BinaryDataWriter writerDecomp = new BinaryDataWriter(memoryStream);
@@ -292,33 +331,33 @@ namespace StudioElevenLib.Level5.Animation
                 {
                     if (i < Tracks.Count)
                     {
-                        var node = Tracks.ElementAt(i);
-                        FixNode(node.Value, FrameCount);
+                        Track track = Tracks.ElementAt(i);
+                        FixNode(track.Nodes, FrameCount);
 
-                        if (node.Value.Count() > 0)
+                        if (track.Nodes.Count() > 0)
                         {
-                            foreach (var keyValuePair in node.Value)
+                            foreach (Node node in track.Nodes)
                             {
-                                int nameInt = Convert.ToInt32(keyValuePair.Key.Name, 16);
-                                int dataVectorSize = AnimationSupport.TrackDataCount[node.Name];
+                                int nameInt = Convert.ToInt32(node.Name, 16);
+                                int dataVectorSize = AnimationSupport.TrackDataCount[track.Name];
 
                                 AnimationSupport.Node nodeHeader = new AnimationSupport.Node
                                 {
                                     BoneNameHash = nameInt,
-                                    NodeType = (byte)AnimationSupport.TrackType.FirstOrDefault(x => x.Value == node.Name).Key,
-                                    DataType = 2,
-                                    IsInMainTrack = (byte)Convert.ToInt32(keyValuePair.Key.IsInMainTrack),
+                                    NodeType = (byte)AnimationSupport.TrackType.FirstOrDefault(x => x.Value == track.Name).Key,
+                                    DataType = (byte)AnimationSupport.TrackDataType[track.Name],
+                                    IsInMainTrack = (byte)Convert.ToInt32(node.IsInMainTrack),
                                     Unk2 = 0,
                                     FrameStart = 0,
                                     FrameEnd = FrameCount,
-                                    DataCount = keyValuePair.Value.Count,
+                                    DataCount = node.Frames.Count,
                                     DifferentFrameCount = FrameCount + 1,
-                                    DataByteSize = 4,
+                                    DataByteSize = AnimationSupport.TrackDataSize[track.Name],
                                     DataVectorSize = dataVectorSize,
-                                    DataVectorLength = dataVectorSize * 4,
+                                    DataVectorLength = dataVectorSize * AnimationSupport.TrackDataSize[track.Name],
                                     DifferentFrameLength = (FrameCount + 1) * 2,
-                                    FrameLength = keyValuePair.Value.Count * 2,
-                                    DataLength = keyValuePair.Value.Count * dataVectorSize * 4
+                                    FrameLength = node.Frames.Count * 2,
+                                    DataLength = node.Frames.Count * dataVectorSize * AnimationSupport.TrackDataSize[track.Name]
                                 };
 
                                 // Write node table
@@ -327,17 +366,21 @@ namespace StudioElevenLib.Level5.Animation
 
                                 // write key frame table
                                 long keyFrameOffset = writerDecomp.Position;
-                                writerDecomp.Write(FillArray(keyValuePair.Value.Select(x => x.Key).ToArray(), FrameCount + 1).SelectMany(x => BitConverter.GetBytes((short)x)).ToArray());
+                                writerDecomp.Write(FillArray(node.Frames.Select(x => x.Key).ToArray(), FrameCount + 1).SelectMany(x => BitConverter.GetBytes((short)x)).ToArray());
                                 writerDecomp.WriteAlignment2(4, 0);
 
                                 // Write different key frame table
                                 long differentKeyFrameOffset = writerDecomp.Position;
-                                writerDecomp.Write(keyValuePair.Value.SelectMany(x => BitConverter.GetBytes((short)x.Key)).ToArray());
+                                writerDecomp.Write(node.Frames.SelectMany(x => BitConverter.GetBytes((short)x.Key)).ToArray());
                                 writerDecomp.WriteAlignment2(4, 0);
 
                                 // writer animation data
                                 long dataOffset = writerDecomp.Position;
-                                writerDecomp.Write(keyValuePair.Value.SelectMany(x => ValueToByteArray(node.Name, x.Value)).ToArray());
+                                writerDecomp.Write(node.Frames.SelectMany(x => ValueToByteArray(track.Name, x.Value)).ToArray());
+                                if (AnimationSupport.TrackDataSize[track.Name] != 4)
+                                {
+                                    writerDecomp.WriteAlignment2(4, 0);
+                                }
 
                                 AnimationSupport.TableHeader tableHeader = new AnimationSupport.TableHeader
                                 {
@@ -413,18 +456,18 @@ namespace StudioElevenLib.Level5.Animation
 
                     if (i < Tracks.Count)
                     {
-                        var node = Tracks.ElementAt(i);
+                        Track myTrack = Tracks.ElementAt(i);
 
-                        if (node.Value.Count() > 0)
+                        if (myTrack.Nodes.Count() > 0)
                         {
-                            track.Type = (byte)AnimationSupport.TrackType.FirstOrDefault(x => x.Value == node.Name).Key;
-                            track.DataType = 2;
+                            track.Type = (byte)AnimationSupport.TrackType.FirstOrDefault(x => x.Value == myTrack.Name).Key;
+                            track.DataType = (byte)AnimationSupport.TrackDataType[myTrack.Name];
                             track.Unk = 0;
-                            track.DataCount = (byte)AnimationSupport.TrackDataCount[node.Name];
+                            track.DataCount = (byte)AnimationSupport.TrackDataCount[myTrack.Name];
                             track.Start = 0;
                             track.End = (short)FrameCount;
 
-                            foreach (var keyValuePair in node.Value)
+                            foreach (Node node in myTrack.Nodes)
                             {
                                 // Write table header
                                 writerDecomp.Seek(tableOffset);
@@ -434,33 +477,33 @@ namespace StudioElevenLib.Level5.Animation
 
                                 // Write data
                                 writerDecomp.Seek(dataOffset);
-                                writerDecomp.Write((short)nameHashes.IndexOf(Convert.ToInt32(keyValuePair.Key.Name, 16)));
+                                writerDecomp.Write((short)nameHashes.IndexOf(Convert.ToInt32(node.Name, 16)));
 
                                 // Frame count
-                                if (keyValuePair.Value.Count() < 255)
+                                if (node.Frames.Count() < 255)
                                 {
-                                    writerDecomp.Write((byte)keyValuePair.Value.Count());
+                                    writerDecomp.Write((byte)node.Frames.Count());
                                     writerDecomp.Write((byte)0x00);
                                 }
                                 else
                                 {
-                                    int lowFrameCount = (short)keyValuePair.Value.Count() & 0xFF;
-                                    int hightFrameCount = 32 + ((short)keyValuePair.Value.Count() >> 8) & 0xFF;
+                                    int lowFrameCount = (short)node.Frames.Count() & 0xFF;
+                                    int hightFrameCount = 32 + ((short)node.Frames.Count() >> 8) & 0xFF;
                                     writerDecomp.Write((byte)lowFrameCount);
                                     writerDecomp.Write((byte)hightFrameCount);
                                 }
 
                                 // Write frames
-                                writerDecomp.WriteMultipleStruct<short>(keyValuePair.Value.Keys.Select(x => Convert.ToInt16(x)).ToArray());
+                                writerDecomp.WriteMultipleStruct<short>(node.Frames.Select(x => Convert.ToInt16(x.Key)).ToArray());
                                 writerDecomp.WriteAlignment(4, 0);
 
                                 // Keep value offset
                                 int valueOffset = (int)writerDecomp.Position;
 
                                 // Write value
-                                foreach (object value in keyValuePair.Value.Values)
+                                foreach (object value in node.Frames.Select(x => x.Value))
                                 {
-                                    writerDecomp.Write(ValueToByteArray(node.Name, value));
+                                    writerDecomp.Write(ValueToByteArray(myTrack.Name, value));
                                 }
 
                                 // Update dataOffset
@@ -486,76 +529,7 @@ namespace StudioElevenLib.Level5.Animation
             }
         }
 
-        public void ReadFrameDataV2(BinaryDataReader data, int offset, int count, int dataOffset, int[] nameHashes, int[] followNameHashes, AnimationSupport.Track track, int trackIndex)
-        {
-            for (int i = offset; i < offset + count; i++)
-            {
-                bool isMainTrack = true;
-                data.Seek(dataOffset + 4 * 4 * i);
-
-                int flagOffset = data.ReadValue<int>();
-                int keyFrameOffset = data.ReadValue<int>();
-                int keyDataOffset = data.ReadValue<int>();
-
-                data.Seek(flagOffset);
-                int index = data.ReadValue<short>();
-                string nameHash = nameHashes[index].ToString("X8");
-
-                int lowFrameCount = data.ReadValue<byte>();
-                int highFrameCount = data.ReadValue<byte>();
-                int keyFrameCount = 0;
-
-                if (highFrameCount == 0)
-                {
-                    isMainTrack = false;
-                    nameHash = followNameHashes[index].ToString("X8");
-                    keyFrameCount = lowFrameCount;
-                }
-                else
-                {
-                    highFrameCount -= 32;
-                    keyFrameCount = (highFrameCount << 8) | lowFrameCount;
-                }
-
-                data.Seek(keyDataOffset);
-                for (int k = 0; k < keyFrameCount; k++)
-                {
-                    long temp = data.Position;
-                    data.Seek(keyFrameOffset + k * 2);
-                    int frame = data.ReadValue<short>();
-                    data.Seek((int)temp);
-
-                    object[] animData = Enumerable.Range(0, track.DataCount).Select(c => new object()).ToArray();
-                    for (int j = 0; j < track.DataCount; j++)
-                    {
-                        if (track.DataType == 1)
-                        {
-                            animData[j] = data.ReadValue<short>() / (float)0x7FFF;
-                        }
-                        else if (track.DataType == 2)
-                        {
-                            animData[j] = data.ReadValue<float>();
-                        }
-                        else if (track.DataType == 3)
-                        {
-                            animData[j] = data.ReadValue<short>();
-                        }
-                        else if (track.DataType == 4)
-                        {
-                            animData[j] = data.ReadValue<byte>();
-                        }
-                        else
-                        {
-                            throw new NotImplementedException($"Data Type {track.DataType} not implemented");
-                        }
-                    }
-
-                    AddNode(nameHash, animData, track.Type, frame, trackIndex, isMainTrack);
-                }
-            }
-        }
-
-        public void ReadFrameDataV1(BinaryDataReader decompReader, long tableOffset, int trackIndex)
+        public void ReadFrameDataV1(BinaryDataReader decompReader, ref long tableOffset, int trackNum, int trackIndex)
         {
             // Read offset table
             decompReader.Seek(tableOffset);
@@ -566,10 +540,10 @@ namespace StudioElevenLib.Level5.Animation
             decompReader.Seek(tableHeader.NodeOffset);
             AnimationSupport.Node node = decompReader.ReadStruct<AnimationSupport.Node>();
 
-            // Create node key based on track type
-            if (node.NodeType != 0)
+            // Add the track if it doesn't exist
+            if (Tracks.All(t => t.Index != trackNum) && node.NodeType != 0)
             {
-                Tracks.Add(new Track(AnimationSupport.TrackType[node.NodeType]));
+                Tracks.Add(new Track(AnimationSupport.TrackType[node.NodeType], trackNum));
             }
 
             // Get data index for frame
@@ -579,6 +553,8 @@ namespace StudioElevenLib.Level5.Animation
             // Get different frame index
             decompReader.Seek(tableHeader.DifferentKeyFrameOffset);
             int[] differentFrames = decompReader.ReadMultipleValue<short>(node.FrameLength / 2).Select(x => Convert.ToInt32(x)).ToArray();
+
+            List<Frame> frames = new List<Frame>();
 
             for (int j = 0; j < differentFrames.Length; j++)
             {
@@ -603,7 +579,11 @@ namespace StudioElevenLib.Level5.Animation
                     }
                     else if (node.DataType == 3)
                     {
-                        animData[k] = decompReader.ReadValue<short>();
+                        animData[k] = decompReader.ReadValue<float>();
+                    }
+                    else if (node.DataType == 4)
+                    {
+                        animData[k] = decompReader.ReadValue<byte>();
                     }
                     else
                     {
@@ -611,55 +591,125 @@ namespace StudioElevenLib.Level5.Animation
                     }
                 }
 
+                frames.Add(new Frame(frame, ConvertAnimDataToObject(animData, node.NodeType)));
+            }
+
+            // Create node
+            Tracks[trackIndex].Nodes.Add(new Node(node.BoneNameHash.ToString("X8"), node.IsInMainTrack == 1, frames));
+        }
+
+        public void ReadFrameDataV2(BinaryDataReader data, int offset, int count, int dataOffset, int[] nameHashes, AnimationSupport.Track track, int trackIndex)
+        {
+            for (int i = offset; i < offset + count; i++)
+            {
+                bool isMainTrack = true;
+                data.Seek(dataOffset + 4 * 4 * i);
+
+                int flagOffset = data.ReadValue<int>();
+                int keyFrameOffset = data.ReadValue<int>();
+                int keyDataOffset = data.ReadValue<int>();
+
+                data.Seek(flagOffset);
+                int index = data.ReadValue<short>();
+                string nameHash = nameHashes[index].ToString("X8");
+
+                int lowFrameCount = data.ReadValue<byte>();
+                int highFrameCount = data.ReadValue<byte>();
+                int keyFrameCount = 0;
+
+                if (highFrameCount == 0)
+                {
+                    isMainTrack = false;
+                    keyFrameCount = lowFrameCount;
+                }
+                else
+                {
+                    highFrameCount -= 32;
+                    keyFrameCount = (highFrameCount << 8) | lowFrameCount;
+                }
+
+                data.Seek(keyDataOffset);
+                List<Frame> frames = new List<Frame>();
+                for (int k = 0; k < keyFrameCount; k++)
+                {
+                    long temp = data.Position;
+                    data.Seek(keyFrameOffset + k * 2);
+                    int frame = data.ReadValue<short>();
+                    data.Seek((int)temp);
+
+                    object[] animData = Enumerable.Range(0, track.DataCount).Select(c => new object()).ToArray();
+                    for (int j = 0; j < track.DataCount; j++)
+                    {
+                        if (track.DataType == 1)
+                        {
+                            animData[j] = data.ReadValue<short>() / (float)0x7FFF;
+                        }
+                        else if (track.DataType == 2)
+                        {
+                            animData[j] = data.ReadValue<float>();
+                        }
+                        else if (track.DataType == 3)
+                        {
+                            animData[j] = data.ReadValue<float>();
+                        }
+                        else if (track.DataType == 4)
+                        {
+                            animData[j] = data.ReadValue<byte>();
+                        }
+                        else
+                        {
+                            throw new NotImplementedException($"Data Type {track.DataType} not implemented");
+                        }
+                    }
+
+                    frames.Add(new Frame(frame, ConvertAnimDataToObject(animData, track.Type)));
+                }
+
                 // Create node
-                AddNode(node.BoneNameHash.ToString("X8"), animData, node.NodeType, frame, trackIndex, node.IsInMainTrack == 1);
+                Tracks[trackIndex].Nodes.Add(new Node(nameHash, isMainTrack, frames));
             }
         }
 
-        public void AddNode(string nameHash, object[] animData, int type, int frame, int index, bool isMainTrack)
+        public object ConvertAnimDataToObject(object[] animData, int type)
         {
-            if (!Tracks[index].NodeExists(nameHash))
+            if (type == 1)
             {
-                Tracks[index].Value.Add(new Node(nameHash, isMainTrack), new Dictionary<int, object>());
+                return new BoneLocation((float)animData[0], (float)animData[1], (float)animData[2]);
             }
-
-            KeyValuePair<Node, Dictionary<int, object>>? node;
-            node = Tracks[index].GetNodeByName(nameHash);
-
-            if (node != null && !node.Value.Value.ContainsKey(frame))
+            else if (type == 2)
             {
-                if (type == 1)
-                {
-                    node.Value.Value.Add(frame, new BoneLocation((float)animData[0], (float)animData[1], (float)animData[2]));
-                }
-                else if (type == 2)
-                {
-                    node.Value.Value.Add(frame, new BoneRotation((float)animData[0], (float)animData[1], (float)animData[2], (float)animData[3]));
-                }
-                else if (type == 3)
-                {
-                    node.Value.Value.Add(frame, new BoneScale((float)animData[0], (float)animData[1], (float)animData[2]));
-                }
-                else if (type == 4)
-                {
-                    node.Value.Value.Add(frame, new UVMove((float)animData[0], (float)animData[1]));
-                }
-                else if (type == 5)
-                {
-                    node.Value.Value.Add(frame, new UVScale((float)animData[0], (float)animData[1]));
-                }
-                else if (type == 7)
-                {
-                    node.Value.Value.Add(frame, new TextureBrightness((float)animData[0]));
-                }
-                else if (type == 8)
-                {
-                    node.Value.Value.Add(frame, new TextureUnk((float)animData[0], (float)animData[1], (float)animData[2]));
-                }
-                else if (type == 9)
-                {
-                    node.Value.Value.Add(frame, new Unk(Convert.ToInt32(animData[0])));
-                }
+                return new BoneRotation((float)animData[0], (float)animData[1], (float)animData[2], (float)animData[3]);
+            }
+            else if (type == 3)
+            {
+                return new BoneScale((float)animData[0], (float)animData[1], (float)animData[2]);
+            }
+            else if (type == 4)
+            {
+               return new UVMove((float)animData[0], (float)animData[1]);
+            }
+            else if (type == 5)
+            {
+                return new UVScale((float)animData[0], (float)animData[1]);
+            }
+            else if (type == 6)
+            {
+                return new UVRotation((float)animData[0]);
+            }
+            else if (type == 7)
+            {
+                return new TextureBrightness((float)animData[0]);
+            }
+            else if (type == 8)
+            {
+                return new TextureUnk((float)animData[0], (float)animData[1], (float)animData[2]);
+            }
+            else if (type == 9)
+            {
+                return new Unk(Convert.ToInt32(animData[0]));
+            } else
+            {
+                throw new NotImplementedException($"Data Type {type} not implemented");
             }
         }
 
@@ -684,6 +734,11 @@ namespace StudioElevenLib.Level5.Animation
             {
                 UVMove uvMove = (UVMove)value;
                 return uvMove.ToByte();
+            }
+            else if (type == "UVRotation")
+            {
+                UVRotation uvRotation = (UVRotation)value;
+                return uvRotation.ToByte();
             }
             else if (type == "UVScale")
             {
@@ -730,7 +785,7 @@ namespace StudioElevenLib.Level5.Animation
 
             for (int i = 0; i < Tracks.Count; i++)
             {
-                hashes.AddRange(Tracks.ElementAt(i).Value.Select(x => x.Key.Name));
+                hashes.AddRange(Tracks.ElementAt(i).Nodes.Select(x => x.Name));
             }
 
             return hashes.Distinct().Count();
@@ -742,7 +797,7 @@ namespace StudioElevenLib.Level5.Animation
 
             for (int i = 0; i < Tracks.Count; i++)
             {
-                hashes += Tracks.ElementAt(i).Value.Count();
+                hashes += Tracks.ElementAt(i).Nodes.Count();
             }
 
             return hashes;
@@ -754,7 +809,7 @@ namespace StudioElevenLib.Level5.Animation
 
             for (int i = 0; i < Tracks.Count; i++)
             {
-                foreach (string nameHash in Tracks.ElementAt(i).Value.Keys.Select(x => x.Name))
+                foreach (string nameHash in Tracks.ElementAt(i).Nodes.Select(x => x.Name))
                 {
                     int nameInt = Convert.ToInt32(nameHash, 16);
 
@@ -798,13 +853,13 @@ namespace StudioElevenLib.Level5.Animation
             return result;
         }
 
-        private void FixNode(Dictionary<Node, Dictionary<int, object>> node, int frameCount)
+        private void FixNode(List<Node> nodes, int frameCount)
         {
-            foreach (KeyValuePair<Node, Dictionary<int, object>> keyValuePair in node)
+            foreach (Node node in nodes)
             {
-                if (keyValuePair.Value.ElementAt(keyValuePair.Value.Count - 1).Key != frameCount)
+                if (node.Frames.ElementAt(node.Frames.Count - 1).Key != frameCount)
                 {
-                    keyValuePair.Value.Add(frameCount, keyValuePair.Value.ElementAt(keyValuePair.Value.Count - 1).Value);
+                    node.Frames.Add(new Frame(frameCount, node.Frames.ElementAt(node.Frames.Count - 1).Value));
                 }
             }
         }

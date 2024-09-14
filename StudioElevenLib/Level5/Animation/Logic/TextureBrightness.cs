@@ -20,5 +20,19 @@ namespace StudioElevenLib.Level5.Animation.Logic
         {
             return BitConverter.GetBytes(Brightness);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is TextureBrightness other)
+            {
+                return Brightness == other.Brightness;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Brightness.GetHashCode();
+        }
     }
 }

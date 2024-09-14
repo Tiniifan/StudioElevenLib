@@ -6,30 +6,50 @@ namespace StudioElevenLib.Level5.Animation.Logic
     public class Track
     {
         public string Name { get; set; }
-        public Dictionary<Node, Dictionary<int, object>> Value { get; set; }
+
+        public int Index { get; set; }
+
+        public List<Node> Nodes { get; set; }
 
         public Track()
         {
-            Value = new Dictionary<Node, Dictionary<int, object>>();
+            Index = -1;
+            Nodes = new List<Node>();
         }
 
         public Track(string name)
         {
             Name = name;
-            Value = new Dictionary<Node, Dictionary<int, object>>();
+            Index = -1;
+            Nodes = new List<Node>();
         }
 
-        public Track(string name, Dictionary<Node, Dictionary<int, object>> value)
+        public Track(string name, int index)
         {
             Name = name;
-            Value = value;
+            Index = index;
+            Nodes = new List<Node>();
         }
 
-        public KeyValuePair<Node, Dictionary<int, object>>? GetNodeByName(string name)
+        public Track(string name, List<Node> nodes)
         {
-            foreach (var nodeEntry in Value)
+            Name = name;
+            Index = -1;
+            Nodes = nodes;
+        }
+
+        public Track(string name, int index, List<Node> nodes)
+        {
+            Name = name;
+            Index = index;
+            Nodes = nodes;
+        }
+
+        public Node GetNodeByName(string name)
+        {
+            foreach (var nodeEntry in Nodes)
             {
-                if (nodeEntry.Key.Name == name)
+                if (nodeEntry.Name == name)
                 {
                     return nodeEntry;
                 }
@@ -40,9 +60,9 @@ namespace StudioElevenLib.Level5.Animation.Logic
 
         public bool NodeExists(string name)
         {
-            foreach (var nodeEntry in Value)
+            foreach (var nodeEntry in Nodes)
             {
-                if (nodeEntry.Key.Name == name)
+                if (nodeEntry.Name == name)
                 {
                     return true;
                 }

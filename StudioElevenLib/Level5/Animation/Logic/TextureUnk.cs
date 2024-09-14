@@ -34,5 +34,19 @@ namespace StudioElevenLib.Level5.Animation.Logic
 
             return bytes;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is TextureUnk other)
+            {
+                return X == other.X && Y == other.Y && Z == other.Z;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return X.GetHashCode() + Y.GetHashCode() + Z.GetHashCode();
+        }
     }
 }
