@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 using System.Collections.Generic;
 using SharpTriStrip;
 
@@ -14,6 +15,28 @@ namespace StudioElevenLib.Level5.Mesh.Logic
 
             // Flatten all indices
             var allIndices = indices.SelectMany(x => x).ToArray();
+            triStripGenerator.GenerateStrips(allIndices.Select(i => (ushort)i).ToArray(), out var primGroups);
+
+            // Convert the generated strips into the desired format
+            List<int> triangleStrip = new List<int>();
+            foreach (var group in primGroups)
+            {
+                if (group.Type == TriStrip.PrimitiveType.Strip)
+                {
+                    triangleStrip.AddRange(group.Indices.Select(i => (int)i));
+                }
+            }
+
+            return triangleStrip;
+        }
+
+        public static List<int> IndiceToStrip(List<Vector3> indices)
+        {
+            // Initialize TriStrip instance
+            TriStrip triStripGenerator = new TriStrip();
+
+            // Flatten all indices by taking each component of Vector3
+            var allIndices = indices.SelectMany(v => new[] { (int)v.X, (int)v.Y, (int)v.Z }).ToArray();
             triStripGenerator.GenerateStrips(allIndices.Select(i => (ushort)i).ToArray(), out var primGroups);
 
             // Convert the generated strips into the desired format

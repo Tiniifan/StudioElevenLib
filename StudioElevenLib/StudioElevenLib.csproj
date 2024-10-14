@@ -93,6 +93,7 @@
     <Compile Include="Level5\Image\IMGCSwizzle.cs" />
     <Compile Include="Level5\Material\MTRC.cs" />
     <Compile Include="Level5\Material\MTRCSupport.cs" />
+    <Compile Include="Level5\Mesh\Logic\Face.cs" />
     <Compile Include="Level5\Mesh\Logic\Mesh.cs" />
     <Compile Include="Level5\Mesh\Logic\Triangle.cs" />
     <Compile Include="Level5\Mesh\XMPR.cs" />
