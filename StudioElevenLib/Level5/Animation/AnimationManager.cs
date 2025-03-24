@@ -844,7 +844,10 @@ namespace StudioElevenLib.Level5.Animation
 
                 for (int j = lastValue; j < nextValue; j++)
                 {
-                    result[j] = lastIndex;
+                    if (j < size)
+                    {
+                        result[j] = lastIndex;
+                    }
                 }
 
                 lastIndex++;

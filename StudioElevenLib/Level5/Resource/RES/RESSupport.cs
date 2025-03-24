@@ -37,26 +37,26 @@ namespace StudioElevenLib.Level5.Resource.RES
             RESType.MaterialTypeUnk1,
             RESType.Material1,
             RESType.Material2,
-            RESType.MaterialSplit,
-            RESType.MaterialTypeUnk2,
             RESType.TextureData,
+            RESType.MaterialTypeUnk2,
+            RESType.MaterialData,
         };
 
         public static List<RESType> Nodes = new List<RESType>
         {
-            RESType.TextureName,
+            RESType.MeshName,
             RESType.Bone,
-            RESType.AnimationMTN,
-            RESType.AnimationIMN,
-            RESType.AnimationMTM,
-            RESType.NodeTypeUnk1,
+            RESType.AnimationMTN2,
+            RESType.AnimationMTN3,
+            RESType.AnimationIMN2,
+            RESType.AnimationMTM2,
             RESType.Shading,
             RESType.NodeTypeUnk2,
-            RESType.BoundingBoxParameter,
-            RESType.AnimationSplitMTMINF,
-            RESType.AnimationSplitIMNINF,
-            RESType.AnimationSplitMTMINF,
-            RESType.NodeTypeUnk3,
+            RESType.Properties,
+            RESType.MTNINF,
+            RESType.MTNINF2,
+            RESType.IMMINF,
+            RESType.MTMINF,
             RESType.Textproj,
         };
     }

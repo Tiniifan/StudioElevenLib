@@ -1,0 +1,186 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\studioelevenlib\\level5\\resource\\xres\\xressupport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|solutionrelative:studioelevenlib\\level5\\resource\\xres\\xressupport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|c:\\users\\tinifan\\source\\repos\\studioelevenlib\\studioelevenlib\\level5\\resource\\xres\\xres.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|solutionrelative:studioelevenlib\\level5\\resource\\xres\\xres.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|c:\\users\\tinifan\\source\\repos\\studioelevenlib\\studioelevenlib\\level5\\animation\\logic\\uvrotation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|solutionrelative:studioelevenlib\\level5\\animation\\logic\\uvrotation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|c:\\users\\tinifan\\source\\repos\\studioelevenlib\\studioelevenlib\\level5\\animation\\logic\\uvmove.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|solutionrelative:studioelevenlib\\level5\\animation\\logic\\uvmove.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|c:\\users\\tinifan\\source\\repos\\studioelevenlib\\studioelevenlib\\level5\\animation\\logic\\track.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|solutionrelative:studioelevenlib\\level5\\animation\\logic\\track.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\studioelevenlib\\level5\\animation\\animationmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|solutionrelative:studioelevenlib\\level5\\animation\\animationmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\studioelevenlib\\level5\\resource\\res\\ressupport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|solutionrelative:studioelevenlib\\level5\\resource\\res\\ressupport.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\studioelevenlib\\level5\\resource\\res\\res.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|solutionrelative:studioelevenlib\\level5\\resource\\res\\res.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\studioelevenlib\\level5\\resource\\restype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|solutionrelative:studioelevenlib\\level5\\resource\\restype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\studioelevenlib\\level5\\resource\\iresource.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}|StudioElevenLib\\StudioElevenLib.csproj|solutionrelative:studioelevenlib\\level5\\resource\\iresource.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UVRotation.cs",
+              "DocumentMoniker": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Animation\\Logic\\UVRotation.cs",
+              "RelativeDocumentMoniker": "StudioElevenLib\\Level5\\Animation\\Logic\\UVRotation.cs",
+              "ToolTip": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Animation\\Logic\\UVRotation.cs",
+              "RelativeToolTip": "StudioElevenLib\\Level5\\Animation\\Logic\\UVRotation.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-09T21:01:51.76Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "UVMove.cs",
+              "DocumentMoniker": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Animation\\Logic\\UVMove.cs",
+              "RelativeDocumentMoniker": "StudioElevenLib\\Level5\\Animation\\Logic\\UVMove.cs",
+              "ToolTip": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Animation\\Logic\\UVMove.cs",
+              "RelativeToolTip": "StudioElevenLib\\Level5\\Animation\\Logic\\UVMove.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-09T21:00:51.292Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Track.cs",
+              "DocumentMoniker": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Animation\\Logic\\Track.cs",
+              "RelativeDocumentMoniker": "StudioElevenLib\\Level5\\Animation\\Logic\\Track.cs",
+              "ToolTip": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Animation\\Logic\\Track.cs",
+              "RelativeToolTip": "StudioElevenLib\\Level5\\Animation\\Logic\\Track.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-09T20:57:46.773Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "RESSupport.cs",
+              "DocumentMoniker": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\RES\\RESSupport.cs",
+              "RelativeDocumentMoniker": "StudioElevenLib\\Level5\\Resource\\RES\\RESSupport.cs",
+              "ToolTip": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\RES\\RESSupport.cs",
+              "RelativeToolTip": "StudioElevenLib\\Level5\\Resource\\RES\\RESSupport.cs",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAcwDsAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-01-05T12:17:46.807Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "XRESSupport.cs",
+              "DocumentMoniker": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\XRES\\XRESSupport.cs",
+              "RelativeDocumentMoniker": "StudioElevenLib\\Level5\\Resource\\XRES\\XRESSupport.cs",
+              "ToolTip": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\XRES\\XRESSupport.cs",
+              "RelativeToolTip": "StudioElevenLib\\Level5\\Resource\\XRES\\XRESSupport.cs",
+              "ViewState": "AgIAACkAAAAAAAAAAAAAAGEAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-06T15:54:58.4Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "RESType.cs",
+              "DocumentMoniker": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\RESType.cs",
+              "RelativeDocumentMoniker": "StudioElevenLib\\Level5\\Resource\\RESType.cs",
+              "ToolTip": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\RESType.cs",
+              "RelativeToolTip": "StudioElevenLib\\Level5\\Resource\\RESType.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAQwBsAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-06T15:54:51.028Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AnimationManager.cs",
+              "DocumentMoniker": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Animation\\AnimationManager.cs",
+              "RelativeDocumentMoniker": "StudioElevenLib\\Level5\\Animation\\AnimationManager.cs",
+              "ToolTip": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Animation\\AnimationManager.cs",
+              "RelativeToolTip": "StudioElevenLib\\Level5\\Animation\\AnimationManager.cs",
+              "ViewState": "AgIAAGAAAAAAAAAAAAA2wJoAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-06T15:51:55.101Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "RES.cs",
+              "DocumentMoniker": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\RES\\RES.cs",
+              "RelativeDocumentMoniker": "StudioElevenLib\\Level5\\Resource\\RES\\RES.cs",
+              "ToolTip": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\RES\\RES.cs",
+              "RelativeToolTip": "StudioElevenLib\\Level5\\Resource\\RES\\RES.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAH8AAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-06T15:54:31.287Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "IResource.cs",
+              "DocumentMoniker": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\IResource.cs",
+              "RelativeDocumentMoniker": "StudioElevenLib\\Level5\\Resource\\IResource.cs",
+              "ToolTip": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\IResource.cs",
+              "RelativeToolTip": "StudioElevenLib\\Level5\\Resource\\IResource.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-06T15:54:45.931Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "XRES.cs",
+              "DocumentMoniker": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\XRES\\XRES.cs",
+              "RelativeDocumentMoniker": "StudioElevenLib\\Level5\\Resource\\XRES\\XRES.cs",
+              "ToolTip": "C:\\Users\\Tinifan\\source\\repos\\StudioElevenLib\\StudioElevenLib\\Level5\\Resource\\XRES\\XRES.cs",
+              "RelativeToolTip": "StudioElevenLib\\Level5\\Resource\\XRES\\XRES.cs",
+              "ViewState": "AgIAAHwAAAAAAAAAAAAiwKMAAACxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-09-06T15:54:56.357Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

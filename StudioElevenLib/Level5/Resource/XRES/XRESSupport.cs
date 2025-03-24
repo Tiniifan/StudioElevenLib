@@ -16,22 +16,22 @@ namespace StudioElevenLib.Level5.Resource.XRES
             public HeaderTable MaterialTypeUnk1;
             public HeaderTable Material1;
             public HeaderTable Material2;
-            public HeaderTable MaterialSplit;
+            public HeaderTable TextureData;
             public HeaderTable MaterialTypeUnk2;
             public int EmptyBlock2;
-            public HeaderTable TextureData;
+            public HeaderTable MaterialData;
             public int EmptyBlock3;
-            public HeaderTable TextureName;
+            public HeaderTable MeshName;
             public HeaderTable Bone;
-            public HeaderTable AnimationMTN;
-            public HeaderTable AnimationIMN;
-            public HeaderTable AnimationMTM;
+            public HeaderTable AnimationMTN2;
+            public HeaderTable AnimationIMN2;
+            public HeaderTable AnimationMTM2;
             public HeaderTable Shading;
-            public HeaderTable NodeTypeUnk2;
-            public HeaderTable BoundingBoxParameter;
-            public HeaderTable AnimationSplitMTNINF;
-            public HeaderTable AnimationSplitIMNINF;
-            public HeaderTable AnimationSplitMTMINF;
+            public HeaderTable NodeTypeUnk1;
+            public HeaderTable Properties;
+            public HeaderTable MTNINF;
+            public HeaderTable IMMINF;
+            public HeaderTable MTMINF;
             public HeaderTable Textproj;
         }
 
@@ -46,19 +46,19 @@ namespace StudioElevenLib.Level5.Resource.XRES
         {
             {RESType.Bone, 8 },
             {RESType.Textproj, 8 },
-            {RESType.BoundingBoxParameter, 8 },
+            {RESType.Properties, 8 },
             {RESType.Shading, 8 },
             {RESType.Material1, 8 },
             {RESType.Material2, 8 },
-            {RESType.TextureName, 8 },
-            {RESType.MaterialSplit, 32 },
-            {RESType.TextureData, 224 },
-            {RESType.AnimationMTN, 8 },
-            {RESType.AnimationIMN, 8 },
-            {RESType.AnimationMTM, 8 },
-            {RESType.AnimationSplitMTNINF, 8 },
-            {RESType.AnimationSplitIMNINF, 8 },
-            {RESType.AnimationSplitMTMINF, 8 },
+            {RESType.MeshName, 8 },
+            {RESType.TextureData, 32 },
+            {RESType.MaterialData, 224 },
+            {RESType.AnimationMTN2, 8 },
+            {RESType.AnimationIMN2, 8 },
+            {RESType.AnimationMTM2, 8 },
+            {RESType.MTNINF, 8 },
+            {RESType.IMMINF, 8 },
+            {RESType.MTMINF, 8 },
         };
 
         public static List<RESType> TypeOrder = new List<RESType>
@@ -66,42 +66,42 @@ namespace StudioElevenLib.Level5.Resource.XRES
             RESType.MaterialTypeUnk1,
             RESType.Material1,
             RESType.Material2,
-            RESType.MaterialSplit,
-            RESType.MaterialTypeUnk2,
             RESType.TextureData,
-            RESType.TextureName,
+            RESType.MaterialTypeUnk2,
+            RESType.MaterialData,
+            RESType.MeshName,
             RESType.Bone,
-            RESType.AnimationMTN,
-            RESType.AnimationIMN,
-            RESType.AnimationMTM,
+            RESType.AnimationMTN2,
+            RESType.AnimationIMN2,
+            RESType.AnimationMTM2,
             RESType.Shading,
             RESType.NodeTypeUnk1,
-            RESType.BoundingBoxParameter,
-            RESType.AnimationSplitMTNINF,
-            RESType.AnimationSplitIMNINF,
-            RESType.AnimationSplitMTMINF,
+            RESType.Properties,
+            RESType.MTNINF,
+            RESType.IMMINF,
+            RESType.MTMINF,
             RESType.Textproj,
         };
 
         public static List<RESType> DataOrder = new List<RESType>
         {
-            RESType.MaterialSplit,
+            RESType.TextureData,
             RESType.Material1,
             RESType.Material2,
             RESType.MaterialTypeUnk1,
             RESType.MaterialTypeUnk2,
-            RESType.TextureData,
-            RESType.TextureName,
+            RESType.MaterialData,
+            RESType.MeshName,
             RESType.Bone,
-            RESType.AnimationMTN,
-            RESType.AnimationIMN,
-            RESType.AnimationMTM,
+            RESType.AnimationMTN2,
+            RESType.AnimationIMN2,
+            RESType.AnimationMTM2,
             RESType.Shading,
             RESType.NodeTypeUnk1,
-            RESType.BoundingBoxParameter,
-            RESType.AnimationSplitMTNINF,
-            RESType.AnimationSplitIMNINF,
-            RESType.AnimationSplitMTMINF,
+            RESType.Properties,
+            RESType.MTNINF,
+            RESType.IMMINF,
+            RESType.MTMINF,
             RESType.Textproj,
         };
     }

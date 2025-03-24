@@ -43,19 +43,19 @@ namespace StudioElevenLib.Level5.Resource.XRES
 
                 Items.Add(RESType.Bone, ReadType(reader, header.Bone, RESType.Bone));
                 Items.Add(RESType.Textproj, ReadType(reader, header.Textproj, RESType.Textproj));
-                Items.Add(RESType.BoundingBoxParameter, ReadType(reader, header.BoundingBoxParameter, RESType.BoundingBoxParameter));
+                Items.Add(RESType.Properties, ReadType(reader, header.Properties, RESType.Properties));
                 Items.Add(RESType.Shading, ReadType(reader, header.Shading, RESType.Shading));
                 Items.Add(RESType.Material1, ReadType(reader, header.Material1, RESType.Material1));
                 Items.Add(RESType.Material2, ReadType(reader, header.Material2, RESType.Material2));
-                Items.Add(RESType.TextureName, ReadType(reader, header.TextureName, RESType.TextureName));
-                Items.Add(RESType.MaterialSplit, ReadType(reader, header.MaterialSplit, RESType.MaterialSplit));
+                Items.Add(RESType.MeshName, ReadType(reader, header.MeshName, RESType.MeshName));
+                Items.Add(RESType.MaterialData, ReadType(reader, header.MaterialData, RESType.MaterialData));
                 Items.Add(RESType.TextureData, ReadType(reader, header.TextureData, RESType.TextureData));
-                Items.Add(RESType.AnimationMTN, ReadType(reader, header.AnimationMTN, RESType.AnimationMTN));
-                Items.Add(RESType.AnimationIMN, ReadType(reader, header.AnimationIMN, RESType.AnimationIMN));
-                Items.Add(RESType.AnimationMTM, ReadType(reader, header.AnimationMTM, RESType.AnimationMTM));
-                Items.Add(RESType.AnimationSplitMTNINF, ReadType(reader, header.AnimationSplitMTNINF, RESType.AnimationSplitMTNINF));
-                Items.Add(RESType.AnimationSplitIMNINF, ReadType(reader, header.AnimationSplitIMNINF, RESType.AnimationSplitIMNINF));
-                Items.Add(RESType.AnimationSplitMTMINF, ReadType(reader, header.AnimationSplitMTMINF, RESType.AnimationSplitMTMINF));
+                Items.Add(RESType.AnimationMTN2, ReadType(reader, header.AnimationMTN2, RESType.AnimationMTN2));
+                Items.Add(RESType.AnimationIMN2, ReadType(reader, header.AnimationIMN2, RESType.AnimationIMN2));
+                Items.Add(RESType.AnimationMTM2, ReadType(reader, header.AnimationMTM2, RESType.AnimationMTM2));
+                Items.Add(RESType.MTNINF, ReadType(reader, header.MTNINF, RESType.MTNINF));
+                Items.Add(RESType.IMMINF, ReadType(reader, header.IMMINF, RESType.IMMINF));
+                Items.Add(RESType.IMMINF, ReadType(reader, header.IMMINF, RESType.IMMINF));
             }
         }
 
@@ -67,87 +67,14 @@ namespace StudioElevenLib.Level5.Resource.XRES
 
         public void Save(string fileName)
         {
-            using (FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+            using (FileStream fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
             {
-                BinaryDataWriter writerComp = new BinaryDataWriter(stream);
-
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    BinaryDataWriter writerDecomp = new BinaryDataWriter(memoryStream);
+                    Save(memoryStream);
 
-                    // Fix items size
-                    for (int i = 0; i < XRESSupport.TypeOrder.Count; i++)
-                    {
-                        RESType resType = XRESSupport.TypeOrder[i];
-
-                        if (Items.ContainsKey(resType))
-                        {
-                            for (int j = 0; j < Items[resType].Count; j++)
-                            {
-                                if (XRESSupport.TypeLength[resType] != Items[resType][j].Length)
-                                {
-                                    byte[] resizedArray = new byte[XRESSupport.TypeLength[resType]];
-                                    Array.Copy(Items[resType][j], resizedArray, Math.Min(XRESSupport.TypeLength[resType], Items[resType][j].Length));
-                                    Items[resType][j] = resizedArray;
-                                }
-                            }
-                        }
-                    }
-
-                    int stringOffset = 0x64 + Items.Values.SelectMany(itemData => itemData).Sum(byteArray => byteArray.Length);
-
-                    // Header
-                    writerDecomp.Write(0x53455258);
-                    writerDecomp.Write((short)stringOffset);
-                    writerDecomp.Write((short)1);
-                    writerDecomp.Write(new byte[0x0C]);
-
-                    // Header table
-                    int dataOffset = 0x64;
-                    for (int i = 0; i < XRESSupport.TypeOrder.Count; i++)
-                    {
-                        RESType resType = XRESSupport.TypeOrder[i];
-
-                        if (Items.ContainsKey(resType))
-                        {
-                            writerDecomp.Write((short)dataOffset);
-                            writerDecomp.Write((short)Items[resType].Count);
-                            dataOffset += Items[resType].Select(itemData => itemData).Sum(byteArray => byteArray.Length);
-                        }
-                        else
-                        {
-                            writerDecomp.Write((short)0x64);
-                            writerDecomp.Write((short)0);
-                        }
-
-                        if (i == 4 || i == 5)
-                        {
-                            writerDecomp.Write(0);
-                        }
-                    }
-
-                    // Data
-                    for (int i = 0; i < XRESSupport.TypeOrder.Count; i++)
-                    {
-                        RESType resType = XRESSupport.TypeOrder[i];
-
-                        if (Items.ContainsKey(resType))
-                        {
-                            writerDecomp.Write(Items[resType].SelectMany(bytes => bytes).ToArray());
-                        }
-                    }
-
-                    // String table
-                    for (int i = 0; i < StringTable.Count; i++)
-                    {
-                        writerDecomp.Write(Encoding.GetEncoding(932).GetBytes(StringTable[i]));
-                        writerDecomp.Write((byte)0);
-                    }
-
-                    writerDecomp.WriteAlignment(4);
-
-                    // Compress
-                    writerComp.Write(new NoCompression().Compress(memoryStream.ToArray()));
+                    memoryStream.Position = 0;
+                    memoryStream.CopyTo(fileStream);
                 }
             }
         }
@@ -156,142 +83,147 @@ namespace StudioElevenLib.Level5.Resource.XRES
         {
             using (MemoryStream fileStream = new MemoryStream())
             {
-                BinaryDataWriter writerComp = new BinaryDataWriter(fileStream);
+                Save(fileStream);
+                return fileStream.ToArray();
+            }
+        }
 
-                using (MemoryStream memoryStream = new MemoryStream())
+        private void Save(MemoryStream fileStream)
+        {
+            BinaryDataWriter writerComp = new BinaryDataWriter(fileStream);
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                BinaryDataWriter writerDecomp = new BinaryDataWriter(memoryStream);
+
+                // Fix items size
+                for (int i = 0; i < XRESSupport.TypeOrder.Count; i++)
                 {
-                    BinaryDataWriter writerDecomp = new BinaryDataWriter(memoryStream);
+                    RESType resType = XRESSupport.TypeOrder[i];
 
-                    // Fix items size
-                    for (int i = 0; i < XRESSupport.TypeOrder.Count; i++)
+                    if (Items.ContainsKey(resType))
                     {
-                        RESType resType = XRESSupport.TypeOrder[i];
-
-                        if (Items.ContainsKey(resType))
+                        for (int j = 0; j < Items[resType].Count; j++)
                         {
-                            for (int j = 0; j < Items[resType].Count; j++)
+                            if (XRESSupport.TypeLength[resType] != Items[resType][j].Length)
                             {
-                                if (XRESSupport.TypeLength[resType] != Items[resType][j].Length)
-                                {
-                                    byte[] resizedArray = new byte[XRESSupport.TypeLength[resType]];
-                                    Array.Copy(Items[resType][j], resizedArray, Math.Min(XRESSupport.TypeLength[resType], Items[resType][j].Length));
-                                    Items[resType][j] = resizedArray;
-                                }
+                                byte[] resizedArray = new byte[XRESSupport.TypeLength[resType]];
+                                Array.Copy(Items[resType][j], resizedArray, Math.Min(XRESSupport.TypeLength[resType], Items[resType][j].Length));
+                                Items[resType][j] = resizedArray;
                             }
                         }
                     }
+                }
 
-                    int stringOffset = 0x64 + Items.Values.SelectMany(itemData => itemData).Sum(byteArray => byteArray.Length);
+                int stringOffset = 0x64 + Items.Values.SelectMany(itemData => itemData).Sum(byteArray => byteArray.Length);
 
-                    // Header
-                    writerDecomp.Write(0x53455258);
-                    writerDecomp.Write((short)stringOffset);
-                    writerDecomp.Write((short)1);
-                    writerDecomp.Write(new byte[0x0C]);
+                // Header
+                writerDecomp.Write(0x53455258);
+                writerDecomp.Write((short)stringOffset);
+                writerDecomp.Write((short)1);
+                writerDecomp.Write(new byte[0x0C]);
 
-                    // Create dataOffset dict
-                    int dataOffset = 0x64;
-                    int stringPos = 0;
-                    Dictionary<RESType, int> dataOffsetDict = new Dictionary<RESType, int>();
-                    Dictionary<string, int> newStringTable = new Dictionary<string,int>();
-                    for (int i = 0; i < XRESSupport.DataOrder.Count; i++)
+                // Create dataOffset dict
+                int dataOffset = 0x64;
+                int stringPos = 0;
+                Dictionary<RESType, int> dataOffsetDict = new Dictionary<RESType, int>();
+                Dictionary<string, int> newStringTable = new Dictionary<string, int>();
+                for (int i = 0; i < XRESSupport.DataOrder.Count; i++)
+                {
+                    RESType resType = XRESSupport.DataOrder[i];
+                    dataOffsetDict.Add(resType, dataOffset);
+
+                    if (Items.ContainsKey(resType))
                     {
-                        RESType resType = XRESSupport.DataOrder[i];
-                        dataOffsetDict.Add(resType, dataOffset);                        
-
-                        if (Items.ContainsKey(resType))
+                        for (int j = 0; j < Items[resType].Count; j++)
                         {
-                            for (int j = 0; j < Items[resType].Count; j++)
+                            byte[] itemContent = Items[resType][j];
+
+                            // Reorder string
+                            using (BinaryDataReader readResItemm = new BinaryDataReader(itemContent))
                             {
-                                byte[] itemContent = Items[resType][j];
+                                int hash = readResItemm.ReadValue<int>();
 
-                                // Reorder string
-                                using (BinaryDataReader readResItemm = new BinaryDataReader(itemContent))
+                                if (hash == unchecked((int)0xBA3CEDA6))
                                 {
-                                    int hash = readResItemm.ReadValue<int>();
-
-                                    if (hash == unchecked((int)0xBA3CEDA6))
+                                    // Remove unused cmn
+                                    Items[resType].RemoveAt(j);
+                                }
+                                else
+                                {
+                                    foreach (string myStr in StringTable)
                                     {
-                                        // Remove unused cmn
-                                        Items[resType].RemoveAt(j);
-                                    } else
-                                    {
-                                        foreach (string myStr in StringTable)
+                                        if (hash == unchecked((int)Crc32.Compute(Encoding.GetEncoding("Shift-JIS").GetBytes(myStr))))
                                         {
-                                            if (hash == unchecked((int)Crc32.Compute(Encoding.GetEncoding("Shift-JIS").GetBytes(myStr))))
+                                            if (!newStringTable.ContainsKey(myStr))
                                             {
-                                                if (!newStringTable.ContainsKey(myStr))
-                                                {
-                                                    newStringTable.Add(myStr, stringPos);
-                                                    stringPos += Encoding.GetEncoding(932).GetByteCount(myStr) + 1;
-                                                }
+                                                newStringTable.Add(myStr, stringPos);
+                                                stringPos += Encoding.GetEncoding(932).GetByteCount(myStr) + 1;
+                                            }
 
-                                                if (resType == RESType.MaterialSplit || resType == RESType.Material1 || resType == RESType.Material2 || resType == RESType.TextureData)
+                                            if (resType == RESType.TextureData || resType == RESType.Material1 || resType == RESType.Material2 || resType == RESType.MaterialData)
+                                            {
+                                                using (BinaryDataWriter writeResItemm = new BinaryDataWriter(itemContent))
                                                 {
-                                                    using (BinaryDataWriter writeResItemm = new BinaryDataWriter(itemContent))
-                                                    {
-                                                        writeResItemm.Seek(4);
-                                                        writeResItemm.Write(newStringTable[myStr]);
-                                                    }
+                                                    writeResItemm.Seek(4);
+                                                    writeResItemm.Write(newStringTable[myStr]);
                                                 }
                                             }
                                         }
                                     }
                                 }
                             }
-                            dataOffset += Items[resType].Select(itemData => itemData).Sum(byteArray => byteArray.Length);
                         }
+                        dataOffset += Items[resType].Select(itemData => itemData).Sum(byteArray => byteArray.Length);
                     }
-
-                    // Header table                 
-                    for (int i = 0; i < XRESSupport.TypeOrder.Count; i++)
-                    {
-                        RESType resType = XRESSupport.TypeOrder[i];
-
-                        if (Items.ContainsKey(resType))
-                        {
-                            writerDecomp.Write((short)dataOffsetDict[resType]);
-                            writerDecomp.Write((short)Items[resType].Count);
-                        }
-                        else
-                        {
-                            writerDecomp.Write((short)dataOffsetDict[resType]);
-                            writerDecomp.Write((short)0);
-                        }
-
-                        if (i == 4 || i == 5)
-                        {
-                            writerDecomp.Write(0);
-                        }
-                    }
-
-                    // Data
-                    for (int i = 0; i < XRESSupport.TypeOrder.Count; i++)
-                    {
-                        RESType resType = XRESSupport.TypeOrder[i];
-
-                        if (Items.ContainsKey(resType))
-                        {
-                            writerDecomp.Seek(dataOffsetDict[resType]);
-                            writerDecomp.Write(Items[resType].SelectMany(bytes => bytes).ToArray());
-                        }
-                    }
-
-                    // String table
-                    writerDecomp.Seek(stringOffset);
-                    for (int i = 0; i < newStringTable.Count; i++)
-                    {
-                        writerDecomp.Write(Encoding.GetEncoding(932).GetBytes(newStringTable.ElementAt(i).Key));
-                        writerDecomp.Write((byte)0);
-                    }
-
-                    writerDecomp.WriteAlignment(4);
-
-                    // Compress
-                    writerComp.Write(new NoCompression().Compress(memoryStream.ToArray()));
                 }
 
-                return fileStream.ToArray();
+                // Header table                 
+                for (int i = 0; i < XRESSupport.TypeOrder.Count; i++)
+                {
+                    RESType resType = XRESSupport.TypeOrder[i];
+
+                    if (Items.ContainsKey(resType))
+                    {
+                        writerDecomp.Write((short)dataOffsetDict[resType]);
+                        writerDecomp.Write((short)Items[resType].Count);
+                    }
+                    else
+                    {
+                        writerDecomp.Write((short)dataOffsetDict[resType]);
+                        writerDecomp.Write((short)0);
+                    }
+
+                    if (i == 4 || i == 5)
+                    {
+                        writerDecomp.Write(0);
+                    }
+                }
+
+                // Data
+                for (int i = 0; i < XRESSupport.TypeOrder.Count; i++)
+                {
+                    RESType resType = XRESSupport.TypeOrder[i];
+
+                    if (Items.ContainsKey(resType))
+                    {
+                        writerDecomp.Seek(dataOffsetDict[resType]);
+                        writerDecomp.Write(Items[resType].SelectMany(bytes => bytes).ToArray());
+                    }
+                }
+
+                // String table
+                writerDecomp.Seek(stringOffset);
+                for (int i = 0; i < newStringTable.Count; i++)
+                {
+                    writerDecomp.Write(Encoding.GetEncoding(932).GetBytes(newStringTable.ElementAt(i).Key));
+                    writerDecomp.Write((byte)0);
+                }
+
+                writerDecomp.WriteAlignment(4);
+
+                // Compress
+                writerComp.Write(new NoCompression().Compress(memoryStream.ToArray()));
             }
         }
 
