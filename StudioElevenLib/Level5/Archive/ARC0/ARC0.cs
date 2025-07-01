@@ -20,7 +20,7 @@ namespace StudioElevenLib.Level5.Archive.ARC0
 
         public ARC0()
         {
-            Directory = new VirtualDirectory("/");
+            Directory = new VirtualDirectory("");
         }
 
         public ARC0(Stream stream)
