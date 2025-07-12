@@ -71,6 +71,12 @@
     <Compile Include="Level5\Armature\Logic\Bone.cs" />
     <Compile Include="Level5\Armature\MBN.cs" />
     <Compile Include="Level5\Armature\MBNSupport.cs" />
+    <Compile Include="Level5\Binary\CfgBin.cs" />
+    <Compile Include="Level5\Binary\CfgBinSupport.cs" />
+    <Compile Include="Level5\Binary\Logic\Entry.cs" />
+    <Compile Include="Level5\Binary\Logic\TreeNode.cs" />
+    <Compile Include="Level5\Binary\Logic\Type.cs" />
+    <Compile Include="Level5\Binary\Logic\Variable.cs" />
     <Compile Include="Level5\Camera\CMR1\CMR1.cs" />
     <Compile Include="Level5\Camera\CMR1\CMR1Support.cs" />
     <Compile Include="Level5\Camera\CMR2\CMR2.cs" />
