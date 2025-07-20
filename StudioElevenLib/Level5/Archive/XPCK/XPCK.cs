@@ -65,7 +65,7 @@ namespace StudioElevenLib.Level5.Archive.XPCK
             return folder;
         }
 
-        public void Save(string fileName)
+        public void Save(string fileName, IProgress<int> progress = null)
         {
             using (FileStream stream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
             {
@@ -194,7 +194,7 @@ namespace StudioElevenLib.Level5.Archive.XPCK
             }
         }
 
-        public byte[] Save()
+        public byte[] Save(IProgress<int> progress = null)
         {
             using (MemoryStream stream = new MemoryStream())
             {

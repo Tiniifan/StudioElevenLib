@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using StudioElevenLib.Level5.Compression.ETC1;
 
 namespace StudioElevenLib.Level5.Image
 {
@@ -34,6 +35,8 @@ namespace StudioElevenLib.Level5.Image
         {
             {0, new RGBA8() },
             {1, new RGBA4() },
+            {3, new RBGR888() },
+            {27, new ETC1() },
             {28, new ETC1A4() },
         };
     }

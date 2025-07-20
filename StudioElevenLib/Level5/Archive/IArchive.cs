@@ -13,7 +13,7 @@ namespace StudioElevenLib.Level5.Archive
 
         VirtualDirectory Directory { get; set; }
 
-        void Save(string path);
+        void Save(string path, IProgress<int> progress = null);
 
         void Close();
     }

@@ -61,7 +61,9 @@
     <Compile Include="Level5\Animation\Logic\UVRotation.cs" />
     <Compile Include="Level5\Animation\Logic\UVScale.cs" />
     <Compile Include="Level5\Archive\ARC0\ARC0.cs" />
+    <Compile Include="Level5\Archive\ARC0\ARC0Reader.cs" />
     <Compile Include="Level5\Archive\ARC0\ARC0Support.cs" />
+    <Compile Include="Level5\Archive\ARC0\ARC0Writer.cs" />
     <Compile Include="Level5\Archive\Archiver.cs" />
     <Compile Include="Level5\Archive\IArchive.cs" />
     <Compile Include="Level5\Archive\XFSP\XFSP.cs" />

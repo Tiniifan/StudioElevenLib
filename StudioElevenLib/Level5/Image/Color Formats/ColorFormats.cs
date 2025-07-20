@@ -71,6 +71,27 @@ namespace StudioElevenLib.Level5.Image
         }
     }
 
+    public class ETC1 : IColorFormat
+    {
+        public string Name => "ETC1";
+
+        public int Size => 3;
+
+        public byte[] Encode(Color color)
+        {
+            // Not implemented
+            return null;
+        }
+
+        public Color Decode(byte[] data)
+        {
+            int r = data[0];
+            int g = data[1];
+            int b = data[2];
+            return Color.FromArgb(255, r, g, b);
+        }
+    }
+
     public class ETC1A4 : IColorFormat
     {
         public string Name => "ETC1A4";
@@ -90,6 +111,37 @@ namespace StudioElevenLib.Level5.Image
             int b = data[2];
             int a = data[3];
             return Color.FromArgb(a, r, g, b);
+        }
+    }
+
+    public class RBGR888 : IColorFormat
+    {
+        public string Name => "RBGR888";
+
+        public int Size => 3;
+
+        public byte[] Encode(Color color)
+        {
+            return new byte[]
+            {
+                color.R,
+                color.B,
+                color.G
+            };
+        }
+
+        public Color Decode(byte[] data)
+        {
+            if (data.Length < 3)
+            {
+                return Color.FromArgb(0);
+            }
+
+            int r = data[2];
+            int b = data[0];
+            int g = data[1];
+
+            return Color.FromArgb(255, r, g, b);
         }
     }
 }
