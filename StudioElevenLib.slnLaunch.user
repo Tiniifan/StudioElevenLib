@@ -1,0 +1,11 @@
+[
+  {
+    "Name": "Nouveau profil",
+    "Projects": [
+      {
+        "Path": "StudioElevenLibTest\\StudioElevenLibTest.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

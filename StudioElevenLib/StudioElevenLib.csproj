@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\TreeNode.cs" />
     <Compile Include="Level5\Animation\AnimationManager.cs" />
     <Compile Include="Level5\Animation\AnimationSupport.cs" />
     <Compile Include="Level5\Animation\Logic\BoneLocation.cs" />
@@ -75,10 +76,13 @@
     <Compile Include="Level5\Armature\MBNSupport.cs" />
     <Compile Include="Level5\Binary\CfgBin.cs" />
     <Compile Include="Level5\Binary\CfgBinSupport.cs" />
+    <Compile Include="Level5\Binary\Collections\CfgTreeNode.cs" />
+    <Compile Include="Level5\Binary\Collections\PTreeNode.cs" />
+    <Compile Include="Level5\Binary\Logic\Attributes.cs" />
     <Compile Include="Level5\Binary\Logic\Entry.cs" />
-    <Compile Include="Level5\Binary\Logic\TreeNode.cs" />
     <Compile Include="Level5\Binary\Logic\Type.cs" />
     <Compile Include="Level5\Binary\Logic\Variable.cs" />
+    <Compile Include="Level5\Binary\Mapper\CfgBinMapper.cs" />
     <Compile Include="Level5\Camera\CMR1\CMR1.cs" />
     <Compile Include="Level5\Camera\CMR1\CMR1Support.cs" />
     <Compile Include="Level5\Camera\CMR2\CMR2.cs" />

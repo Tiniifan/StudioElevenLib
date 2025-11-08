@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StudioElevenLib.Level5.Binary.Logic
 {
@@ -14,7 +10,7 @@ namespace StudioElevenLib.Level5.Binary.Logic
         /// <summary>
         /// Gets or sets the type of the variable.
         /// </summary>
-        public Type Type { get; set; }
+        public CfgValueType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the variable.
@@ -39,7 +35,7 @@ namespace StudioElevenLib.Level5.Binary.Logic
         /// </summary>
         /// <param name="type">The type of the variable.</param>
         /// <param name="value">The value of the variable.</param>
-        public Variable(Type type, object value)
+        public Variable(CfgValueType type, object value)
         {
             Type = type;
             Value = value;
@@ -57,4 +53,3 @@ namespace StudioElevenLib.Level5.Binary.Logic
         }
     }
 }
-

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace StudioElevenLib.Level5.Binary.Logic
 {
@@ -17,19 +13,9 @@ namespace StudioElevenLib.Level5.Binary.Logic
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this entry is an end terminator.
-        /// </summary>
-        public bool EndTerminator { get; set; }
-
-        /// <summary>
         /// Gets or sets the list of variables associated with this entry.
         /// </summary>
         public List<Variable> Variables { get; set; }
-
-        /// <summary>
-        /// Gets or sets the list of child entries under this entry.
-        /// </summary>
-        public List<Entry> Children { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Entry"/> class.
@@ -37,7 +23,6 @@ namespace StudioElevenLib.Level5.Binary.Logic
         public Entry()
         {
             Variables = new List<Variable>();
-            Children = new List<Entry>();
         }
 
         /// <summary>
@@ -49,21 +34,6 @@ namespace StudioElevenLib.Level5.Binary.Logic
         {
             Name = name;
             Variables = variables ?? new List<Variable>();
-            Children = new List<Entry>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Entry"/> class with a specified name, variables, and end terminator flag.
-        /// </summary>
-        /// <param name="name">The name of the entry.</param>
-        /// <param name="variables">The list of variables associated with this entry.</param>
-        /// <param name="endTerminator">A value indicating whether this entry is an end terminator.</param>
-        public Entry(string name, List<Variable> variables, bool endTerminator)
-        {
-            Name = name;
-            Variables = variables ?? new List<Variable>();
-            EndTerminator = endTerminator;
-            Children = new List<Entry>();
         }
 
         /// <summary>
@@ -74,7 +44,6 @@ namespace StudioElevenLib.Level5.Binary.Logic
         {
             Name = name;
             Variables = new List<Variable>();
-            Children = new List<Entry>();
         }
 
         /// <summary>

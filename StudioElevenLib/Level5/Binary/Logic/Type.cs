@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace StudioElevenLib.Level5.Binary.Logic
+﻿namespace StudioElevenLib.Level5.Binary.Logic
 {
-    public enum Type
+    public enum CfgValueType
     {
         String,
         Int,
@@ -14,4 +8,3 @@ namespace StudioElevenLib.Level5.Binary.Logic
         Unknown
     }
 }
-
