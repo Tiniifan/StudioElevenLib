@@ -42,14 +42,14 @@ namespace StudioElevenLib.Level5.Text
         private void LoadBinary()
         {
             // Get faces
-            var washaBeginsNodes = Entries.FindNodes(node => node.Name == "TEXT_WASHA_BEGIN");
+            var washaBeginsNodes = Entries.FindNodes(node => node.Name == "TEXT_WASHA");
             int[] faces = washaBeginsNodes
                 .SelectMany(node => node.Item.Variables.Skip(1).Where(v => v.Type == CfgValueType.Int))
                 .Select(v => Convert.ToInt32(v.Value))
                 .ToArray();
 
             // Get faces configs
-            var configBeginNodes = Entries.FindNodes(node => node.Name == "TEXT_CONFIG_BEGIN");
+            var configBeginNodes = Entries.FindNodes(node => node.Name == "TEXT_CONFIG");
             Dictionary<int, int> facesConfig = new Dictionary<int, int>();
 
             foreach (var configNode in configBeginNodes)
@@ -63,7 +63,7 @@ namespace StudioElevenLib.Level5.Text
             }
 
             // Get Texts
-            var textInfoNodes = Entries.FindNodes(node => node.Name == "TEXT_INFO_BEGIN");
+            var textInfoNodes = Entries.FindNodes(node => node.Name == "TEXT_INFO");
 
             Texts = textInfoNodes
                 .GroupBy(
@@ -105,7 +105,7 @@ namespace StudioElevenLib.Level5.Text
                 );
 
             // Get Nouns
-            var nounInfoNodes = Entries.FindNodes(node => node.Name == "NOUN_INFO_BEGIN");
+            var nounInfoNodes = Entries.FindNodes(node => node.Name == "NOUN_INFO");
 
             Nouns = nounInfoNodes
                 .GroupBy(

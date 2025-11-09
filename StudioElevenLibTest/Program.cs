@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using StudioElevenLib.Level5.Compression.NoCompression;
 using static System.Net.Mime.MediaTypeNames;
 using System.Linq.Expressions;
+using StudioElevenLib.Level5.Text;
 
 
 namespace StudioElevenLibTest
@@ -403,6 +404,10 @@ namespace StudioElevenLibTest
 
         static void Main(string[] args)
         {
+            byte[] fileData = File.ReadAllBytes("./chara_text_fr.cfg.bin");
+            T2bþ test = new T2bþ(fileData);
+
+            
             // GetCondition();
 
             // NoCompression();
@@ -410,7 +415,7 @@ namespace StudioElevenLibTest
 
             // DefaultFuncpt();
 
-            DefaultHealpt();
+            // DefaultHealpt();
 
             // DefaultNPC();
 
