@@ -53,6 +53,29 @@ namespace StudioElevenLib.Level5.Binary.Collections
         }
 
         /// <summary>
+        /// Dynamically flattens a configuration entry into a list of objects using the specified runtime type.
+        /// </summary>
+        /// <param name="targetEntryName">The name of the target entry to flatten from the configuration tree.</param>
+        /// <param name="targetType">The runtime type used to instantiate and map each entry element.</param>
+        /// <returns>
+        /// A <see cref="List{Object}"/> containing the deserialized elements of the specified type.
+        /// </returns>
+        /// <remarks>
+        /// This overload allows dynamic type resolution at runtime by invoking the generic
+        /// <c>FlattenEntryToClassList&lt;T&gt;</c> method via reflection.
+        /// </remarks>
+        public List<object> FlattenEntryToClassList(string targetEntryName, Type targetType)
+        {
+            var method = typeof(CfgTreeNode)
+                .GetMethod(nameof(FlattenEntryToClassList), new[] { typeof(string) });
+
+            var generic = method.MakeGenericMethod(targetType);
+            var result = generic.Invoke(this, new object[] { targetEntryName });
+
+            return (List<object>)result;
+        }
+
+        /// <summary>
         /// Rebuilds this tree from a list of class instances using the mapper.
         /// This replaces the content of the current node with the new structure.
         /// </summary>
