@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using StudioElevenLib.Collections;
@@ -53,18 +54,14 @@ namespace StudioElevenLib.Level5.Binary.Collections
         }
 
         /// <summary>
-        /// Dynamically flattens a configuration entry into a list of objects using the specified runtime type.
+        /// Dynamically flattens a configuration entry into a sequence of objects using a runtime type.
         /// </summary>
-        /// <param name="targetEntryName">The name of the target entry to flatten from the configuration tree.</param>
-        /// <param name="targetType">The runtime type used to instantiate and map each entry element.</param>
+        /// <param name="targetType">The runtime type used to instantiate and map each flattened element.</param>
+        /// <param name="targetEntryName">The name of the configuration entry to flatten.</param>
         /// <returns>
-        /// A <see cref="List{Object}"/> containing the deserialized elements of the specified type.
+        /// An <see cref="IEnumerable"/> containing the deserialized elements created from the specified type.
         /// </returns>
-        /// <remarks>
-        /// This overload allows dynamic type resolution at runtime by invoking the generic
-        /// <c>FlattenEntryToClassList&lt;T&gt;</c> method via reflection.
-        /// </remarks>
-        public List<object> FlattenEntryToClassList(string targetEntryName, Type targetType)
+        public IEnumerable FlattenEntryToClassList(Type targetType, string targetEntryName)
         {
             var method = typeof(CfgTreeNode)
                 .GetMethod(nameof(FlattenEntryToClassList), new[] { typeof(string) });
@@ -72,7 +69,7 @@ namespace StudioElevenLib.Level5.Binary.Collections
             var generic = method.MakeGenericMethod(targetType);
             var result = generic.Invoke(this, new object[] { targetEntryName });
 
-            return (List<object>)result;
+            return (IEnumerable)result;
         }
 
         /// <summary>
