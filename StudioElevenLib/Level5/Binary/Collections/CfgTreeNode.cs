@@ -43,6 +43,52 @@ namespace StudioElevenLib.Level5.Binary.Collections
             }
         }
 
+        /// <summary>
+        /// Checks if an entry with the specified name exists in this node or any of its descendants.
+        /// </summary>
+        /// <param name="name">The name of the entry to search for.</param>
+        /// <returns>True if an entry with the specified name exists; otherwise, false.</returns>
+        public bool Exists(string name)
+        {
+            if (Item.Name == name) return true;
+
+            foreach (var child in Children)
+            {
+                if (child is CfgTreeNode cfgChild)
+                {
+                    if (cfgChild.Exists(name)) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Deletes the first entry with the specified name from this node or any of its descendants.
+        /// </summary>
+        /// <param name="name">The name of the entry to delete.</param>
+        /// <returns>True if an entry was found and deleted; otherwise, false.</returns>
+        public bool Delete(string name)
+        {
+            for (int i = 0; i < Children.Count; i++)
+            {
+                if (Children[i] is CfgTreeNode cfgChild)
+                {
+                    if (cfgChild.Item.Name == name)
+                    {
+                        Children.RemoveAt(i);
+                        return true;
+                    }
+
+                    if (cfgChild.Delete(name))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+
         #region Mapper Delegates
 
         /// <summary>
