@@ -272,6 +272,38 @@ namespace StudioElevenLib.Tools
         }
 
         /// <summary>
+        /// Gets a SubMemoryStream from the specified full path.
+        /// </summary>
+        /// <param name="path">The full path of the file.</param>
+        /// <returns>The file as a byte array.</returns>
+        public SubMemoryStream GetSubMemoryStreamFromFullPath(string path)
+        {
+            var pathSplit = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var fileName = pathSplit[pathSplit.Length - 1];
+            var current = this;
+
+            // Get Path
+            for (int i = 0; i < pathSplit.Length - 1; i++)
+            {
+                current = current.GetFolder(pathSplit[i]);
+
+                if (current == null)
+                {
+                    throw new DirectoryNotFoundException(path + " not exist");
+                }
+            }
+
+            if (current.Files.ContainsKey(fileName))
+            {
+                return current.Files[fileName];
+            }
+            else
+            {
+                throw new FileNotFoundException(fileName + " not exist");
+            }
+        }
+
+        /// <summary>
         /// Recursively gets all files within this directory and its subdirectories.
         /// </summary>
         /// <returns>A dictionary mapping full file paths to <see cref="SubMemoryStream"/> instances.</returns>
