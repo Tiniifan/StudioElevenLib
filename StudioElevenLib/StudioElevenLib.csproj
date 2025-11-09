@@ -116,6 +116,9 @@
     <Compile Include="Level5\Resource\RES\RESSupport.cs" />
     <Compile Include="Level5\Resource\XRES\XRES.cs" />
     <Compile Include="Level5\Resource\XRES\XRESSupport.cs" />
+    <Compile Include="Level5\Text\Logic\StringLevel5.cs" />
+    <Compile Include="Level5\Text\Logic\TextConfig.cs" />
+    <Compile Include="Level5\Text\T2bþ.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SharpTriStrip\EdgeInfo.cs" />
     <Compile Include="SharpTriStrip\FaceInfo.cs" />
