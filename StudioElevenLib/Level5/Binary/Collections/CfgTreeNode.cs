@@ -173,6 +173,53 @@ namespace StudioElevenLib.Level5.Binary.Collections
             AddChild(new CfgTreeNode(new Entry(parentEntryName.Replace("_BEGIN", "_END"))));
         }
 
+        /// <summary>
+        /// Adds a bounded entry (BEGIN ... END) to this node from a class list using the mapper,
+        /// dynamically invoking the generic implementation through reflection.
+        /// </summary>
+        /// <param name="instances">The sequence of instances to serialize into the bounded entry.</param>
+        /// <param name="targetType">The runtime type of the class used to map entries.</param>
+        /// <param name="parentEntryName">The name of the parent entry (BEGIN marker).</param>
+        /// <param name="childEntryName">The name of the repeated child entries within the bounded section.</param>
+        /// <param name="variables">
+        /// Optional list of variables to include in the parent entry.
+        /// If omitted, a count variable is automatically generated.
+        /// </param>
+        /// <remarks>
+        /// This overload relies on reflection to construct a <see cref="List{T}"/> of the specified runtime type
+        /// and to invoke the generic <c>AddBoundedEntryFromClassList&lt;T&gt;</c> method dynamically.
+        /// It is intended for use cases where the entry type is not known at compile time.
+        /// </remarks>
+        public void AddBoundedEntryFromClassList(
+            IEnumerable instances,
+            Type targetType,
+            string parentEntryName,
+            string childEntryName,
+            List<Variable> variables = null
+        )
+        {
+            // Convert IEnumerable to List<T> using reflection
+            var listType = typeof(List<>).MakeGenericType(targetType);
+            var list = Activator.CreateInstance(listType) as IList;
+
+            foreach (var item in instances)
+            {
+                list.Add(item);
+            }
+
+            // Call the generic method via reflection
+            var method = typeof(CfgTreeNode)
+                .GetMethod(nameof(AddBoundedEntryFromClassList), new[] {
+            typeof(List<>).MakeGenericType(targetType),
+            typeof(string),
+            typeof(string),
+            typeof(List<Variable>)
+                });
+
+            var generic = method.MakeGenericMethod(targetType);
+            generic.Invoke(this, new object[] { list, parentEntryName, childEntryName, variables });
+        }
+
         #endregion
     }
 }
