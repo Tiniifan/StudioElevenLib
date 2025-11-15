@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Xml;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml;
-using StudioElevenLib.Level5.Binary.Logic;
+using System.Collections.Generic;
 using StudioElevenLib.Level5.Binary;
-using StudioElevenLib.Level5.Binary.Collections;
+using StudioElevenLib.Level5.Binary.Logic;
 using StudioElevenLib.Level5.Text.Logic;
+using StudioElevenLib.Level5.Binary.Collections;
 
 namespace StudioElevenLib.Level5.Text
 {
@@ -84,12 +84,18 @@ namespace StudioElevenLib.Level5.Text
                         }
 
                         string text = y.Item.Variables[2].Value as string;
+                        int textNumber = Convert.ToInt32(y.Item.Variables[1].Value);
+                        int varianceKey = 0;
+
+                        // Check if varianceKey exists (4th variable)
+                        if (y.Item.Variables.Count > 3)
+                        {
+                            varianceKey = Convert.ToInt32(y.Item.Variables[3].Value);
+                        }
+
                         if (text != null)
                         {
-                            strings.Add(new StringLevel5(
-                                Convert.ToInt32(y.Item.Variables[1].Value),
-                                text
-                            ));
+                            strings.Add(new StringLevel5(textNumber, text, varianceKey));
                         }
 
                         return new TextConfig(strings, washaID);
@@ -118,12 +124,11 @@ namespace StudioElevenLib.Level5.Text
                         if (y.Item.Variables.Count > 5)
                         {
                             string text = y.Item.Variables[5].Value as string;
+                            int varianceKey = Convert.ToInt32(y.Item.Variables[1].Value);
+
                             if (text != null)
                             {
-                                strings.Add(new StringLevel5(
-                                    Convert.ToInt32(y.Item.Variables[1].Value),
-                                    text
-                                ));
+                                strings.Add(new StringLevel5(0, text, varianceKey));
                             }
                         }
 
@@ -158,9 +163,23 @@ namespace StudioElevenLib.Level5.Text
                 XmlNodeList stringNodes = textNode.SelectNodes("String");
                 List<StringLevel5> strings = new List<StringLevel5>();
 
-                for (int i = 0; i < stringNodes.Count; i++)
+                foreach (XmlNode stringNode in stringNodes)
                 {
-                    strings.Add(new StringLevel5(i, stringNodes[i].Attributes.GetNamedItem("value").Value));
+                    string value = stringNode.Attributes.GetNamedItem("value").Value;
+                    int textNumber = 0;
+                    int varianceKey = 0;
+
+                    if (stringNode.Attributes.GetNamedItem("textNumber") != null)
+                    {
+                        textNumber = int.Parse(stringNode.Attributes.GetNamedItem("textNumber").Value);
+                    }
+
+                    if (stringNode.Attributes.GetNamedItem("varianceKey") != null)
+                    {
+                        varianceKey = int.Parse(stringNode.Attributes.GetNamedItem("varianceKey").Value);
+                    }
+
+                    strings.Add(new StringLevel5(textNumber, value, varianceKey));
                 }
 
                 if (textNode.ParentNode.Name == "Texts")
@@ -209,13 +228,24 @@ namespace StudioElevenLib.Level5.Text
                 }
                 else if (!string.IsNullOrWhiteSpace(line))
                 {
-                    if (currentTextConfig != null)
+                    // Check for [textNumber; varianceKey] format
+                    Match entryMatch = Regex.Match(line.Trim(), @"^\[(\d+);\s*(\d+)\]\s*(.*)$");
+
+                    if (entryMatch.Success && currentTextConfig != null)
                     {
-                        currentTextConfig.Strings.Add(new StringLevel5(currentTextConfig.Strings.Count, line));
+                        int textNumber = int.Parse(entryMatch.Groups[1].Value);
+                        int varianceKey = int.Parse(entryMatch.Groups[2].Value);
+                        string text = entryMatch.Groups[3].Value;
+
+                        currentTextConfig.Strings.Add(new StringLevel5(textNumber, text, varianceKey));
+                    }
+                    else if (currentTextConfig != null)
+                    {
+                        currentTextConfig.Strings.Add(new StringLevel5(currentTextConfig.Strings.Count, line, 0));
                     }
                     else
                     {
-                        Texts.Add(currentIndex, new TextConfig(new List<StringLevel5>() { new StringLevel5(0, line) }, -1));
+                        Texts.Add(currentIndex, new TextConfig(new List<StringLevel5>() { new StringLevel5(0, line, 0) }, -1));
                         currentTextConfig = null;
                     }
                 }
@@ -274,9 +304,9 @@ namespace StudioElevenLib.Level5.Text
                     Entry textItemEntry = new Entry("TEXT_INFO_BEGIN", new List<Variable>()
                     {
                         new Variable(CfgValueType.Int, textItem.Key),
-                        new Variable(CfgValueType.Int, i),
+                        new Variable(CfgValueType.Int, textValue.TextNumber),
                         new Variable(CfgValueType.String, textValue.Text),
-                        new Variable(CfgValueType.Int, 0),
+                        new Variable(CfgValueType.Int, textValue.VarianceKey),
                     });
 
                     textBeginNode.AddChild(new CfgTreeNode(textItemEntry, 2));
@@ -354,7 +384,7 @@ namespace StudioElevenLib.Level5.Text
                     Entry textItemEntry = new Entry("NOUN_INFO_BEGIN", new List<Variable>()
                     {
                         new Variable(CfgValueType.Int, nounItem.Key),
-                        new Variable(CfgValueType.Int, i),
+                        new Variable(CfgValueType.Int, textValue.VarianceKey),
                         new Variable(CfgValueType.String, null),
                         new Variable(CfgValueType.String, null),
                         new Variable(CfgValueType.String, null),
@@ -382,7 +412,6 @@ namespace StudioElevenLib.Level5.Text
             {
                 var textNode = GetTextEntry();
 
-                // Supprimer l'ancien noeud TEXT_INFO_BEGIN s'il existe
                 if (Entries.Exists("TEXT_INFO_BEGIN"))
                 {
                     Entries.Delete("TEXT_INFO_BEGIN");
@@ -464,7 +493,8 @@ namespace StudioElevenLib.Level5.Text
 
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
-                    xmlBuilder.AppendLine($"  <String value=\"{stringLevel5.Text.Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;")}\" />");
+                    string escapedText = stringLevel5.Text.Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
+                    xmlBuilder.AppendLine($"  <String textNumber=\"{stringLevel5.TextNumber}\" varianceKey=\"{stringLevel5.VarianceKey}\" value=\"{escapedText}\" />");
                 }
 
                 xmlBuilder.AppendLine(" </TextConfig>");
@@ -502,6 +532,18 @@ namespace StudioElevenLib.Level5.Text
         {
             List<string> txtStrings = new List<string>();
 
+            // Calculate maximum width for alignment
+            int maxPrefixWidth = 0;
+            foreach (var kvp in Texts.Concat(Nouns))
+            {
+                foreach (var stringLevel5 in kvp.Value.Strings)
+                {
+                    int prefixLength = $"[{stringLevel5.TextNumber}; {stringLevel5.VarianceKey}]".Length;
+                    if (prefixLength > maxPrefixWidth)
+                        maxPrefixWidth = prefixLength;
+                }
+            }
+
             foreach (var kvp in Texts)
             {
                 int crc32 = kvp.Key;
@@ -512,7 +554,8 @@ namespace StudioElevenLib.Level5.Text
 
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
-                    textBuilder.AppendLine(stringLevel5.Text);
+                    string formattedPrefix = $"[{stringLevel5.TextNumber}; {stringLevel5.VarianceKey}]".PadRight(maxPrefixWidth);
+                    textBuilder.AppendLine($"{formattedPrefix} {stringLevel5.Text}");
                 }
 
                 txtStrings.Add(textBuilder.ToString());
@@ -527,7 +570,8 @@ namespace StudioElevenLib.Level5.Text
 
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
-                    textBuilder.AppendLine(stringLevel5.Text);
+                    string formattedPrefix = $"[{stringLevel5.TextNumber}; {stringLevel5.VarianceKey}]".PadRight(maxPrefixWidth);
+                    textBuilder.AppendLine($"{formattedPrefix} {stringLevel5.Text}");
                 }
 
                 txtStrings.Add(textBuilder.ToString());
