@@ -100,6 +100,9 @@ namespace StudioElevenLib.Level5.Text
                         if (text != null)
                         {
                             strings.Add(new StringLevel5(textNumber, text, varianceKey));
+                        } else
+                        {
+                            strings.Add(new StringLevel5(textNumber, "", varianceKey));
                         }
 
                         return new TextConfig(strings, washaID);
@@ -125,12 +128,15 @@ namespace StudioElevenLib.Level5.Text
                         List<StringLevel5> strings = new List<StringLevel5>();
 
                         string text = y.Item.Variables[2].Value as string;
-                        string textDebug = y.Item.Variables.Count > 3 ? y.Item.Variables[3].Value as string : null;
+                        string textDebug = y.Item.Variables.Count > 3 ? y.Item.Variables[3].Value as string : "";
                         int textNumber = Convert.ToInt32(y.Item.Variables[1].Value);
 
                         if (text != null)
                         {
                             strings.Add(new StringLevel5(textNumber, text, 0, textDebug));
+                        } else
+                        {
+                            strings.Add(new StringLevel5(textNumber, "", 0, textDebug));
                         }
 
                         return new TextConfig(strings, -1);
@@ -164,6 +170,9 @@ namespace StudioElevenLib.Level5.Text
                             if (text != null)
                             {
                                 strings.Add(new StringLevel5(0, text, varianceKey));
+                            } else
+                            {
+                                strings.Add(new StringLevel5(0, "", varianceKey));
                             }
                         }
 
@@ -343,6 +352,7 @@ namespace StudioElevenLib.Level5.Text
 
             return allTexts.Union(allNouns).Union(allDebugTexts).ToArray();
         }
+
 
         private CfgTreeNode GetTextEntry(bool variance)
         {
