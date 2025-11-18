@@ -350,7 +350,8 @@ namespace StudioElevenLib.Level5.Text
             {
                 new Variable(CfgValueType.Int, Texts.Values.Sum(textList => textList.Strings.Count))
             });
-            var textBeginNode = new CfgTreeNode(textBeginEntry, 1);
+
+            var textBeginNode = new CfgTreeNode(textBeginEntry, 0);
 
             foreach (KeyValuePair<int, TextConfig> textItem in Texts)
             {
@@ -371,8 +372,8 @@ namespace StudioElevenLib.Level5.Text
                         variables.Add(new Variable(CfgValueType.Int, textValue.VarianceKey));
                     }
 
-                    Entry textItemEntry = new Entry("TEXT_INFO_BEGIN", variables);
-                    textBeginNode.AddChild(new CfgTreeNode(textItemEntry, 2));
+                    Entry textItemEntry = new Entry("TEXT_INFO", variables);
+                    textBeginNode.AddChild(new CfgTreeNode(textItemEntry, 1));
                 }
             }
 
@@ -385,7 +386,8 @@ namespace StudioElevenLib.Level5.Text
             {
                 new Variable(CfgValueType.Int, TextsDebug.Values.Sum(textList => textList.Strings.Count))
             });
-            var debugTextBeginNode = new CfgTreeNode(debugTextBeginEntry, 1);
+
+            var debugTextBeginNode = new CfgTreeNode(debugTextBeginEntry, 0);
 
             foreach (KeyValuePair<int, TextConfig> textItem in TextsDebug)
             {
@@ -393,7 +395,7 @@ namespace StudioElevenLib.Level5.Text
                 {
                     StringLevel5 textValue = textItem.Value.Strings[i];
 
-                    Entry textItemEntry = new Entry("DEBUG_TEXT_INFO_BEGIN", new List<Variable>()
+                    Entry textItemEntry = new Entry("DEBUG_TEXT_INFO", new List<Variable>()
                     {
                         new Variable(CfgValueType.Int, textItem.Key),
                         new Variable(CfgValueType.Int, textValue.TextNumber),
@@ -401,7 +403,7 @@ namespace StudioElevenLib.Level5.Text
                         new Variable(CfgValueType.String, textValue.TextDebug),
                     });
 
-                    debugTextBeginNode.AddChild(new CfgTreeNode(textItemEntry, 2));
+                    debugTextBeginNode.AddChild(new CfgTreeNode(textItemEntry, 1));
                 }
             }
 
@@ -417,18 +419,18 @@ namespace StudioElevenLib.Level5.Text
             {
                 new Variable(CfgValueType.Int, Texts.Count)
             });
-            var textConfigNode = new CfgTreeNode(textConfigEntry, 1);
+            var textConfigNode = new CfgTreeNode(textConfigEntry, 0);
 
             foreach (KeyValuePair<int, TextConfig> textItem in Texts)
             {
-                Entry textConfigItemEntry = new Entry("TEXT_CONFIG_BEGIN", new List<Variable>()
+                Entry textConfigItemEntry = new Entry("TEXT_CONFIG", new List<Variable>()
                 {
                     new Variable(CfgValueType.Int, textItem.Key),
                     new Variable(CfgValueType.Int, textItem.Value.Strings.Count),
                     new Variable(CfgValueType.Int, washas.IndexOf(textItem.Value.WashaID)),
                 });
 
-                textConfigNode.AddChild(new CfgTreeNode(textConfigItemEntry, 2));
+                textConfigNode.AddChild(new CfgTreeNode(textConfigItemEntry, 1));
                 index++;
             }
 
@@ -443,17 +445,17 @@ namespace StudioElevenLib.Level5.Text
             {
                 new Variable(CfgValueType.Int, washas.Length)
             });
-            var textWashaNode = new CfgTreeNode(textWashaEntry, 1);
+            var textWashaNode = new CfgTreeNode(textWashaEntry, 0);
 
             for (int i = 0; i < washas.Length; i++)
             {
-                Entry textWashaItem = new Entry("TEXT_WASHA_BEGIN", new List<Variable>()
+                Entry textWashaItem = new Entry("TEXT_WASHA", new List<Variable>()
                 {
                     new Variable(CfgValueType.Int, i),
                     new Variable(CfgValueType.Int, washas[i]),
                 });
 
-                textWashaNode.AddChild(new CfgTreeNode(textWashaItem, 2));
+                textWashaNode.AddChild(new CfgTreeNode(textWashaItem, 1));
             }
 
             return textWashaNode;
@@ -465,7 +467,7 @@ namespace StudioElevenLib.Level5.Text
             {
                 new Variable(CfgValueType.Int, Nouns.Values.Sum(textList => textList.Strings.Count))
             });
-            var nounNode = new CfgTreeNode(nounEntry, 1);
+            var nounNode = new CfgTreeNode(nounEntry, 0);
 
             foreach (KeyValuePair<int, TextConfig> nounItem in Nouns)
             {
@@ -476,7 +478,7 @@ namespace StudioElevenLib.Level5.Text
                     // For NOUN_INFO, we keep the variable but set the value to 0 if variance = false
                     int varianceValue = variance ? textValue.VarianceKey : 0;
 
-                    Entry textItemEntry = new Entry("NOUN_INFO_BEGIN", new List<Variable>()
+                    Entry textItemEntry = new Entry("NOUN_INFO", new List<Variable>()
                     {
                         new Variable(CfgValueType.Int, nounItem.Key),
                         new Variable(CfgValueType.Int, varianceValue),
@@ -494,7 +496,7 @@ namespace StudioElevenLib.Level5.Text
                         new Variable(CfgValueType.Int, 0),
                     });
 
-                    nounNode.AddChild(new CfgTreeNode(textItemEntry, 2));
+                    nounNode.AddChild(new CfgTreeNode(textItemEntry, 1));
                 }
             }
 
