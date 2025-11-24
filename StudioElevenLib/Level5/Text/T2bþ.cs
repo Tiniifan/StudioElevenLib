@@ -353,7 +353,6 @@ namespace StudioElevenLib.Level5.Text
             return allTexts.Union(allNouns).Union(allDebugTexts).ToArray();
         }
 
-
         private CfgTreeNode GetTextEntry(bool variance)
         {
             var textBeginEntry = new Entry("TEXT_INFO_BEGIN", new List<Variable>()
@@ -513,57 +512,34 @@ namespace StudioElevenLib.Level5.Text
             return nounNode;
         }
 
+        private void AddSection(string beginKey, string endKey, Func<CfgTreeNode> createNode)
+        {
+            if (Entries.Exists(beginKey))
+                Entries.Delete(beginKey);
+
+            Entries.AddChild(createNode());
+
+            if (Entries.Exists(endKey))
+                Entries.Delete(endKey);
+
+            Entries.AddChild(new CfgTreeNode(new Entry(endKey)));
+        }
+
         public void Save(string fileName, bool iego, bool variance)
         {
             if (Texts.Count > 0)
-            {
-                var textNode = GetTextEntry(variance);
-
-                if (Entries.Exists("TEXT_INFO_BEGIN"))
-                {
-                    Entries.Delete("TEXT_INFO_BEGIN");
-                }
-                Entries.AddChild(textNode);
-
-                if (iego)
-                {
-                    var configNode = GetTextConfigEntry();
-                    var washaNode = GetTextWashaEntry();
-
-                    if (Entries.Exists("TEXT_CONFIG_BEGIN"))
-                    {
-                        Entries.Delete("TEXT_CONFIG_BEGIN");
-                    }
-                    Entries.AddChild(configNode);
-
-                    if (Entries.Exists("TEXT_WASHA_BEGIN"))
-                    {
-                        Entries.Delete("TEXT_WASHA_BEGIN");
-                    }
-                    Entries.AddChild(washaNode);
-                }
-            }
+                AddSection("TEXT_INFO_BEGIN", "TEXT_INFO_END", () => GetTextEntry(variance));
 
             if (TextsDebug.Count > 0)
-            {
-                var debugTextNode = GetDebugTextEntry();
-
-                if (Entries.Exists("DEBUG_TEXT_INFO_BEGIN"))
-                {
-                    Entries.Delete("DEBUG_TEXT_INFO_BEGIN");
-                }
-                Entries.AddChild(debugTextNode);
-            }
+                AddSection("DEBUG_TEXT_INFO_BEGIN", "DEBUG_TEXT_INFO_END", () => GetDebugTextEntry());
 
             if (Nouns.Count > 0)
-            {
-                var nounNode = GetNounEntry(variance);
+                AddSection("NOUN_INFO_BEGIN", "NOUN_INFO_END", () => GetNounEntry(variance));
 
-                if (Entries.Exists("NOUN_INFO_BEGIN"))
-                {
-                    Entries.Delete("NOUN_INFO_BEGIN");
-                }
-                Entries.AddChild(nounNode);
+            if (iego)
+            {
+                AddSection("TEXT_CONFIG_BEGIN", "TEXT_CONFIG_END", () => GetTextConfigEntry());
+                AddSection("TEXT_WASHA_BEGIN", "TEXT_WASHA_END", () => GetTextWashaEntry());
             }
 
             Save(fileName);
@@ -572,37 +548,13 @@ namespace StudioElevenLib.Level5.Text
         public new byte[] Save()
         {
             if (Texts.Count > 0)
-            {
-                var textNode = GetTextEntry(true);
-
-                if (Entries.Exists("TEXT_INFO_BEGIN"))
-                {
-                    Entries.Delete("TEXT_INFO_BEGIN");
-                }
-                Entries.AddChild(textNode);
-            }
+                AddSection("TEXT_INFO_BEGIN", "TEXT_INFO_END", () => GetTextEntry(true));
 
             if (TextsDebug.Count > 0)
-            {
-                var debugTextNode = GetDebugTextEntry();
-
-                if (Entries.Exists("DEBUG_TEXT_INFO_BEGIN"))
-                {
-                    Entries.Delete("DEBUG_TEXT_INFO_BEGIN");
-                }
-                Entries.AddChild(debugTextNode);
-            }
+                AddSection("DEBUG_TEXT_INFO_BEGIN", "DEBUG_TEXT_INFO_END", () => GetDebugTextEntry());
 
             if (Nouns.Count > 0)
-            {
-                var nounNode = GetNounEntry(true);
-
-                if (Entries.Exists("NOUN_INFO_BEGIN"))
-                {
-                    Entries.Delete("NOUN_INFO_BEGIN");
-                }
-                Entries.AddChild(nounNode);
-            }
+                AddSection("NOUN_INFO_BEGIN", "NOUN_INFO_END", () => GetNounEntry(true));
 
             return base.Save();
         }
