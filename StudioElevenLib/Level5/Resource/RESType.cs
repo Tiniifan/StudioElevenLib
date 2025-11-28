@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StudioElevenLib.Level5.Resource.Logic
+namespace StudioElevenLib.Level5.Resource
 {
     public enum RESType
     {
