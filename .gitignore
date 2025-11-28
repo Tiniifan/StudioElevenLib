@@ -38,3 +38,7 @@ StudioElevenLibTest/obj/
 *.xi.00.png
 *.xi.png
 *.mapcol
+
+*.pbi
+*.pvb
+*.bin

@@ -14,6 +14,9 @@ using StudioElevenLib.Level5.Compression.NoCompression;
 using static System.Net.Mime.MediaTypeNames;
 using System.Linq.Expressions;
 using StudioElevenLib.Level5.Text;
+using StudioElevenLib.Level5.Resource.RES;
+using StudioElevenLib.Level5.Resource;
+using StudioElevenLib.Level5.Resource.Logic;
 
 
 namespace StudioElevenLibTest
@@ -404,8 +407,13 @@ namespace StudioElevenLibTest
 
         static void Main(string[] args)
         {
-            byte[] fileData = File.ReadAllBytes("./chara_text_fr.cfg.bin");
-            T2bþ test = new T2bþ(fileData);
+            byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_player_cs.bin");
+            RES resTest = new RES(fileData);
+
+            foreach (KeyValuePair<RESType, List<byte[]>> item in resTest.Items)
+            {
+                //Console.WriteLine(item.Key + " " + item.Value.Count);
+            }
 
             
             // GetCondition();

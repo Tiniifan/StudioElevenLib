@@ -111,7 +111,7 @@
     <Compile Include="Level5\Mesh\Logic\Triangle.cs" />
     <Compile Include="Level5\Mesh\XMPR.cs" />
     <Compile Include="Level5\Resource\IResource.cs" />
-    <Compile Include="Level5\Resource\RESType.cs" />
+    <Compile Include="Level5\Resource\Logic\RESType.cs" />
     <Compile Include="Level5\Resource\RES\RES.cs" />
     <Compile Include="Level5\Resource\RES\RESSupport.cs" />
     <Compile Include="Level5\Resource\XRES\XRES.cs" />
