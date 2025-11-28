@@ -16,8 +16,6 @@ using System.Linq.Expressions;
 using StudioElevenLib.Level5.Text;
 using StudioElevenLib.Level5.Resource.RES;
 using StudioElevenLib.Level5.Resource;
-using StudioElevenLib.Level5.Resource.Logic;
-
 
 namespace StudioElevenLibTest
 {
@@ -408,6 +406,7 @@ namespace StudioElevenLibTest
         static void Main(string[] args)
         {
             byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_player_cs.bin");
+            //byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_cs.bin");
             RES resTest = new RES(fileData);
 
             foreach (KeyValuePair<RESType, List<byte[]>> item in resTest.Items)

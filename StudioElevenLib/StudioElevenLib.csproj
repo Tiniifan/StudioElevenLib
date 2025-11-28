@@ -111,9 +111,25 @@
     <Compile Include="Level5\Mesh\Logic\Triangle.cs" />
     <Compile Include="Level5\Mesh\XMPR.cs" />
     <Compile Include="Level5\Resource\IResource.cs" />
-    <Compile Include="Level5\Resource\Logic\RESType.cs" />
+    <Compile Include="Level5\Resource\RESType.cs" />
     <Compile Include="Level5\Resource\RES\RES.cs" />
     <Compile Include="Level5\Resource\RES\RESSupport.cs" />
+    <Compile Include="Level5\Resource\Types\RESElement.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationIMMINF.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationIMN2.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTM2.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTMINF.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTN2.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTNINF.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESBone.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESMaterial1.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESMaterial2.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\ResMaterialData.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESMesh.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESProperty.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESShading.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESTextproj.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESTextureData.cs" />
     <Compile Include="Level5\Resource\XRES\XRES.cs" />
     <Compile Include="Level5\Resource\XRES\XRESSupport.cs" />
     <Compile Include="Level5\Text\Logic\StringLevel5.cs" />
@@ -134,6 +150,8 @@
     <Compile Include="Tools\SubMemoryStream.cs" />
     <Compile Include="Tools\VirtualDirectory.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Level5\Resource\Types\Scene2D\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

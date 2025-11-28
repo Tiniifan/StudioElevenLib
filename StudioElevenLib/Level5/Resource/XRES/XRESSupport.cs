@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using StudioElevenLib.Level5.Resource.Logic;
+using StudioElevenLib.Level5.Resource;
 
 namespace StudioElevenLib.Level5.Resource.XRES
 {

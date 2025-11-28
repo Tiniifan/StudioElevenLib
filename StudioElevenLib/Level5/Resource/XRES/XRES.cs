@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using StudioElevenLib.Tools;
 using StudioElevenLib.Level5.Compression;
 using StudioElevenLib.Level5.Compression.NoCompression;
-using StudioElevenLib.Level5.Resource.Logic;
+using StudioElevenLib.Level5.Resource;
 
 namespace StudioElevenLib.Level5.Resource.XRES
 {

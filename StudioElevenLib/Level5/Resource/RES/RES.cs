@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using StudioElevenLib.Tools;
 using StudioElevenLib.Level5.Compression;
 using StudioElevenLib.Level5.Compression.NoCompression;
-using StudioElevenLib.Level5.Resource.Logic;
+using StudioElevenLib.Level5.Resource;
 
 namespace StudioElevenLib.Level5.Resource.RES
 {
@@ -203,6 +203,7 @@ namespace StudioElevenLib.Level5.Resource.RES
                 if (!Items.ContainsKey((RESType)headerTable.Type))
                 {
                     Items.Add((RESType)headerTable.Type, new List<byte[]>());
+                    Console.WriteLine((RESType)headerTable.Type + " -> " + headerTable.DataOffset + " " + headerTable.Length + " ");
                 }
 
                 for (int j = 0; j < headerTable.Count; j++)

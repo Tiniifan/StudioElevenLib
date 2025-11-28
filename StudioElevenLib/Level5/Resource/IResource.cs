@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using StudioElevenLib.Level5.Resource.Logic;
+using StudioElevenLib.Level5.Resource;
+using StudioElevenLib.Level5.Resource.Types;
 
 namespace StudioElevenLib.Level5.Resource
 {
@@ -11,9 +12,9 @@ namespace StudioElevenLib.Level5.Resource
     {
         string Name { get; }
 
-        List<string> StringTable { get; set; }
+        Dictionary<string, uint> StringTable { get; set; }
 
-        Dictionary<RESType, List<byte[]>> Items { get; set; }
+        Dictionary<RESType, List<RESElement>> Items { get; set; }
 
         void Save(string path);
     }
