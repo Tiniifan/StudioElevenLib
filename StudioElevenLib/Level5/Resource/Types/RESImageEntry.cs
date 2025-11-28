@@ -10,7 +10,7 @@ namespace StudioElevenLib.Level5.Resource.Types
         /// <summary>
         /// CRC32 hash of the image entry name.
         /// </summary>
-        public int NameCrc32 { get; set; }
+        public uint NameCrc32 { get; set; }
 
         /// <summary>
         /// Indicates whether the image entry is enabled (0 = false, non-zero = true).
@@ -90,6 +90,37 @@ namespace StudioElevenLib.Level5.Resource.Types
                 Unk9 = imageStruct.Unk9,
                 Unk10 = imageStruct.Unk10,
                 Unk11 = imageStruct.Unk11
+            };
+        }
+
+        /// <summary>
+        /// Converts this <see cref="RESImageEntry"/> into a <see cref="RESImageEntryStruct"/> using the string table.
+        /// Throws an exception if the name is not found.
+        /// </summary>
+        /// <param name="stringTable">Dictionary mapping names to (CRC32, textOffset).</param>
+        /// <returns>The raw <see cref="RESImageEntryStruct"/> corresponding to this instance.</returns>
+        public RESImageEntryStruct ToStruct(Dictionary<string, (uint, int)> stringTable)
+        {
+            if (!stringTable.ContainsKey(Name))
+                throw new KeyNotFoundException($"The name '{Name}' was not found in the string table.");
+
+            var (crc32, offset) = stringTable[Name];
+
+            return new RESImageEntryStruct
+            {
+                NameCrc32 = crc32,
+                Enabled = Enabled ? 1 : 0,
+                Unk1 = Unk1,
+                Unk2 = Unk2,
+                Unk3 = Unk3,
+                Unk4 = Unk4,
+                Unk5 = Unk5,
+                Unk6 = Unk6,
+                Unk7 = Unk7,
+                Unk8 = Unk8,
+                Unk9 = Unk9,
+                Unk10 = Unk10,
+                Unk11 = Unk11
             };
         }
     }

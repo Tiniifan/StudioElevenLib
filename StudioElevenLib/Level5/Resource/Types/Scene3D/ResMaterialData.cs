@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace StudioElevenLib.Level5.Resource.Types.Scene3D
 {
@@ -19,12 +15,12 @@ namespace StudioElevenLib.Level5.Resource.Types.Scene3D
         /// <summary>
         /// CRC32 hash for the first material data name.
         /// </summary>
-        public int MaterialDataName1Crc32 { get; set; }
+        public uint MaterialDataName1Crc32 { get; set; }
 
         /// <summary>
         /// CRC32 hash for the second material data name.
         /// </summary>
-        public int MaterialDataName2Crc32 { get; set; }
+        public uint MaterialDataName2Crc32 { get; set; }
 
         /// <summary>
         /// First linked image entry.
@@ -99,6 +95,39 @@ namespace StudioElevenLib.Level5.Resource.Types.Scene3D
                     RESImageEntry.FromStruct(materialStruct.Image3, stringTable),
                     RESImageEntry.FromStruct(materialStruct.Image4, stringTable)
                 }
+            };
+        }
+
+        /// <summary>
+        /// Converts this <see cref="ResMaterialData"/> into a <see cref="ResMaterialDataStruct"/> using the string table.
+        /// Throws an exception if any name is not found in the string table.
+        /// </summary>
+        /// <param name="stringTable">Dictionary mapping strings to (CRC32, textOffset).</param>
+        /// <returns>The raw <see cref="ResMaterialDataStruct"/> corresponding to this instance.</returns>
+        public new ResMaterialDataStruct ToStruct(Dictionary<string, (uint, int)> stringTable)
+        {
+            if (!stringTable.ContainsKey(Name))
+                throw new KeyNotFoundException($"The material name '{Name}' was not found in the string table.");
+
+            if (!stringTable.ContainsKey(MaterialDataName1))
+                throw new KeyNotFoundException($"The material data name '{MaterialDataName1}' was not found in the string table.");
+
+            if (!stringTable.ContainsKey(MaterialDataName2))
+                throw new KeyNotFoundException($"The material data name '{MaterialDataName2}' was not found in the string table.");
+
+            var (nameCrc32, nameOffset) = stringTable[Name];
+            var (name1Crc32, name1Offset) = stringTable[MaterialDataName1];
+            var (name2Crc32, name2Offset) = stringTable[MaterialDataName2];
+
+            return new ResMaterialDataStruct
+            {
+                ResElementStruct = new ResElementStruct(nameCrc32, nameOffset),
+                MaterialDataName1Crc32 = name1Crc32,
+                MaterialDataName2Crc32 = name2Crc32,
+                Image1 = Images[0].ToStruct(stringTable),
+                Image2 = Images[1].ToStruct(stringTable),
+                Image3 = Images[2].ToStruct(stringTable),
+                Image4 = Images[3].ToStruct(stringTable)
             };
         }
     }

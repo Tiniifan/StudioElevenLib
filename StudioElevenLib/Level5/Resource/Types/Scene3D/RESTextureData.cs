@@ -83,6 +83,28 @@ namespace StudioElevenLib.Level5.Resource.Types.Scene3D
                 Unk3 = textureStruct.Unk3
             };
         }
+
+        /// <summary>
+        /// Converts this <see cref="RESTextureData"/> into a <see cref="RESTextureDataStruct"/> using the string table.
+        /// Throws an exception if the name is not present in the table.
+        /// </summary>
+        /// <param name="stringTable">A dictionary mapping strings to (CRC32, textOffset) values.</param>
+        /// <returns>The raw <see cref="RESTextureDataStruct"/> corresponding to this instance.</returns>
+        public RESTextureDataStruct ToStruct(Dictionary<string, (uint, int)> stringTable)
+        {
+            if (!stringTable.ContainsKey(Name))
+                throw new KeyNotFoundException($"The name '{Name}' was not found in the string table.");
+
+            var (crc32, offset) = stringTable[Name];
+
+            return new RESTextureDataStruct
+            {
+                ResElementStruct = new ResElementStruct(crc32, offset),
+                Unk1 = Unk1,
+                Unk2 = Unk2,
+                Unk3 = Unk3
+            };
+        }
     }
 
     /// <summary>

@@ -8,6 +8,7 @@ using StudioElevenLib.Tools;
 using StudioElevenLib.Level5.Compression;
 using StudioElevenLib.Level5.Compression.NoCompression;
 using StudioElevenLib.Level5.Resource;
+using StudioElevenLib.Level5.Resource.Types;
 
 namespace StudioElevenLib.Level5.Resource.XRES
 {
@@ -15,55 +16,55 @@ namespace StudioElevenLib.Level5.Resource.XRES
     {
         public string Name => "XRES";
 
-        public List<string> StringTable { get; set; }
+        public Dictionary<string, uint> StringTable { get; set; }
 
-        public Dictionary<RESType, List<byte[]>> Items { get; set; }
+        public Dictionary<RESType, List<RESElement>> Items { get; set; }
 
         public XRES(Stream stream)
         {
-            StringTable = new List<string>();
-            Items = new Dictionary<RESType, List<byte[]>>();
+            //StringTable = new List<string>();
+            //Items = new Dictionary<RESType, List<RESElement>>();
 
-            using (BinaryDataReader reader = new BinaryDataReader(Compressor.Decompress(stream)))
-            {
-                XRESSupport.Header header = reader.ReadStruct<XRESSupport.Header>();
+            //using (BinaryDataReader reader = new BinaryDataReader(Compressor.Decompress(stream)))
+            //{
+            //    XRESSupport.Header header = reader.ReadStruct<XRESSupport.Header>();
 
-                reader.Seek(header.StringOffset);
-                using (BinaryDataReader textReader = new BinaryDataReader(reader.GetSection((int)(reader.Length - reader.Position))))
-                {
-                    while (textReader.Position < textReader.Length)
-                    {
-                        string name = textReader.ReadString(Encoding.GetEncoding(932));
+            //    reader.Seek(header.StringOffset);
+            //    using (BinaryDataReader textReader = new BinaryDataReader(reader.GetSection((int)(reader.Length - reader.Position))))
+            //    {
+            //        while (textReader.Position < textReader.Length)
+            //        {
+            //            string name = textReader.ReadString(Encoding.GetEncoding(932));
 
-                        if (name != "" && name != " ")
-                        {
-                            StringTable.Add(name);
-                        }
-                    }
-                }
+            //            if (name != "" && name != " ")
+            //            {
+            //                StringTable.Add(name);
+            //            }
+            //        }
+            //    }
 
-                Items.Add(RESType.Bone, ReadType(reader, header.Bone, RESType.Bone));
-                Items.Add(RESType.Textproj, ReadType(reader, header.Textproj, RESType.Textproj));
-                Items.Add(RESType.Properties, ReadType(reader, header.Properties, RESType.Properties));
-                Items.Add(RESType.Shading, ReadType(reader, header.Shading, RESType.Shading));
-                Items.Add(RESType.Material1, ReadType(reader, header.Material1, RESType.Material1));
-                Items.Add(RESType.Material2, ReadType(reader, header.Material2, RESType.Material2));
-                Items.Add(RESType.MeshName, ReadType(reader, header.MeshName, RESType.MeshName));
-                Items.Add(RESType.MaterialData, ReadType(reader, header.MaterialData, RESType.MaterialData));
-                Items.Add(RESType.TextureData, ReadType(reader, header.TextureData, RESType.TextureData));
-                Items.Add(RESType.AnimationMTN2, ReadType(reader, header.AnimationMTN2, RESType.AnimationMTN2));
-                Items.Add(RESType.AnimationIMN2, ReadType(reader, header.AnimationIMN2, RESType.AnimationIMN2));
-                Items.Add(RESType.AnimationMTM2, ReadType(reader, header.AnimationMTM2, RESType.AnimationMTM2));
-                Items.Add(RESType.MTNINF, ReadType(reader, header.MTNINF, RESType.MTNINF));
-                Items.Add(RESType.IMMINF, ReadType(reader, header.IMMINF, RESType.IMMINF));
-                Items.Add(RESType.IMMINF, ReadType(reader, header.IMMINF, RESType.IMMINF));
-            }
+            //    //Items.Add(RESType.Bone, ReadType(reader, header.Bone, RESType.Bone));
+            //    //Items.Add(RESType.Textproj, ReadType(reader, header.Textproj, RESType.Textproj));
+            //    //Items.Add(RESType.Properties, ReadType(reader, header.Properties, RESType.Properties));
+            //    //Items.Add(RESType.Shading, ReadType(reader, header.Shading, RESType.Shading));
+            //    //Items.Add(RESType.Material1, ReadType(reader, header.Material1, RESType.Material1));
+            //    //Items.Add(RESType.Material2, ReadType(reader, header.Material2, RESType.Material2));
+            //    //Items.Add(RESType.MeshName, ReadType(reader, header.MeshName, RESType.MeshName));
+            //    //Items.Add(RESType.MaterialData, ReadType(reader, header.MaterialData, RESType.MaterialData));
+            //    //Items.Add(RESType.TextureData, ReadType(reader, header.TextureData, RESType.TextureData));
+            //    //Items.Add(RESType.AnimationMTN2, ReadType(reader, header.AnimationMTN2, RESType.AnimationMTN2));
+            //    //Items.Add(RESType.AnimationIMN2, ReadType(reader, header.AnimationIMN2, RESType.AnimationIMN2));
+            //    //Items.Add(RESType.AnimationMTM2, ReadType(reader, header.AnimationMTM2, RESType.AnimationMTM2));
+            //    //Items.Add(RESType.MTNINF, ReadType(reader, header.MTNINF, RESType.MTNINF));
+            //    //Items.Add(RESType.IMMINF, ReadType(reader, header.IMMINF, RESType.IMMINF));
+            //    //Items.Add(RESType.IMMINF, ReadType(reader, header.IMMINF, RESType.IMMINF));
+            //}
         }
 
         public XRES(List<string> stringTable, Dictionary<RESType, List<byte[]>> items)
         {
-            StringTable = stringTable;
-            Items = items;
+            //StringTable = stringTable;
+            //Items = items;
         }
 
         public void Save(string fileName)
@@ -106,17 +107,18 @@ namespace StudioElevenLib.Level5.Resource.XRES
                     {
                         for (int j = 0; j < Items[resType].Count; j++)
                         {
-                            if (XRESSupport.TypeLength[resType] != Items[resType][j].Length)
-                            {
-                                byte[] resizedArray = new byte[XRESSupport.TypeLength[resType]];
-                                Array.Copy(Items[resType][j], resizedArray, Math.Min(XRESSupport.TypeLength[resType], Items[resType][j].Length));
-                                Items[resType][j] = resizedArray;
-                            }
+                            //if (XRESSupport.TypeLength[resType] != Items[resType][j].Length)
+                            //{
+                            //    byte[] resizedArray = new byte[XRESSupport.TypeLength[resType]];
+                            //    Array.Copy(Items[resType][j], resizedArray, Math.Min(XRESSupport.TypeLength[resType], Items[resType][j].Length));
+                            //    Items[resType][j] = resizedArray;
+                            //}
                         }
                     }
                 }
 
-                int stringOffset = 0x64 + Items.Values.SelectMany(itemData => itemData).Sum(byteArray => byteArray.Length);
+                // int stringOffset = 0x64 + Items.Values.SelectMany(itemData => itemData).Sum(byteArray => byteArray.Length);
+                int stringOffset = 0;
 
                 // Header
                 writerDecomp.Write(0x53455258);
@@ -136,46 +138,46 @@ namespace StudioElevenLib.Level5.Resource.XRES
 
                     if (Items.ContainsKey(resType))
                     {
-                        for (int j = 0; j < Items[resType].Count; j++)
-                        {
-                            byte[] itemContent = Items[resType][j];
+                        //for (int j = 0; j < Items[resType].Count; j++)
+                        //{
+                        //    byte[] itemContent = Items[resType][j];
 
-                            // Reorder string
-                            using (BinaryDataReader readResItemm = new BinaryDataReader(itemContent))
-                            {
-                                int hash = readResItemm.ReadValue<int>();
+                        //    // Reorder string
+                        //    using (BinaryDataReader readResItemm = new BinaryDataReader(itemContent))
+                        //    {
+                        //        int hash = readResItemm.ReadValue<int>();
 
-                                if (hash == unchecked((int)0xBA3CEDA6))
-                                {
-                                    // Remove unused cmn
-                                    Items[resType].RemoveAt(j);
-                                }
-                                else
-                                {
-                                    foreach (string myStr in StringTable)
-                                    {
-                                        if (hash == unchecked((int)Crc32.Compute(Encoding.GetEncoding("Shift-JIS").GetBytes(myStr))))
-                                        {
-                                            if (!newStringTable.ContainsKey(myStr))
-                                            {
-                                                newStringTable.Add(myStr, stringPos);
-                                                stringPos += Encoding.GetEncoding(932).GetByteCount(myStr) + 1;
-                                            }
+                        //        if (hash == unchecked((int)0xBA3CEDA6))
+                        //        {
+                        //            // Remove unused cmn
+                        //            Items[resType].RemoveAt(j);
+                        //        }
+                        //        else
+                        //        {
+                        //            foreach (string myStr in StringTable)
+                        //            {
+                        //                if (hash == unchecked((int)Crc32.Compute(Encoding.GetEncoding("Shift-JIS").GetBytes(myStr))))
+                        //                {
+                        //                    if (!newStringTable.ContainsKey(myStr))
+                        //                    {
+                        //                        newStringTable.Add(myStr, stringPos);
+                        //                        stringPos += Encoding.GetEncoding(932).GetByteCount(myStr) + 1;
+                        //                    }
 
-                                            if (resType == RESType.TextureData || resType == RESType.Material1 || resType == RESType.Material2 || resType == RESType.MaterialData)
-                                            {
-                                                using (BinaryDataWriter writeResItemm = new BinaryDataWriter(itemContent))
-                                                {
-                                                    writeResItemm.Seek(4);
-                                                    writeResItemm.Write(newStringTable[myStr]);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        dataOffset += Items[resType].Select(itemData => itemData).Sum(byteArray => byteArray.Length);
+                        //                    if (resType == RESType.TextureData || resType == RESType.Material1 || resType == RESType.Material2 || resType == RESType.MaterialData)
+                        //                    {
+                        //                        using (BinaryDataWriter writeResItemm = new BinaryDataWriter(itemContent))
+                        //                        {
+                        //                            writeResItemm.Seek(4);
+                        //                            writeResItemm.Write(newStringTable[myStr]);
+                        //                        }
+                        //                    }
+                        //                }
+                        //            }
+                        //        }
+                        //    }
+                        //}
+                        //dataOffset += Items[resType].Select(itemData => itemData).Sum(byteArray => byteArray.Length);
                     }
                 }
 
@@ -208,8 +210,8 @@ namespace StudioElevenLib.Level5.Resource.XRES
 
                     if (Items.ContainsKey(resType))
                     {
-                        writerDecomp.Seek(dataOffsetDict[resType]);
-                        writerDecomp.Write(Items[resType].SelectMany(bytes => bytes).ToArray());
+                        //writerDecomp.Seek(dataOffsetDict[resType]);
+                        //writerDecomp.Write(Items[resType].SelectMany(bytes => bytes).ToArray());
                     }
                 }
 

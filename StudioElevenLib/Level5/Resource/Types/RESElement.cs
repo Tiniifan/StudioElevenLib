@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using StudioElevenLib.Tools;
+using System.Text;
 
 namespace StudioElevenLib.Level5.Resource.Types
 {
@@ -11,7 +13,7 @@ namespace StudioElevenLib.Level5.Resource.Types
         /// <summary>
         /// Gets or sets the CRC32 hash of the element's name.
         /// </summary>
-        public int NameCrc32 { get; set; }
+        public uint NameCrc32 { get; set; }
 
         /// <summary>
         /// Gets or sets the offset of the associated text inside the resource.
@@ -23,7 +25,7 @@ namespace StudioElevenLib.Level5.Resource.Types
         /// </summary>
         /// <param name="nameCrc32">CRC32 hash of the name.</param>
         /// <param name="textOffset">Offset of the text in the resource.</param>
-        public ResElementStruct(int nameCrc32, int textOffset)
+        public ResElementStruct(uint nameCrc32, int textOffset)
         {
             NameCrc32 = nameCrc32;
             TextOffset = textOffset;
@@ -66,6 +68,25 @@ namespace StudioElevenLib.Level5.Resource.Types
         {
             string name = ResourceHelper.ResolveName(elementStruct.NameCrc32, stringTable);
             return new RESElement(name);
+        }
+
+        /// <summary>
+        /// Converts this <see cref="RESElement"/> into a <see cref="ResElementStruct"/> using the string table.
+        /// Throws an exception if the name is not present in the string table.
+        /// </summary>
+        /// <param name="stringTable">A dictionary mapping strings to their CRC32 and textOffset values.</param>
+        /// <returns>A <see cref="ResElementStruct"/> representing this element.</returns>
+        public ResElementStruct ToStruct(Dictionary<string, (uint, int)> stringTable)
+        {
+            if (!stringTable.ContainsKey(Name))
+            {
+                throw new KeyNotFoundException($"The name '{Name}' was not found in the string table.");
+            }
+
+            uint crc32 = stringTable[Name].Item1;
+            int pos = stringTable[Name].Item2;
+
+            return new ResElementStruct(crc32, pos);
         }
     }
 }

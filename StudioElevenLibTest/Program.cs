@@ -16,6 +16,7 @@ using System.Linq.Expressions;
 using StudioElevenLib.Level5.Text;
 using StudioElevenLib.Level5.Resource.RES;
 using StudioElevenLib.Level5.Resource;
+using StudioElevenLib.Level5.Resource.Types;
 
 namespace StudioElevenLibTest
 {
@@ -409,9 +410,12 @@ namespace StudioElevenLibTest
             //byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_cs.bin");
             RES resTest = new RES(fileData);
 
-            foreach (KeyValuePair<RESType, List<byte[]>> item in resTest.Items)
+            foreach (KeyValuePair<RESType, List<RESElement>> item in resTest.Items)
             {
-                //Console.WriteLine(item.Key + " " + item.Value.Count);
+                foreach (RESElement reselement in item.Value) {
+                    Console.WriteLine(reselement.Name);
+                }
+
             }
 
             

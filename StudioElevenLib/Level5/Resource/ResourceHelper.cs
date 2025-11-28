@@ -13,7 +13,7 @@ namespace StudioElevenLib.Level5.Resource
         /// The resolved string if a matching CRC32 value is found;
         /// otherwise, a hexadecimal representation of the CRC32 value.
         /// </returns>
-        public static string ResolveName(int nameCrc32, Dictionary<string, uint> stringTable)
+        public static string ResolveName(uint nameCrc32, Dictionary<string, uint> stringTable)
         {
             // Search for the name in the string table by comparing CRC32 values
             foreach (var kvp in stringTable)
