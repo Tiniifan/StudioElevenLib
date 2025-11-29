@@ -67,7 +67,7 @@ namespace StudioElevenLib.Level5.Resource.XRES
             //Items = items;
         }
 
-        public void Save(string fileName)
+        public void Save(string magic, string filepath)
         {
             using (FileStream fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write))
             {
