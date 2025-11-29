@@ -16,7 +16,7 @@ namespace StudioElevenLib.Level5.Resource.XRES
     {
         public string Name => "XRES";
 
-        public Dictionary<string, uint> StringTable { get; set; }
+        private Dictionary<string, uint> StringTable { get; set; }
 
         public Dictionary<RESType, List<RESElement>> Items { get; set; }
 

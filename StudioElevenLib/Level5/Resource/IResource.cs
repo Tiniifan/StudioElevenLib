@@ -12,8 +12,6 @@ namespace StudioElevenLib.Level5.Resource
     {
         string Name { get; }
 
-        Dictionary<string, uint> StringTable { get; set; }
-
         Dictionary<RESType, List<RESElement>> Items { get; set; }
 
         void Save(string path);
