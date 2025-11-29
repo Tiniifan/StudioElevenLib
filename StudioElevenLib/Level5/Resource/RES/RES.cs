@@ -94,7 +94,7 @@ namespace StudioElevenLib.Level5.Resource.RES
                         header.NodeCount = (short)nodes.Count;
 
                         int headerPos = 20;
-                        int dataPos = (materials.Count + nodes.Count) * 8;
+                        int dataPos = headerPos + (materials.Count + nodes.Count) * 8;
 
                         // Material - Header table
                         if (materials.Count > 0)
@@ -196,8 +196,21 @@ namespace StudioElevenLib.Level5.Resource.RES
 
                 foreach (var element in elements)
                 {
-                    var elementStruct = element.ToStruct(stringDict);
-                    writerData.WriteStruct(elementStruct);
+                    if (element is RESTextureData texture)
+                    {
+                        var elementStruct = texture.ToStruct(stringDict);
+                        writerData.WriteStruct(elementStruct);
+                    }
+                    else if (element is ResMaterialData resMaterialData)
+                    {
+                        var elementStruct = resMaterialData.ToStruct(stringDict);
+                        writerData.WriteStruct(elementStruct);
+                    }
+                    else
+                    {
+                        var elementStruct = element.ToStruct(stringDict);
+                        writerData.WriteStruct(elementStruct);
+                    }
                 }
 
                 long dataEndPos = writerData.Position;

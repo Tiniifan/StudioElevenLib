@@ -125,8 +125,21 @@ namespace StudioElevenLib.Level5.Resource.XRES
                             {
                                 foreach (var element in Items[resType])
                                 {
-                                    var elementStruct = element.ToStruct(stringDict);
-                                    writerData.WriteStruct(elementStruct);
+                                    if (element is XRESTextureData xtexture)
+                                    {
+                                        var elementStruct = xtexture.ToStruct(stringDict);
+                                        writerData.WriteStruct(elementStruct);
+                                    }
+                                    else if (element is ResMaterialData resMaterialData)
+                                    {
+                                        var elementStruct = resMaterialData.ToStruct(stringDict);
+                                        writerData.WriteStruct(elementStruct);
+                                    }
+                                    else
+                                    {
+                                        var elementStruct = element.ToStruct(stringDict);
+                                        writerData.WriteStruct(elementStruct);
+                                    }
                                 }
                             }
                         }

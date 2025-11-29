@@ -406,7 +406,7 @@ namespace StudioElevenLibTest
 
         static void Main(string[] args)
         {
-            byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_311.bin");
+            byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_waza_cs.bin");
             //byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_cs.bin");
             IResource resTest = Resourcer.GetResource(fileData);
 
@@ -418,7 +418,7 @@ namespace StudioElevenLibTest
             //    }
             //}
 
-            resTest.Save("HELLO", "./test.bin");
+            resTest.Save("CHRC00", "./test.bin");
 
             // GetCondition();
 
