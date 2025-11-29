@@ -15,6 +15,8 @@ namespace StudioElevenLib.Level5.Resource.RES
     {
         public string Name => "RES";
 
+        private Dictionary<string, uint> StringTable { get; set; }
+
         public Dictionary<RESType, List<RESElement>> Items { get; set; }
 
         public RES(Stream stream)
@@ -38,108 +40,107 @@ namespace StudioElevenLib.Level5.Resource.RES
 
         public byte[] Save(byte[] magic)
         {
-            // Split Items into 2 dictionaries
-            Dictionary<RESType, List<RESElement>> materials = Items.Where(item => RESSupport.Materials.Contains(item.Key))
-                .ToDictionary(item => item.Key, item => item.Value);
+            //// Split Items into 2 dictionaries
+            //Dictionary<RESType, List<byte[]>> materials = Items.Where(item => RESSupport.Materials.Contains(item.Key))
+            //    .ToDictionary(item => item.Key, item => item.Value);
+            //Dictionary<RESType, List<byte[]>> nodes = Items.Where(item => RESSupport.Nodes.Contains(item.Key))
+            //    .ToDictionary(item => item.Key, item => item.Value);
 
-            Dictionary<RESType, List<RESElement>> nodes = Items.Where(item => RESSupport.Nodes.Contains(item.Key))
-                .ToDictionary(item => item.Key, item => item.Value);
+            //using (MemoryStream fileStream = new MemoryStream())
+            //{
+            //    BinaryDataWriter writerComp = new BinaryDataWriter(fileStream);
 
-            using (MemoryStream fileStream = new MemoryStream())
-            {
-                BinaryDataWriter writerComp = new BinaryDataWriter(fileStream);
+            //    using (MemoryStream memoryStream = new MemoryStream())
+            //    {
+            //        BinaryDataWriter writerDecomp = new BinaryDataWriter(memoryStream);
 
-                using (MemoryStream memoryStream = new MemoryStream())
-                {
-                    BinaryDataWriter writerDecomp = new BinaryDataWriter(memoryStream);
+            //        using (MemoryStream dataStream = new MemoryStream())
+            //        {
+            //            BinaryDataWriter writerData = new BinaryDataWriter(dataStream);
 
-                    using (MemoryStream dataStream = new MemoryStream())
-                    {
-                        BinaryDataWriter writerData = new BinaryDataWriter(dataStream);
+            //            RESSupport.Header header = new RESSupport.Header();
+            //            header.Magic = BitConverter.ToInt64(magic, 0);
+            //            header.Unk1 = 1;
+            //            header.MaterialTableCount = (short)materials.Count;
+            //            header.NodeCount = (short)nodes.Count;
 
-                        RESSupport.Header header = new RESSupport.Header();
-                        header.Magic = BitConverter.ToInt64(magic, 0);
-                        header.Unk1 = 1;
-                        header.MaterialTableCount = (short)materials.Count;
-                        header.NodeCount = (short)nodes.Count;
+            //            int headerPos = 20;
+            //            int dataPos = Items.Count * 8;
 
-                        int headerPos = 20;
-                        int dataPos = Items.Count * 8;
+            //            // Material - Header table
+            //            if (materials.Count > 0)
+            //            {
+            //                writerDecomp.Seek(headerPos);
+            //                header._materialTableOffset = (short)(headerPos >> 2);
 
-                        // Material - Header table
-                        if (materials.Count > 0)
-                        {
-                            writerDecomp.Seek(headerPos);
-                            header._materialTableOffset = (short)(headerPos >> 2);
+            //                for (int i = 0; i < materials.Count; i++)
+            //                {
+            //                    KeyValuePair<RESType, List<byte[]>> resType = materials.ElementAt(i);
 
-                            for (int i = 0; i < materials.Count; i++)
-                            {
-                                KeyValuePair<RESType, List<byte[]>> resType = materials.ElementAt(i);
+            //                    RESSupport.HeaderTable materialHeaderTable = new RESSupport.HeaderTable()
+            //                    {
+            //                        _dataOffset = (short)(dataPos >> 2),
+            //                        Count = (short)resType.Value.Count,
+            //                        Type = (short)resType.Key,
+            //                        Length = (short)resType.Value[0].Length
+            //                    };
 
-                                RESSupport.HeaderTable materialHeaderTable = new RESSupport.HeaderTable()
-                                {
-                                    _dataOffset = (short)(dataPos >> 2),
-                                    Count = (short)resType.Value.Count,
-                                    Type = (short)resType.Key,
-                                    Length = (short)resType.Value[0].Length
-                                };
+            //                    headerPos += 8;
+            //                    dataPos += resType.Value.Sum(byteArray => byteArray.Length);
 
-                                headerPos += 8;
-                                dataPos += resType.Value.Sum(byteArray => byteArray.Length);
+            //                    writerDecomp.WriteStruct(materialHeaderTable);
+            //                    writerData.Write(resType.Value.SelectMany(bytes => bytes).ToArray());
+            //                }
+            //            }
 
-                                writerDecomp.WriteStruct(materialHeaderTable);
-                                writerData.Write(resType.Value.SelectMany(bytes => bytes).ToArray());
-                            }
-                        }
+            //            // Node - Header table
+            //            if (nodes.Count > 0)
+            //            {
+            //                writerDecomp.Seek(headerPos);
+            //                header._nodeOffset = (short)(headerPos >> 2);
 
-                        // Node - Header table
-                        if (nodes.Count > 0)
-                        {
-                            writerDecomp.Seek(headerPos);
-                            header._nodeOffset = (short)(headerPos >> 2);
+            //                for (int i = 0; i < nodes.Count; i++)
+            //                {
+            //                    KeyValuePair<RESType, List<byte[]>> resType = nodes.ElementAt(i);
 
-                            for (int i = 0; i < nodes.Count; i++)
-                            {
-                                KeyValuePair<RESType, List<byte[]>> resType = nodes.ElementAt(i);
+            //                    RESSupport.HeaderTable nodeHeaderTable = new RESSupport.HeaderTable()
+            //                    {
+            //                        _dataOffset = (short)(dataPos >> 2),
+            //                        Count = (short)resType.Value.Count,
+            //                        Type = (short)resType.Key,
+            //                        Length = (short)resType.Value[0].Length
+            //                    };
 
-                                RESSupport.HeaderTable nodeHeaderTable = new RESSupport.HeaderTable()
-                                {
-                                    _dataOffset = (short)(dataPos >> 2),
-                                    Count = (short)resType.Value.Count,
-                                    Type = (short)resType.Key,
-                                    Length = (short)resType.Value[0].Length
-                                };
+            //                    headerPos += 8;
+            //                    dataPos += resType.Value.Sum(byteArray => byteArray.Length);
 
-                                headerPos += 8;
-                                dataPos += resType.Value.Sum(byteArray => byteArray.Length);
+            //                    writerDecomp.WriteStruct(nodeHeaderTable);
+            //                    writerData.Write(resType.Value.SelectMany(bytes => bytes).ToArray());
+            //                }
+            //            }
 
-                                writerDecomp.WriteStruct(nodeHeaderTable);
-                                writerData.Write(resType.Value.SelectMany(bytes => bytes).ToArray());
-                            }
-                        }
+            //            writerDecomp.Write(dataStream.ToArray());
 
-                        writerDecomp.Write(dataStream.ToArray());
+            //            // String table
+            //            header._stringOffset = (short)(writerDecomp.Position>>2);
+            //            for (int i = 0; i < StringTable.Count; i++)
+            //            {
+            //                writerDecomp.Write(Encoding.GetEncoding(932).GetBytes(StringTable[i]));
+            //                writerDecomp.Write((byte)0);
+            //            }
 
-                        // String table
-                        header._stringOffset = (short)(writerDecomp.Position >> 2);
-                        for (int i = 0; i < StringTable.Count; i++)
-                        {
-                            writerDecomp.Write(Encoding.GetEncoding(932).GetBytes(StringTable[i]));
-                            writerDecomp.Write((byte)0);
-                        }
+            //            writerDecomp.WriteAlignment(4);
 
-                        writerDecomp.WriteAlignment(4);
+            //            writerDecomp.Seek(0);
+            //            writerDecomp.WriteStruct(header);
+            //        }
 
-                        writerDecomp.Seek(0);
-                        writerDecomp.WriteStruct(header);
-                    }
+            //        // Compress
+            //       writerComp.Write(memoryStream.ToArray());
+            //    }
 
-                    // Compress
-                    writerComp.Write(memoryStream.ToArray());
-                }
-
-                return fileStream.ToArray();
-            }
+            //    return fileStream.ToArray();
+            //}
 
             return null;
         }
@@ -173,7 +174,7 @@ namespace StudioElevenLib.Level5.Resource.RES
 
                     if (!string.IsNullOrWhiteSpace(name))
                     {
-                        // Calculate the CRC32 for the full name
+                        // Calculer le CRC32 pour le nom complet
                         uint stringCrc32 = Crc32.Compute(encoding.GetBytes(name));
 
                         if (!StringTable.ContainsKey(name))
@@ -181,7 +182,7 @@ namespace StudioElevenLib.Level5.Resource.RES
                             StringTable.Add(name, stringCrc32);
                         }
 
-                        // Process the string recursively for the separate parts
+                        // Traiter la chaîne de manière récursive pour les parties séparées
                         ProcessStringRecursively(name, separators, encoding);
                     }
                 }
@@ -190,7 +191,7 @@ namespace StudioElevenLib.Level5.Resource.RES
 
         private void ProcessStringRecursively(string input, char[] separators, Encoding encoding)
         {
-            // If the string is empty or null, return
+            // Si la chaîne est vide ou nulle, on retourne
             if (string.IsNullOrEmpty(input))
                 return;
 
@@ -198,24 +199,24 @@ namespace StudioElevenLib.Level5.Resource.RES
             {
                 if (input.Contains(separator.ToString()))
                 {
-                    // Split the string by the separator
+                    // Diviser la chaîne par le séparateur
                     string[] parts = input.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
 
-                    // Add each part to the dictionary
+                    // Ajouter chaque partie au dictionnaire
                     foreach (string part in parts)
                     {
                         if (!string.IsNullOrWhiteSpace(part))
                         {
-                            // Calculate the CRC32 for this part
+                            // Calculer le CRC32 pour cette partie
                             uint crc32Part = Crc32.Compute(encoding.GetBytes(part));
 
-                            // Add to dictionary if it does not exist
+                            // Ajouter au dictionnaire si inexistant
                             if (!StringTable.ContainsKey(part))
                             {
                                 StringTable.Add(part, crc32Part);
                             }
 
-                            // Recursive call on this part using the same separators
+                            // Appel récursif sur cette partie en utilisant les mêmes séparateurs
                             ProcessStringRecursively(part, separators, encoding);
                         }
                     }
