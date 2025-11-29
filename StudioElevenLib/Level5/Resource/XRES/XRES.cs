@@ -125,7 +125,7 @@ namespace StudioElevenLib.Level5.Resource.XRES
                             {
                                 foreach (var element in Items[resType])
                                 {
-                                    object elementStruct = element.ToStruct(stringDict);
+                                    var elementStruct = element.ToStruct(stringDict);
                                     writerData.WriteStruct(elementStruct);
                                 }
                             }

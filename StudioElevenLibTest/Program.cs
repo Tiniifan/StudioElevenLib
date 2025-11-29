@@ -410,15 +410,16 @@ namespace StudioElevenLibTest
             //byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_cs.bin");
             IResource resTest = Resourcer.GetResource(fileData);
 
-            foreach (KeyValuePair<RESType, List<RESElement>> item in resTest.Items)
-            {
-                //foreach (RESElement reselement in item.Value) {
-                //    Console.WriteLine(reselement.Name);
-                //}
+            //foreach (KeyValuePair<RESType, List<RESElement>> item in resTest.Items)
+            //{
+            //    foreach (RESElement reselement in item.Value)
+            //    {
+            //        Console.WriteLine(reselement.Name);
+            //    }
+            //}
 
-            }
+            resTest.Save("HELLO", "./test.bin");
 
-            
             // GetCondition();
 
             // NoCompression();

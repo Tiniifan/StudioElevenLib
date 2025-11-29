@@ -196,7 +196,7 @@ namespace StudioElevenLib.Level5.Resource.RES
 
                 foreach (var element in elements)
                 {
-                    object elementStruct = element.ToStruct(stringDict);
+                    var elementStruct = element.ToStruct(stringDict);
                     writerData.WriteStruct(elementStruct);
                 }
 
@@ -366,8 +366,6 @@ namespace StudioElevenLib.Level5.Resource.RES
                 RESSupport.HeaderTable headerTable = reader.ReadStruct<RESSupport.HeaderTable>();
 
                 RESType resType = (RESType)headerTable.Type;
-
-                Console.WriteLine(resType + " type: " + headerTable.Type + " dataOffset: " + headerTable.DataOffset + " length: " + headerTable.Length + " count: " +  headerTable.Count);
 
                 if (!Items.ContainsKey(resType))
                 {
