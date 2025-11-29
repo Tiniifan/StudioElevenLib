@@ -19,6 +19,11 @@ namespace StudioElevenLib.Level5.Resource.RES
 
         public Dictionary<RESType, List<RESElement>> Items { get; set; }
 
+        public RES()
+        {
+
+        }
+
         public RES(Stream stream)
         {
             using (MemoryStream memoryStream = new MemoryStream())

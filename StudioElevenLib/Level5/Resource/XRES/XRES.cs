@@ -19,6 +19,11 @@ namespace StudioElevenLib.Level5.Resource.XRES
 
         public Dictionary<RESType, List<RESElement>> Items { get; set; }
 
+        public XRES()
+        {
+
+        }
+
         public XRES(Stream stream)
         {
             using (MemoryStream memoryStream = new MemoryStream())
