@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using StudioElevenLib.Level5.Resource.Types;
-using StudioElevenLib.Level5.Resource.Types.Scene3D;
-using StudioElevenLib.Tools;
 
 namespace StudioElevenLib.Level5.Resource
 {
@@ -42,48 +39,6 @@ namespace StudioElevenLib.Level5.Resource
             Array.Copy(encoded, magicBytes, length);
 
             return magicBytes;
-        }
-
-        public static Dictionary<string, (uint crc32, int position)> BuildStringDictionary(Dictionary<RESType, List<RESElement>> items)
-        {
-            Encoding encoding = Encoding.GetEncoding(932); // Shift-JIS
-            Dictionary<string, (uint, int)> stringDict = new Dictionary<string, (uint, int)>();
-            int currentPosition = 0;
-
-            foreach (var itemPair in items)
-            {
-                foreach (var element in itemPair.Value)
-                {
-                    // Add the name of the element
-                    AddStringToDictionary(element.Name, encoding, stringDict, ref currentPosition);
-
-                    // If it is a ResMaterialData, process the images
-                    if (element is ResMaterialData materialData)
-                    {
-                        foreach (var image in materialData.Images)
-                        {
-                            if (image != null && !string.IsNullOrEmpty(image.Name))
-                            {
-                                AddStringToDictionary(image.Name, encoding, stringDict, ref currentPosition);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return stringDict;
-        }
-
-        public static void AddStringToDictionary(string name, Encoding encoding, Dictionary<string, (uint, int)> dict, ref int position)
-        {
-            if (string.IsNullOrEmpty(name) || dict.ContainsKey(name))
-                return;
-
-            uint crc32 = Crc32.Compute(encoding.GetBytes(name));
-            dict.Add(name, (crc32, position));
-
-            // Position suivante = position actuelle + longueur du string + 1 (pour le 0x00)
-            position += encoding.GetByteCount(name) + 1;
         }
     }
 }
