@@ -33,7 +33,7 @@ namespace StudioElevenLib.Level5.Resource
         NodeTypeUnk2 = 3,
         NodeTypeUnk3 = 4,
         NodeTypeUnk4 = 460,
-        NodeTypeUnk7 = 20,
+        Ref = 20,
     }
 
 }

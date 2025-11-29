@@ -367,6 +367,8 @@ namespace StudioElevenLib.Level5.Resource.RES
 
                 RESType resType = (RESType)headerTable.Type;
 
+                Console.WriteLine(resType + " type: " + headerTable.Type + " dataOffset: " + headerTable.DataOffset + " length: " + headerTable.Length + " count: " +  headerTable.Count);
+
                 if (!Items.ContainsKey(resType))
                 {
                     Items[resType] = new List<RESElement>();
@@ -396,6 +398,9 @@ namespace StudioElevenLib.Level5.Resource.RES
                 case RESType.Shading:
                     return ReadTypedElements<ResElementStruct>(reader, count,
                         (s, st) => RESShading.FromStruct(s, st));
+                case RESType.Ref:
+                    return ReadTypedElements<ResElementStruct>(reader, count,
+                        (s, st) => RESRef.FromStruct(s, st));
                 case RESType.Material1:
                     return ReadTypedElements<ResElementStruct>(reader, count,
                         (s, st) => RESMaterial1.FromStruct(s, st));

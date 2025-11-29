@@ -406,15 +406,15 @@ namespace StudioElevenLibTest
 
         static void Main(string[] args)
         {
-            byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_player_cs.bin");
+            byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_311.bin");
             //byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_cs.bin");
             IResource resTest = Resourcer.GetResource(fileData);
 
             foreach (KeyValuePair<RESType, List<RESElement>> item in resTest.Items)
             {
-                foreach (RESElement reselement in item.Value) {
-                    Console.WriteLine(reselement.Name);
-                }
+                //foreach (RESElement reselement in item.Value) {
+                //    Console.WriteLine(reselement.Name);
+                //}
 
             }
 

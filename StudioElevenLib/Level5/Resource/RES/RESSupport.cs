@@ -36,6 +36,7 @@ namespace StudioElevenLib.Level5.Resource.RES
         public static List<RESType> Materials = new List<RESType>
         {
             RESType.MaterialTypeUnk1,
+            RESType.Ref,
             RESType.Material1,
             RESType.Material2,
             RESType.TextureData,

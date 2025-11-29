@@ -132,6 +132,7 @@
     <Compile Include="Level5\Resource\Types\Scene3D\ResMaterialData.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESMesh.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESProperty.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESRef.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESShading.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESTextproj.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESTextureData.cs" />
