@@ -31,6 +31,7 @@ namespace StudioElevenLib.Level5.Resource
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 stream.CopyTo(memoryStream);
+                memoryStream.Position = 0;
 
                 using (BinaryDataReader reader = new BinaryDataReader(Compressor.Decompress(memoryStream)))
                 {

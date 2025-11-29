@@ -408,7 +408,7 @@ namespace StudioElevenLibTest
         {
             byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_player_cs.bin");
             //byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_cs.bin");
-            RES resTest = new RES(fileData);
+            IResource resTest = Resourcer.GetResource(fileData);
 
             foreach (KeyValuePair<RESType, List<RESElement>> item in resTest.Items)
             {
