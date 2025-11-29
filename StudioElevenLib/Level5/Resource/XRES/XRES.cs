@@ -29,14 +29,29 @@ namespace StudioElevenLib.Level5.Resource.XRES
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 stream.CopyTo(memoryStream);
-                Initialize(memoryStream.ToArray());
+                using (BinaryDataReader reader = new BinaryDataReader(memoryStream.ToArray()))
+                {
+                    byte[] data = ProcessAndValidateData(reader);
+                    Initialize(data);
+                }
             }
         }
 
         public XRES(byte[] data)
         {
+            using (BinaryDataReader reader = new BinaryDataReader(data))
+            {
+                byte[] validatedData = ProcessAndValidateData(reader);
+                Initialize(validatedData);
+            }
+        }
+
+        public XRES(BinaryDataReader reader)
+        {
+            byte[] data = ProcessAndValidateData(reader);
             Initialize(data);
         }
+
 
         public void Save(string magic, string filepath)
         {
@@ -191,12 +206,57 @@ namespace StudioElevenLib.Level5.Resource.XRES
             }
         }
 
+        private byte[] ProcessAndValidateData(BinaryDataReader reader)
+        {
+            // Read the first 8 bytes to check the magic number
+            long magicLong = reader.ReadValue<long>();
+            string magicSTR = ResourceHelper.LongToUtf8String(magicLong);
+
+            // Check if it is a valid XRES format
+            if (magicSTR.StartsWith("XRES") || magicSTR.StartsWith("XA01"))
+            {
+                // Valid format, reset position and return data
+                reader.Seek(0);
+                return reader.GetSection((int)reader.Length);
+            }
+
+            // The file is not recognized, try decompressing it.
+            reader.Seek(0);
+            byte[] compressedData = reader.GetSection((int)reader.Length);
+
+            try
+            {
+                byte[] decompressedData = Compressor.Decompress(compressedData);
+
+                // Check the magic after decompression
+                using (BinaryDataReader decompReader = new BinaryDataReader(decompressedData))
+                {
+                    magicLong = decompReader.ReadValue<long>();
+                    magicSTR = ResourceHelper.LongToUtf8String(magicLong);
+
+                    if (magicSTR.StartsWith("XRES") || magicSTR.StartsWith("XA01"))
+                    {
+                        // Valid format after decompression
+                        return compressedData;
+                    }
+                }
+            }
+            catch
+            {
+                // Decompression failed
+            }
+
+            // Neither compressed nor uncompressed correspond to a valid XRES format.
+            throw new InvalidDataException("The file is not a valid XRES file. Expected magic: 'XRES' or 'XA01'");
+        }
+
         private void Initialize(byte[] data)
         {
             StringTable = new Dictionary<string, uint>();
             Items = new Dictionary<RESType, List<RESElement>>();
 
-            using (BinaryDataReader reader = new BinaryDataReader(Compressor.Decompress(data)))
+            // We assume data is decompressed
+            using (BinaryDataReader reader = new BinaryDataReader(data))
             {
                 XRESSupport.Header header = reader.ReadStruct<XRESSupport.Header>();
 

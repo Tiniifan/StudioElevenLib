@@ -29,12 +29,26 @@ namespace StudioElevenLib.Level5.Resource.RES
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 stream.CopyTo(memoryStream);
-                Initialize(memoryStream.ToArray());
+                using (BinaryDataReader reader = new BinaryDataReader(memoryStream.ToArray()))
+                {
+                    byte[] data = ProcessAndValidateData(reader);
+                    Initialize(data);
+                }
             }
         }
 
         public RES(byte[] data)
         {
+            using (BinaryDataReader reader = new BinaryDataReader(data))
+            {
+                byte[] validatedData = ProcessAndValidateData(reader);
+                Initialize(validatedData);
+            }
+        }
+
+        public RES(BinaryDataReader reader)
+        {
+            byte[] data = ProcessAndValidateData(reader);
             Initialize(data);
         }
 
@@ -220,12 +234,57 @@ namespace StudioElevenLib.Level5.Resource.RES
             }
         }
 
+        private byte[] ProcessAndValidateData(BinaryDataReader reader)
+        {
+            // Read the first 8 bytes to check the magic number
+            long magicLong = reader.ReadValue<long>();
+            string magicSTR = ResourceHelper.LongToUtf8String(magicLong);
+
+            // Check if it is a valid RES format
+            if (magicSTR.StartsWith("CHR") || magicSTR.StartsWith("ANMC00"))
+            {
+                // Valid format, reset position and return data
+                reader.Seek(0);
+                return reader.GetSection((int)reader.Length);
+            }
+
+            // The file is not recognized, try decompressing it.
+            reader.Seek(0);
+            byte[] compressedData = reader.GetSection((int)reader.Length);
+
+            try
+            {
+                byte[] decompressedData = Compressor.Decompress(compressedData);
+
+                // Check the magic after decompression
+                using (BinaryDataReader decompReader = new BinaryDataReader(decompressedData))
+                {
+                    magicLong = decompReader.ReadValue<long>();
+                    magicSTR = ResourceHelper.LongToUtf8String(magicLong);
+
+                    if (magicSTR.StartsWith("CHR") || magicSTR.StartsWith("ANMC00"))
+                    {
+                        // Valid format after decompression
+                        return decompressedData;
+                    }
+                }
+            }
+            catch
+            {
+                // Decompression failed
+            }
+
+            // Neither compressed nor uncompressed correspond to a valid RES format.
+            throw new InvalidDataException("The file is not a valid RES file. Expected magic: 'CHR' or 'ANMC00'");
+        }
+
         private void Initialize(byte[] data)
         {
             StringTable = new Dictionary<string, uint>();
             Items = new Dictionary<RESType, List<RESElement>>();
 
-            using (BinaryDataReader reader = new BinaryDataReader(Compressor.Decompress(data)))
+            // We assume data is decompressed
+            using (BinaryDataReader reader = new BinaryDataReader(data))
             {
                 RESSupport.Header header = reader.ReadStruct<RESSupport.Header>();
 

@@ -40,5 +40,16 @@ namespace StudioElevenLib.Level5.Resource
 
             return magicBytes;
         }
+
+        public static string LongToUtf8String(long value)
+        {
+            byte[] bytes = BitConverter.GetBytes(value);
+
+            int len = Array.IndexOf<byte>(bytes, 0);
+            if (len == -1) len = bytes.Length;
+
+            return Encoding.UTF8.GetString(bytes, 0, len);
+        }
+
     }
 }
