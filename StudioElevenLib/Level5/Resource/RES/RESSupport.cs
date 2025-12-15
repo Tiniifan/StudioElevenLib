@@ -60,6 +60,7 @@ namespace StudioElevenLib.Level5.Resource.RES
             RESType.IMMINF,
             RESType.MTMINF,
             RESType.Textproj,
+            RESType.LookUpTable,
         };
     }
 }

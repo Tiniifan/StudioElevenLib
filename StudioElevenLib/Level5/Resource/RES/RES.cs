@@ -406,6 +406,9 @@ namespace StudioElevenLib.Level5.Resource.RES
                 case RESType.Properties:
                     return ReadTypedElements<ResElementStruct>(reader, count,
                         (s, st) => RESProperty.FromStruct(s, st));
+                case RESType.LookUpTable:
+                    return ReadTypedElements<ResElementStruct>(reader, count,
+                        (s, st) => RESProperty.FromStruct(s, st));
                 case RESType.Shading:
                     return ReadTypedElements<ResElementStruct>(reader, count,
                         (s, st) => RESShading.FromStruct(s, st));

@@ -87,8 +87,6 @@ namespace StudioElevenLib.Level5.Resource.Types
             uint crc32 = stringTable[Name].Item1;
             int pos = stringTable[Name].Item2;
 
-            Console.WriteLine(this + " " + Name + " " + crc32.ToString("X8") + " " + pos);
-
             return new ResElementStruct(crc32, pos);
         }
     }

@@ -127,6 +127,7 @@
     <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTNINF.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTNINF2.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESBone.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESLookUpTable.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESMaterial1.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESMaterial2.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\ResMaterialData.cs" />

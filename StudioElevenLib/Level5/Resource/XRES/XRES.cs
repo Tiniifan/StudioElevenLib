@@ -288,7 +288,7 @@ namespace StudioElevenLib.Level5.Resource.XRES
                 ReadSection(reader, header.AnimationIMN2, RESType.AnimationIMN2);
                 ReadSection(reader, header.AnimationMTM2, RESType.AnimationMTM2);
                 ReadSection(reader, header.Shading, RESType.Shading);
-                ReadSection(reader, header.NodeTypeUnk1, RESType.NodeTypeUnk1);
+                ReadSection(reader, header.LookUpTable, RESType.LookUpTable);
                 ReadSection(reader, header.Properties, RESType.Properties);
                 ReadSection(reader, header.MTNINF, RESType.MTNINF);
                 ReadSection(reader, header.IMMINF, RESType.IMMINF);
@@ -386,6 +386,9 @@ namespace StudioElevenLib.Level5.Resource.XRES
                     return ReadTypedElements<ResElementStruct>(reader, count,
                         (s, st) => RESTextproj.FromStruct(s, st));
                 case RESType.Properties:
+                    return ReadTypedElements<ResElementStruct>(reader, count,
+                        (s, st) => RESProperty.FromStruct(s, st));
+                case RESType.LookUpTable:
                     return ReadTypedElements<ResElementStruct>(reader, count,
                         (s, st) => RESProperty.FromStruct(s, st));
                 case RESType.Shading:

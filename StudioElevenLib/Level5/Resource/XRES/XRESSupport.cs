@@ -28,7 +28,7 @@ namespace StudioElevenLib.Level5.Resource.XRES
             public HeaderTable AnimationIMN2;
             public HeaderTable AnimationMTM2;
             public HeaderTable Shading;
-            public HeaderTable NodeTypeUnk1;
+            public HeaderTable LookUpTable;
             public HeaderTable Properties;
             public HeaderTable MTNINF;
             public HeaderTable IMMINF;
@@ -48,6 +48,7 @@ namespace StudioElevenLib.Level5.Resource.XRES
             {RESType.Bone, 8 },
             {RESType.Textproj, 8 },
             {RESType.Properties, 8 },
+            {RESType.LookUpTable, 8 },
             {RESType.Shading, 8 },
             {RESType.Material1, 8 },
             {RESType.Material2, 8 },
@@ -76,7 +77,7 @@ namespace StudioElevenLib.Level5.Resource.XRES
             RESType.AnimationIMN2,
             RESType.AnimationMTM2,
             RESType.Shading,
-            RESType.NodeTypeUnk1,
+            RESType.LookUpTable,
             RESType.Properties,
             RESType.MTNINF,
             RESType.IMMINF,
@@ -98,7 +99,7 @@ namespace StudioElevenLib.Level5.Resource.XRES
             RESType.AnimationIMN2,
             RESType.AnimationMTM2,
             RESType.Shading,
-            RESType.NodeTypeUnk1,
+            RESType.LookUpTable,
             RESType.Properties,
             RESType.MTNINF,
             RESType.IMMINF,
