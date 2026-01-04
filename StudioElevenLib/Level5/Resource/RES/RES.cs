@@ -254,7 +254,7 @@ namespace StudioElevenLib.Level5.Resource.RES
             string magicSTR = ResourceHelper.LongToUtf8String(magicLong);
 
             // Check if it is a valid RES format
-            if (magicSTR.StartsWith("CHR") || magicSTR.StartsWith("ANMC00"))
+            if (magicSTR.StartsWith("CHR") || magicSTR.StartsWith("ANMC00") || magicSTR.StartsWith("RESC01"))
             {
                 // Valid format, reset position and return data
                 reader.Seek(0);
