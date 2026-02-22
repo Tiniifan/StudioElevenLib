@@ -42,3 +42,4 @@ StudioElevenLibTest/obj/
 *.pbi
 *.pvb
 *.bin
+/StudioElevenLibMultiplatform/obj

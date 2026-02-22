@@ -3,7 +3,7 @@
     "Name": "Nouveau profil",
     "Projects": [
       {
-        "Path": "StudioElevenLibTest\\StudioElevenLibTest.csproj",
+        "Path": "StudioElevenLibTest\\StudioElevenLibZTest.csproj",
         "Action": "Start"
       }
     ]
