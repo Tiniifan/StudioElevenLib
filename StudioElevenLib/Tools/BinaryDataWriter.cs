@@ -106,6 +106,11 @@ namespace StudioElevenLib.Tools
             Write(data);
         }
 
+        public void Write(sbyte value)
+        {
+            _stream.WriteByte((byte)value);
+        }
+
         public void WriteAlignment(int alignment = 16, byte alignmentByte = 0x0)
         {
             var remainder = BaseStream.Position % alignment;

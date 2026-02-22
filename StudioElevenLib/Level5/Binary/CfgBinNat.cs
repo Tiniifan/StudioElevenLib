@@ -15,6 +15,8 @@ namespace StudioElevenLib.Level5.Binary
     /// Unlike <see cref="CfgBin{TNode}"/>, this format contains no string table, no key table,
     /// and no entry tree — only raw primitive values grouped by type, preceded by a count header.
     /// Supported field types are: byte, sbyte, short, ushort, int, uint, float.
+    /// If the binary contains more classes than the registered types, the trailing classes
+    /// are preserved as raw bytes and restored as-is on save.
     /// </summary>
     public class CfgBinNat
     {
@@ -24,19 +26,60 @@ namespace StudioElevenLib.Level5.Binary
         private readonly List<Type> _typeOrder;
 
         /// <summary>
+        /// Total number of classes present in the binary file, including unregistered/ignored ones.
+        /// </summary>
+        private readonly int _totalClassCount;
+
+        /// <summary>
         /// Stores the deserialized instances for each registered type.
         /// </summary>
         private readonly Dictionary<Type, IList> _data;
 
         /// <summary>
+        /// Stores the instance counts read from the header for each ignored (unregistered) class.
+        /// </summary>
+        private int[] _ignoredCounts;
+
+        /// <summary>
+        /// Stores the raw binary data of all ignored classes as a single contiguous block.
+        /// </summary>
+        private byte[] _ignoredRawData;
+
+        /// <summary>
         /// Initializes a new instance of <see cref="CfgBinNat"/> with the given type sequence.
         /// The order of types must match the order in which they appear in the binary file.
+        /// The total class count defaults to the number of registered types (no ignored classes).
         /// </summary>
         /// <param name="types">The ordered collection of types to register.</param>
-        public CfgBinNat(IEnumerable<Type> types)
+        public CfgBinNat(IEnumerable<Type> types) : this(types, 0)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="CfgBinNat"/> with the given type sequence
+        /// and the total number of classes present in the binary file.
+        /// Classes beyond the registered types will be ignored during parsing but preserved on save.
+        /// </summary>
+        /// <param name="types">The ordered collection of types to register.</param>
+        /// <param name="totalClassCount">
+        /// The total number of classes in the binary file.
+        /// Must be greater than or equal to the number of registered types.
+        /// If 0, defaults to the number of registered types.
+        /// </param>
+        /// <exception cref="ArgumentException">
+        /// Thrown if <paramref name="totalClassCount"/> is less than the number of registered types.
+        /// </exception>
+        public CfgBinNat(IEnumerable<Type> types, int totalClassCount)
         {
             _typeOrder = types.ToList();
+            _totalClassCount = totalClassCount == 0 ? _typeOrder.Count : totalClassCount;
+
+            if (_totalClassCount < _typeOrder.Count)
+                throw new ArgumentException("totalClassCount cannot be less than the number of registered types.");
+
             _data = new Dictionary<Type, IList>();
+            _ignoredCounts = new int[_totalClassCount - _typeOrder.Count];
+            _ignoredRawData = Array.Empty<byte>();
 
             foreach (var t in _typeOrder)
             {
@@ -70,7 +113,9 @@ namespace StudioElevenLib.Level5.Binary
 
         /// <summary>
         /// Opens and parses the native binary data from a stream.
-        /// The header contains one int count per registered type, followed by the raw instances in order.
+        /// The header contains one int count per class (registered and ignored),
+        /// followed by the raw instances in order.
+        /// Ignored classes are stored as a raw byte block and are not deserialized.
         /// </summary>
         /// <param name="stream">The stream representing the binary file.</param>
         public void Open(Stream stream)
@@ -81,6 +126,10 @@ namespace StudioElevenLib.Level5.Binary
                 var counts = new int[_typeOrder.Count];
                 for (int i = 0; i < _typeOrder.Count; i++)
                     counts[i] = reader.ReadValue<int>();
+
+                // Read the count for each ignored class from the header
+                for (int i = 0; i < _ignoredCounts.Length; i++)
+                    _ignoredCounts[i] = reader.ReadValue<int>();
 
                 // Read the raw instances for each registered type
                 for (int i = 0; i < _typeOrder.Count; i++)
@@ -102,6 +151,10 @@ namespace StudioElevenLib.Level5.Binary
                         list.Add(instance);
                     }
                 }
+
+                // Preserve the raw binary data of all ignored classes as a single block
+                int remaining = (int)(stream.Length - stream.Position);
+                _ignoredRawData = remaining > 0 ? reader.ReadBytes(remaining) : Array.Empty<byte>();
             }
         }
 
@@ -116,7 +169,8 @@ namespace StudioElevenLib.Level5.Binary
 
         /// <summary>
         /// Serializes the current data to a byte array.
-        /// The output starts with the count header (one int per type), followed by raw field data.
+        /// The output starts with the count header (one int per class, registered and ignored),
+        /// followed by raw field data for registered types, then the preserved raw block for ignored classes.
         /// </summary>
         /// <returns>A byte array representing the serialized file.</returns>
         public byte[] Save()
@@ -125,9 +179,13 @@ namespace StudioElevenLib.Level5.Binary
             {
                 using (var writer = new BinaryDataWriter(stream))
                 {
-                    // Write the count header
+                    // Write the count header for registered types
                     foreach (var type in _typeOrder)
                         writer.Write(_data[type].Count);
+
+                    // Write the count header for ignored classes, preserved from the original file
+                    foreach (var count in _ignoredCounts)
+                        writer.Write(count);
 
                     // Write raw field data for each registered type
                     foreach (var type in _typeOrder)
@@ -142,6 +200,10 @@ namespace StudioElevenLib.Level5.Binary
                             }
                         }
                     }
+
+                    // Re-write the preserved raw binary data of ignored classes as-is
+                    if (_ignoredRawData.Length > 0)
+                        writer.Write(_ignoredRawData);
 
                     return stream.ToArray();
                 }

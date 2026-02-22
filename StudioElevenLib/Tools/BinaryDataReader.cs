@@ -40,6 +40,11 @@ namespace StudioElevenLib.Tools
             byte[] bytes = new byte[size];
             _stream.Read(bytes, 0, size);
 
+            if (typeof(T) == typeof(sbyte))
+            {
+                return (T)(object)(sbyte)bytes[0];
+            }
+
             if (typeof(T) == typeof(byte))
             {
                 return (T)(object)bytes[0];
@@ -176,6 +181,13 @@ namespace StudioElevenLib.Tools
         public T[] ReadMultipleStruct<T>(int count)
         {
             return Enumerable.Range(0, count).Select(x => ReadStruct<T>()).ToArray();
+        }
+
+        public byte[] ReadBytes(int count)
+        {
+            byte[] bytes = new byte[count];
+            _stream.Read(bytes, 0, count);
+            return bytes;
         }
     }
 }
