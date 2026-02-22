@@ -1,4 +1,8 @@
-﻿using System.Drawing;
+﻿#if USE_SYSTEM_DRAWING
+using System.Drawing;
+#elif USE_IMAGESHARP
+using SixLabors.ImageSharp;
+#endif
 
 namespace StudioElevenLib.Level5.Image
 {

@@ -58,6 +58,7 @@
     <Compile Include="TestClass\NPC.cs" />
     <Compile Include="TestClass\NPCTalk.cs" />
     <Compile Include="TestClass\Position3D.cs" />
+    <Compile Include="TestNatClass\Charabase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -17,6 +17,7 @@ using StudioElevenLib.Level5.Text;
 using StudioElevenLib.Level5.Resource.RES;
 using StudioElevenLib.Level5.Resource;
 using StudioElevenLib.Level5.Resource.Types;
+using StudioElevenLibTest.TestNatClass;
 
 namespace StudioElevenLibTest
 {
@@ -406,9 +407,9 @@ namespace StudioElevenLibTest
 
         static void Main(string[] args)
         {
-            byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_waza_cs.bin");
+            //byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_waza_cs.bin");
             //byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_cs.bin");
-            IResource resTest = Resourcer.GetResource(fileData);
+            //IResource resTest = Resourcer.GetResource(fileData);
 
             //foreach (KeyValuePair<RESType, List<RESElement>> item in resTest.Items)
             //{
@@ -418,7 +419,7 @@ namespace StudioElevenLibTest
             //    }
             //}
 
-            resTest.Save("CHRC00", "./test.bin");
+            //resTest.Save("CHRC00", "./test.bin");
 
             // GetCondition();
 
@@ -481,6 +482,12 @@ namespace StudioElevenLibTest
             //Console.WriteLine(charaParams[0].ParamHash.ToString("X8"));
             //Console.WriteLine(charaParams[0].IgnoreMe);
             //Console.WriteLine(charaParams[0].BaseHash.ToString("X8"));
+
+            var cfg = new CfgBinNat(new[] { typeof(Charabase) });
+            cfg.Open(File.ReadAllBytes("chara_base_0.02.cfg.bin.nat"));
+
+            List<Charabase> players = cfg.GetList<Charabase>();
+            Console.WriteLine(players[1].BaseID);
         }
     }
 }

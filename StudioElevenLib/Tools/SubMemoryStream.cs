@@ -1,8 +1,12 @@
 ﻿using System;
 using System.IO;
-using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
+#if USE_SYSTEM_DRAWING
+using System.Drawing;
+#elif USE_IMAGESHARP
+using SixLabors.ImageSharp;
+#endif
 
 namespace StudioElevenLib.Tools
 {

@@ -4,30 +4,48 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using StudioElevenLib.Tools;
 using StudioElevenLib.Level5.Compression;
 using StudioElevenLib.Level5.Compression.ETC1;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Net.WebRequestMethods;
+using StudioElevenLib.Level5.Compression.NoCompression;
+using StudioElevenLib.Level5.Image;
+
+#if USE_SYSTEM_DRAWING
+using System.Drawing;
+using System.Drawing.Imaging;
+#elif USE_IMAGESHARP
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+#endif
 
 namespace StudioElevenLib.Level5.Image
 {
     public static class IMGC
     {
+#if USE_SYSTEM_DRAWING
         public static Bitmap ToBitmap(byte[] fileContent)
+#elif USE_IMAGESHARP
+        public static Image<Rgba32> ToBitmap(byte[] fileContent)
+#endif
         {
             BinaryDataReader data = new BinaryDataReader(fileContent);
 
-            var header = data.ReadStruct<IMGCSupport.Header>();
+        var header = data.ReadStruct<IMGCSupport.Header>();
 
-            byte[] tileData = Compressor.Decompress(data.GetSection((uint)header.TileOffset, header.TileSize1));
-            byte[] imageData = Compressor.Decompress(data.GetSection((uint)(header.TileOffset + header.TileSize2), header.ImageSize));
+        byte[] tileData = Compressor.Decompress(data.GetSection((uint)header.TileOffset, header.TileSize1));
+        byte[] imageData = Compressor.Decompress(data.GetSection((uint)(header.TileOffset + header.TileSize2), header.ImageSize));
 
             return DecodeImage(tileData, imageData, IMGCSupport.ImageFormats[header.ImageFormat], header.Width, header.Height, header.BitDepth);
-        }
+    }
 
+#if USE_SYSTEM_DRAWING
         private static Bitmap DecodeImage(byte[] tile, byte[] imageData, IColorFormat imgFormat, int width, int height, int bitDepth)
+#elif USE_IMAGESHARP
+        private static Image<Rgba32> DecodeImage(byte[] tile, byte[] imageData, IColorFormat imgFormat, int width, int height, int bitDepth)
+#endif
         {
             byte[] entryStart = null;
 
@@ -36,8 +54,8 @@ namespace StudioElevenLib.Level5.Image
             {
                 int tableLength = (int)table.BaseStream.Length;
 
-                var tmp = table.ReadValue<ushort>();
-                table.BaseStream.Position = 0;
+    var tmp = table.ReadValue<ushort>();
+    table.BaseStream.Position = 0;
                 var entryLength = 2;
                 if (tmp == 0x453)
                 {
@@ -45,58 +63,59 @@ namespace StudioElevenLib.Level5.Image
                     entryLength = 4;
                 }
 
-                var ms = new MemoryStream();
-                for (int i = (int)table.BaseStream.Position; i < tableLength; i += entryLength)
-                {
-                    uint entry = (entryLength == 2) ? table.ReadValue<ushort>() : table.ReadValue<uint>();
-                    if (entry == 0xFFFF || entry == 0xFFFFFFFF)
-                    {
-                        for (int j = 0; j < 64 * bitDepth / 8; j++)
-                        {
-                            ms.WriteByte(0);
-                        }
-                    }
-                    else
-                    {
-                        if (entry * (64 * bitDepth / 8) < tex.BaseStream.Length)
-                        {
-                            tex.BaseStream.Position = entry * (64 * bitDepth / 8);
-                            for (int j = 0; j < 64 * bitDepth / 8; j++)
-                            {
-                                ms.WriteByte(tex.ReadValue<byte>());
-                            }
-                        }
-                    }
-                }
+var ms = new MemoryStream();
+for (int i = (int)table.BaseStream.Position; i < tableLength; i += entryLength)
+{
+    uint entry = (entryLength == 2) ? table.ReadValue<ushort>() : table.ReadValue<uint>();
+    if (entry == 0xFFFF || entry == 0xFFFFFFFF)
+    {
+        for (int j = 0; j < 64 * bitDepth / 8; j++)
+        {
+            ms.WriteByte(0);
+        }
+    }
+    else
+    {
+        if (entry * (64 * bitDepth / 8) < tex.BaseStream.Length)
+        {
+            tex.BaseStream.Position = entry * (64 * bitDepth / 8);
+            for (int j = 0; j < 64 * bitDepth / 8; j++)
+            {
+                ms.WriteByte(tex.ReadValue<byte>());
+            }
+        }
+    }
+}
 
-                byte[] pic;
-                switch (imgFormat.Name)
-                {
-                    case "ETC1A4":
-                        pic = new Compression.ETC1.ETC1(true, width, height).Decompress(ms.ToArray());
-                        break;
-                    case "ETC1":
-                        pic = new Compression.ETC1.ETC1(false, width, height).Decompress(ms.ToArray());
-                        break;
-                    default:
-                        pic = ms.ToArray();
-                        break;
-                }
+byte[] pic;
+switch (imgFormat.Name)
+{
+    case "ETC1A4":
+        pic = new Compression.ETC1.ETC1(true, width, height).Decompress(ms.ToArray());
+        break;
+    case "ETC1":
+        pic = new Compression.ETC1.ETC1(false, width, height).Decompress(ms.ToArray());
+        break;
+    default:
+        pic = ms.ToArray();
+        break;
+}
 
-                IMGCSwizzle imgcSwizzle = new IMGCSwizzle(width, height);
-                var points = imgcSwizzle.GetPointSequence();
+IMGCSwizzle imgcSwizzle = new IMGCSwizzle(width, height);
+var points = imgcSwizzle.GetPointSequence();
 
-                int pixelCount = width * height;
-                Color[] resultArray = new Color[pixelCount];
+int pixelCount = width * height;
+Color[] resultArray = new Color[pixelCount];
 
-                for (int i = 0; i < pixelCount; i++)
-                {
-                    int dataIndex = i * imgFormat.Size;
-                    byte[] group = new byte[imgFormat.Size];
-                    Array.Copy(pic, dataIndex, group, 0, imgFormat.Size);
-                    resultArray[i] = imgFormat.Decode(group);
-                }
+for (int i = 0; i < pixelCount; i++)
+{
+    int dataIndex = i * imgFormat.Size;
+    byte[] group = new byte[imgFormat.Size];
+    Array.Copy(pic, dataIndex, group, 0, imgFormat.Size);
+    resultArray[i] = imgFormat.Decode(group);
+}
 
+#if USE_SYSTEM_DRAWING
                 var bmp = new Bitmap(width, height);
                 var data = bmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
@@ -115,6 +134,21 @@ namespace StudioElevenLib.Level5.Image
                 bmp.UnlockBits(data);
 
                 return bmp;
+#elif USE_IMAGESHARP
+                var bmp = new Image<Rgba32>(width, height);
+
+                foreach (var pair in points.Zip(resultArray, Tuple.Create))
+                {
+                    int x = pair.Item1.X, y = pair.Item1.Y;
+                    if (0 <= x && x < width && 0 <= y && y < height)
+                    {
+                        var color = pair.Item2;
+                        bmp[x, y] = color.ToPixel<Rgba32>();
+                    }
+                }
+
+                return bmp;
+#endif
             }
         }
     }

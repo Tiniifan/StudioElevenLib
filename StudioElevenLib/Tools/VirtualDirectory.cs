@@ -1,10 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Drawing;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+#if USE_SYSTEM_DRAWING
+using System.Drawing;
+#elif USE_IMAGESHARP
+using SixLabors.ImageSharp;
+#endif
 
 namespace StudioElevenLib.Tools
 {
