@@ -20,11 +20,11 @@ namespace StudioElevenLib.Level5.Compression.RLE
                 // Write compression header
                 var header = new[]
                 {
-            (byte)((byte)(indata.Length << 3) | 4),
-            (byte)(indata.Length >> 5),
-            (byte)(indata.Length >> 13),
-            (byte)(indata.Length >> 21)
-        };
+                    (byte)((byte)(indata.Length << 3) | 4),
+                    (byte)(indata.Length >> 5),
+                    (byte)(indata.Length >> 13),
+                    (byte)(indata.Length >> 21)
+                };
 
                 output.Write(header, 0, 4);
 

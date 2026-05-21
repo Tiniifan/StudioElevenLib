@@ -11,12 +11,36 @@ namespace StudioElevenLib.Level5.Compression.Huffman
             BitDepth = bitDepth;
         }
 
+        /// <summary>
+        /// Compresses data using Huffman compression.
+        /// </summary>
         public byte[] Compress(byte[] data)
         {
-            // Not Implemented
-            return null;
+            if (data.Length > 0x1FFFFFFF)
+                throw new System.Exception("File is too big to be compressed with Level5 compressions!");
+
+            using (MemoryStream output = new MemoryStream())
+            {
+                uint mode = (uint)(BitDepth == 4 ? 2 : 3);
+                var header = new[]
+                {
+                    (byte)((byte)(data.Length << 3) | mode),
+                    (byte)(data.Length >> 5),
+                    (byte)(data.Length >> 13),
+                    (byte)(data.Length >> 21)
+                };
+
+                output.Write(header, 0, 4);
+
+                new HuffmanEncoder(BitDepth).Encode(data, output);
+
+                return output.ToArray();
+            }
         }
 
+        /// <summary>
+        /// Decompresses data using Huffman compression.
+        /// </summary>
         public byte[] Decompress(byte[] data)
         {
             using (var input = new MemoryStream(data))
