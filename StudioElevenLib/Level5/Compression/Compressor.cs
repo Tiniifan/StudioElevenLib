@@ -1,11 +1,23 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace StudioElevenLib.Level5.Compression
 {
+    /// <summary>
+    /// Provides helper methods for compression and decompression operations.
+    /// </summary>
     public static class Compressor
     {
+        /// <summary>
+        /// Gets the compression implementation associated with the specified method identifier.
+        /// </summary>
+        /// <param name="method">Compression method identifier.</param>
+        /// <returns>An instance of the matching compression implementation.</returns>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when the compression method is unknown or unsupported.
+        /// </exception>
         public static ICompression GetCompression(uint method)
         {
             switch (method)
@@ -33,27 +45,103 @@ namespace StudioElevenLib.Level5.Compression
             }
         }
 
+        /// <summary>
+        /// Compresses the data using all available algorithms in parallel
+        /// and returns the smallest resulting output.
+        /// </summary>
+        public static byte[] Compress(byte[] data)
+        {
+            var methods = new ICompression[]
+            {
+                new NoCompression.NoCompression(),
+                new LZ10.LZ10(),
+                new Huffman.Huffman(4),
+                new Huffman.Huffman(8),
+                new RLE.RLE(),
+                new ZLib.Zlib(),
+            };
+
+            var results = new byte[methods.Length][];
+
+            // Try all compression methods in parallel
+            Parallel.For(0, methods.Length, i =>
+            {
+                try { results[i] = methods[i].Compress(data); }
+                catch { results[i] = null; }
+            });
+
+            // Return the smallest valid output
+            return results
+                .Where(r => r != null && r.Length > 0)
+                .OrderBy(r => r.Length)
+                .First();
+        }
+
+        /// <summary>
+        /// Decompresses the specified byte array using the detected compression method.
+        /// </summary>
+        /// <param name="data">Compressed input data.</param>
+        /// <returns>The decompressed byte array.</returns>
         public static byte[] Decompress(byte[] data)
         {
+            // Read the compression header
             var sizeMethodBuffer = data.Take(4).ToArray();
+
+            // Extract the original uncompressed size
             int size = (sizeMethodBuffer[0] >> 3) | (sizeMethodBuffer[1] << 5) |
                                    (sizeMethodBuffer[2] << 13) | (sizeMethodBuffer[3] << 21);
+
+            // Get the compression method from the header
             ICompression method = GetCompression(BitConverter.ToUInt32(sizeMethodBuffer, 0) & 0x7);
 
             if (method != null)
             {
+                // Decompress and trim to the expected size
                 return method.Decompress(data).Take(size).ToArray();
             }
             else
             {
+                // Return original data if no valid compression method was found
                 return data;
             }
         }
 
+        /// <summary>
+        /// Reads compressed data from a stream and decompresses it.
+        /// </summary>
+        /// <param name="inputStream">Input stream containing compressed data.</param>
+        /// <returns>The decompressed byte array.</returns>
         public static byte[] Decompress(Stream inputStream)
         {
+            // Allocate a buffer for the entire stream content
             byte[] inputData = new byte[inputStream.Length];
-            inputStream.Read(inputData, 0, (int)inputStream.Length);
+
+            int totalRead = 0;
+
+            // Read the stream until the buffer is completely filled
+            while (totalRead < inputData.Length)
+            {
+                int bytesRead = inputStream.Read(
+                    inputData,
+                    totalRead,
+                    inputData.Length - totalRead);
+
+                // Stop if the end of the stream is reached
+                if (bytesRead == 0)
+                {
+                    break;
+                }
+
+                totalRead += bytesRead;
+            }
+
+            // Resize the buffer if fewer bytes were read
+            if (totalRead != inputData.Length)
+            {
+                Array.Resize(ref inputData, totalRead);
+            }
+
+            // Decompress the loaded data
             return Decompress(inputData);
         }
     }
