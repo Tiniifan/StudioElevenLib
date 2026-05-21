@@ -22,22 +22,22 @@ namespace StudioElevenLib.Level5.Compression
         {
             switch (method)
             {
-                case 0:
+                case (uint)CompressionMethod.None:
                     return new NoCompression.NoCompression();
 
-                case 1:
+                case (uint)CompressionMethod.LZ10:
                     return new LZ10.LZ10();
 
-                case 2:
+                case (uint)CompressionMethod.Huffman4:
                     return new Huffman.Huffman(4);
 
-                case 3:
+                case (uint)CompressionMethod.Huffman8:
                     return new Huffman.Huffman(8);
 
-                case 4:
+                case (uint)CompressionMethod.RLE:
                     return new RLE.RLE();
 
-                case 5:
+                case (uint)CompressionMethod.ZLib:
                     return new ZLib.Zlib();
 
                 default:
@@ -75,6 +75,21 @@ namespace StudioElevenLib.Level5.Compression
                 .Where(r => r != null && r.Length > 0)
                 .OrderBy(r => r.Length)
                 .First();
+        }
+
+        /// <summary>
+        /// Compresses data using a specific compression method.
+        /// </summary>
+        /// <param name="data">Input data to compress.</param>
+        /// <param name="method">Compression method identifier.</param>
+        /// <returns>The compressed data.</returns>
+        public static byte[] Compress(byte[] data, uint method)
+        {
+            // Get the requested compression method
+            ICompression compression = GetCompression(method);
+
+            // Compress the data
+            return compression.Compress(data);
         }
 
         /// <summary>
