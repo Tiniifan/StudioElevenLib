@@ -10,7 +10,7 @@ namespace StudioElevenLib.Level5.Compression.NoCompression
             MemoryStream outstream = new MemoryStream();
 
             var compressionHeader = new[] {
-                (byte)((byte)(indata.Length << 3) | 0),
+                (byte)((byte)(indata.Length << 3) | (byte)CompressionMethod.None),
                 (byte)(indata.Length >> 5),
                 (byte)(indata.Length >> 13),
                 (byte)(indata.Length >> 21) };

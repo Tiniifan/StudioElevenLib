@@ -144,28 +144,27 @@ namespace StudioElevenLib.Level5.Compression.LZ10
 
         public unsafe byte[] Compress(byte[] indata)
         {
-            if (indata.Length > 0x1fffffff)
+            // Check maximum supported file size
+            if (indata.Length > 0x1FFFFFFF)
                 throw new Exception("File is too big to be compressed with Level5 compressions!");
-            uint methodSize = (uint)indata.Length << 3;
-            methodSize |= 0x1;
-            using (var bw = new BinaryWriter(new MemoryStream()))
-            {
-                Stream stream = new MemoryStream(indata.Length);
 
-                bw.Write(methodSize);
-                stream.Position = 0;
-                var comp = Comp(indata);
-                bw.Write(comp);
-                bw.BaseStream.Position = 0;
-                byte[] compressed = new BinaryReader(bw.BaseStream).ReadBytes((int)bw.BaseStream.Length);
-                byte[] compressed1 = new byte[compressed.Length];
-                using (BinaryReader binaryReader = new BinaryReader(stream))
+            byte[] compressed = Comp(indata);
+
+            using (MemoryStream output = new MemoryStream())
+            {
+                // Write compression header
+                var header = new[]
                 {
-                    binaryReader.BaseStream.Seek(0, SeekOrigin.Begin);
-                    binaryReader.Read(compressed1, 0, compressed.Length);
-                    binaryReader.Close();
-                }
-                return compressed;
+                    (byte)((byte)(indata.Length << 3) | (byte)CompressionMethod.LZ10),
+                    (byte)(indata.Length >> 5),
+                    (byte)(indata.Length >> 13),
+                    (byte)(indata.Length >> 21)
+                };
+
+                output.Write(header, 0, 4);
+                output.Write(compressed, 0, compressed.Length);
+
+                return output.ToArray();
             }
         }
 

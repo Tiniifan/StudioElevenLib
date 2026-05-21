@@ -21,7 +21,7 @@ namespace StudioElevenLib.Level5.Compression.Huffman
 
             using (MemoryStream output = new MemoryStream())
             {
-                uint mode = (uint)(BitDepth == 4 ? 2 : 3);
+                uint mode = (uint)(BitDepth == 4 ? (byte)CompressionMethod.Huffman4 : (byte)CompressionMethod.Huffman8);
                 var header = new[]
                 {
                     (byte)((byte)(data.Length << 3) | mode),

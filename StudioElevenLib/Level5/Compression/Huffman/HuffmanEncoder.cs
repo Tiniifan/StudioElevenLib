@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using StudioElevenLib.Tools;
 
 // HuffmanEncoder From https://github.com/FanTranslatorsInternational/Kuriimu2
@@ -32,6 +30,7 @@ namespace StudioElevenLib.Level5.Compression.Huffman
             }
         }
     }
+
     internal class HuffmanEncoder
     {
         private readonly int _bitDepth;
@@ -53,7 +52,6 @@ namespace StudioElevenLib.Level5.Compression.Huffman
             }
 
             var root = BuildTree(freq, symbolCount);
-
             var labelList = LabelTreeNodes(root);
 
             var bitCodes = labelList[0]
@@ -70,7 +68,8 @@ namespace StudioElevenLib.Level5.Compression.Huffman
 
                 foreach (var node in nodesToWrite)
                 {
-                    byte code = (byte)node.Code;
+                    byte code = node.IsLeaf ? node.Value : (byte)node.Code;
+
                     if (node.Children != null)
                     {
                         if (node.Children[0].IsLeaf) code |= 0x80;
@@ -79,25 +78,24 @@ namespace StudioElevenLib.Level5.Compression.Huffman
                     bw.Write(code);
                 }
 
-                while (output.Position % 4 != 0) bw.Write((byte)0);
-
-                var bitWriter = new MsbBitWriter(output);
-
-                if (_bitDepth == 4)
+                using (MsbBitWriter bitWriter = new MsbBitWriter(output))
                 {
-                    foreach (var b in data)
+                    if (_bitDepth == 4)
                     {
-                        foreach (var ch in bitCodes[b & 0xF]) bitWriter.WriteBit(ch == '1');
-                        foreach (var ch in bitCodes[b >> 4]) bitWriter.WriteBit(ch == '1');
+                        foreach (var b in data)
+                        {
+                            foreach (var ch in bitCodes[b & 0xF]) bitWriter.WriteBit(ch == '1');
+                            foreach (var ch in bitCodes[b >> 4]) bitWriter.WriteBit(ch == '1');
+                        }
                     }
-                }
-                else
-                {
-                    foreach (var b in data)
-                        foreach (var ch in bitCodes[b]) bitWriter.WriteBit(ch == '1');
-                }
+                    else
+                    {
+                        foreach (var b in data)
+                            foreach (var ch in bitCodes[b]) bitWriter.WriteBit(ch == '1');
+                    }
 
-                bitWriter.Flush();
+                    bitWriter.Flush();
+                }
             }
         }
 

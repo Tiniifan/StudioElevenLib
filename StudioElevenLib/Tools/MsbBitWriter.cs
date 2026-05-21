@@ -7,28 +7,51 @@ using System.Threading.Tasks;
 
 namespace StudioElevenLib.Tools
 {
-    public class MsbBitWriter
+    public class MsbBitWriter : IDisposable
     {
-        private readonly Stream _out;
-        private int _buf;
-        private int _count;
+        private BinaryWriter _writer;
+        private uint _buffer = 0;
+        private int _bitCount = 0;
 
-        public MsbBitWriter(Stream output) => _out = output;
-
-        public void WriteBit(bool one)
+        public MsbBitWriter(Stream outputStream)
         {
-            _buf = (_buf << 1) | (one ? 1 : 0);
-            if (++_count == 8) { _out.WriteByte((byte)_buf); _buf = 0; _count = 0; }
+            _writer = new BinaryWriter(outputStream, System.Text.Encoding.Default, leaveOpen: true);
+        }
+
+        public void WriteBit(bool bit)
+        {
+            if (bit)
+            {
+                _buffer |= (1u << (31 - _bitCount));
+            }
+
+            _bitCount++;
+
+            if (_bitCount == 32)
+            {
+                FlushBuffer();
+            }
         }
 
         public void Flush()
         {
-            if (_count > 0)
+            if (_bitCount > 0)
             {
-                _buf <<= (8 - _count);
-                _out.WriteByte((byte)_buf);
-                _buf = 0; _count = 0;
+                FlushBuffer();
             }
+        }
+
+        private void FlushBuffer()
+        {
+            _writer.Write(_buffer);
+            _buffer = 0;
+            _bitCount = 0;
+        }
+
+        public void Dispose()
+        {
+            Flush();
+            _writer?.Dispose();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,22 +50,26 @@ namespace StudioElevenLib.Level5.Compression
         /// Compresses the data using all available algorithms in parallel
         /// and returns the smallest resulting output.
         /// </summary>
-        public static byte[] Compress(byte[] data)
+        public static byte[] Compress(byte[] data, bool acceptZlib = false)
         {
-            var methods = new ICompression[]
+            List<ICompression> methods = new List<ICompression>
             {
                 new NoCompression.NoCompression(),
                 new LZ10.LZ10(),
                 new Huffman.Huffman(4),
                 new Huffman.Huffman(8),
                 new RLE.RLE(),
-                new ZLib.Zlib(),
             };
 
-            var results = new byte[methods.Length][];
+            if (acceptZlib)
+            {
+                methods.Add(new ZLib.Zlib());
+            }
+
+            var results = new byte[methods.Count][];
 
             // Try all compression methods in parallel
-            Parallel.For(0, methods.Length, i =>
+            Parallel.For(0, methods.Count, i =>
             {
                 try { results[i] = methods[i].Compress(data); }
                 catch { results[i] = null; }

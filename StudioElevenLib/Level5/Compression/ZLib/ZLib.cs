@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.IO.Compression;
+using System;
 
 namespace StudioElevenLib.Level5.Compression.ZLib
 {
@@ -8,8 +9,12 @@ namespace StudioElevenLib.Level5.Compression.ZLib
     {
         public byte[] Compress(byte[] data)
         {
+            // Check maximum supported file size
+            if (data.Length > 0x1FFFFFFF)
+                throw new Exception("File is too big to be compressed with Level5 compressions!");
+
             var compressionHeader = new[] {
-                (byte)((byte)(data.Length << 3) | 1),
+                (byte)((byte)(data.Length << 3) | (byte)CompressionMethod.ZLib),
                 (byte)(data.Length >> 5),
                 (byte)(data.Length >> 13),
                 (byte)(data.Length >> 21)
