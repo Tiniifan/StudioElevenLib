@@ -14,4 +14,7 @@ namespace StudioElevenLib.Level5.Binary.Logic
         public int Order { get; }
         public CfgBinNatOrderAttribute(int order) => Order = order;
     }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class CfgBinStringAsIntAttribute : Attribute { }
 }

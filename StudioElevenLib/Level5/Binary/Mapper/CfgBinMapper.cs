@@ -195,6 +195,17 @@ namespace StudioElevenLib.Level5.Binary.Mapper
                     cfgType = GetVariableType(property.PropertyType);
                 }
 
+                var stringAsIntAttr = property.GetCustomAttribute<CfgBinStringAsIntAttribute>();
+                if (stringAsIntAttr != null && property.PropertyType == typeof(string))
+                {
+                    var strVal = value as string;
+                    if (string.IsNullOrEmpty(strVal) || strVal == "0")
+                    {
+                        cfgType = CfgValueType.Int;
+                        value = 0;
+                    }
+                }
+
                 var variable = new Variable
                 {
                     Name = property.Name,
@@ -283,6 +294,66 @@ namespace StudioElevenLib.Level5.Binary.Mapper
             }
 
             return CfgValueType.Unknown;
+        }
+
+        /// <summary>
+        /// Converts a class instance into a list of <see cref="Variable"/> by mapping each mappable property
+        /// to its corresponding variable name, value, and inferred <see cref="CfgValueType"/>.
+        /// Properties marked with <see cref="CfgBinIgnoreAttribute"/> are excluded from the result.
+        /// </summary>
+        /// <typeparam name="T">The type of the class instance to convert.</typeparam>
+        /// <param name="instance">The class instance whose properties will be mapped to variables.</param>
+        /// <returns>
+        /// A <see cref="List{Variable}"/> where each entry represents a mappable property
+        /// of the given instance, preserving declaration order.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="instance"/> is null.</exception>
+        public static List<Variable> GetVariablesFromInstance<T>(T instance) where T : class
+        {
+            if (instance == null)
+                throw new ArgumentNullException(nameof(instance));
+
+            var properties = GetMappableProperties(typeof(T));
+            var variables = new List<Variable>();
+
+            foreach (var property in properties)
+            {
+                // Retrieve the current value of the property
+                var value = property.GetValue(instance);
+                CfgValueType cfgType;
+
+                // If the property type is object, infer the CfgValueType from the runtime value type
+                if (property.PropertyType == typeof(object))
+                {
+                    cfgType = value != null
+                        ? GetVariableType(value.GetType())
+                        : CfgValueType.Int; // Default to Int when value is null
+                }
+                else
+                {
+                    cfgType = GetVariableType(property.PropertyType);
+                }
+
+                var stringAsIntAttr = property.GetCustomAttribute<CfgBinStringAsIntAttribute>();
+                if (stringAsIntAttr != null && property.PropertyType == typeof(string))
+                {
+                    var strVal = value as string;
+                    if (string.IsNullOrEmpty(strVal) || strVal == "0")
+                    {
+                        cfgType = CfgValueType.Int;
+                        value = 0;
+                    }
+                }
+
+                variables.Add(new Variable
+                {
+                    Name = property.Name,
+                    Value = value,
+                    Type = cfgType
+                });
+            }
+
+            return variables;
         }
     }
 }

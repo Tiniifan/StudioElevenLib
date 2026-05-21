@@ -89,6 +89,26 @@ namespace StudioElevenLib.Level5.Binary.Collections
         }
 
 
+        public new CfgTreeNode Clone()
+        {
+            var clone = new CfgTreeNode(this.Item, this.Level);
+
+            foreach (var child in this.Children)
+            {
+                if (child is CfgTreeNode cfgChild)
+                {
+                    clone.AddChild(cfgChild.Clone());
+                }
+                else
+                {
+                    var baseClone = child.Clone();
+                    clone.AddChild(new CfgTreeNode(baseClone.Item, baseClone.Level));
+                }
+            }
+
+            return clone;
+        }
+
         #region Mapper Delegates
 
         /// <summary>
@@ -218,6 +238,21 @@ namespace StudioElevenLib.Level5.Binary.Collections
 
             var generic = method.MakeGenericMethod(targetType);
             generic.Invoke(this, new object[] { list, parentEntryName, childEntryName, variables });
+        }
+
+        /// <summary>
+        /// Converts a class instance into a list of <see cref="Variable"/> by mapping each of its
+        /// mappable public properties to a variable with the corresponding name, value, and inferred type.
+        /// Properties marked with <see cref="CfgBinIgnoreAttribute"/> are excluded.
+        /// </summary>
+        /// <typeparam name="T">The type of the class instance to convert.</typeparam>
+        /// <param name="instance">The class instance to extract variables from.</param>
+        /// <returns>
+        /// A <see cref="List{Variable}"/> representing the mappable properties of the given instance.
+        /// </returns>
+        public List<Variable> GetVariablesFromInstance<T>(T instance) where T : class
+        {
+            return CfgBinMapper.GetVariablesFromInstance(instance);
         }
 
         #endregion
