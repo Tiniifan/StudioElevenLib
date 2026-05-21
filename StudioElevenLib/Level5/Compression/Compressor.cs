@@ -18,26 +18,26 @@ namespace StudioElevenLib.Level5.Compression
         /// <exception cref="NotSupportedException">
         /// Thrown when the compression method is unknown or unsupported.
         /// </exception>
-        public static ICompression GetCompression(uint method)
+        public static ICompression GetCompression(CompressionMethod method)
         {
             switch (method)
             {
-                case (uint)CompressionMethod.None:
+                case CompressionMethod.None:
                     return new NoCompression.NoCompression();
 
-                case (uint)CompressionMethod.LZ10:
+                case CompressionMethod.LZ10:
                     return new LZ10.LZ10();
 
-                case (uint)CompressionMethod.Huffman4:
+                case CompressionMethod.Huffman4:
                     return new Huffman.Huffman(4);
 
-                case (uint)CompressionMethod.Huffman8:
+                case CompressionMethod.Huffman8:
                     return new Huffman.Huffman(8);
 
-                case (uint)CompressionMethod.RLE:
+                case CompressionMethod.RLE:
                     return new RLE.RLE();
 
-                case (uint)CompressionMethod.ZLib:
+                case CompressionMethod.ZLib:
                     return new ZLib.Zlib();
 
                 default:
@@ -83,7 +83,7 @@ namespace StudioElevenLib.Level5.Compression
         /// <param name="data">Input data to compress.</param>
         /// <param name="method">Compression method identifier.</param>
         /// <returns>The compressed data.</returns>
-        public static byte[] Compress(byte[] data, uint method)
+        public static byte[] Compress(byte[] data, CompressionMethod method)
         {
             // Get the requested compression method
             ICompression compression = GetCompression(method);
@@ -107,7 +107,8 @@ namespace StudioElevenLib.Level5.Compression
                                    (sizeMethodBuffer[2] << 13) | (sizeMethodBuffer[3] << 21);
 
             // Get the compression method from the header
-            ICompression method = GetCompression(BitConverter.ToUInt32(sizeMethodBuffer, 0) & 0x7);
+            CompressionMethod methodId = (CompressionMethod)(BitConverter.ToUInt32(sizeMethodBuffer, 0) & 0x7);
+            ICompression method = GetCompression(methodId);
 
             if (method != null)
             {
