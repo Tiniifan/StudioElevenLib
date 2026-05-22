@@ -41,6 +41,9 @@ StudioElevenLibTest/obj/
 *.xa
 *.fa
 *.png
+*.obj
+*.sil
+*lkat
 
 *.pbi
 *.pvb
