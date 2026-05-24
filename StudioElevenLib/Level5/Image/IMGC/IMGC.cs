@@ -32,7 +32,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
         public int Height { get; set; }
 
         /// <summary>Color format used to encode/decode this image.</summary>
-        public IColorFormat? ImageFormat { get; set; }
+        public IPixelFormat? ImageFormat { get; set; }
 
         /// <summary>Empty constructor for manual initialization.</summary>
         public IMGC() { }
@@ -76,7 +76,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
 #elif USE_IMAGESHARP
             Image<Rgba32> bitmap,
 #endif
-            IColorFormat format)
+            IPixelFormat format)
         {
             if (bitmap == null)
                 throw new ArgumentNullException(nameof(bitmap));

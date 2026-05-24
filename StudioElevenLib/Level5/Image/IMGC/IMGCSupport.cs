@@ -31,7 +31,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
             public byte[] UnkBlock5;
         }
 
-        public static Dictionary<byte, IColorFormat> ImageFormats = new Dictionary<byte, IColorFormat>
+        public static Dictionary<byte, IPixelFormat> ImageFormats = new Dictionary<byte, IPixelFormat>
         {
             {0, new RGBA8() },
             {1, new RGBA4() },

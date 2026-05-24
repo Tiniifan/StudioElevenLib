@@ -27,9 +27,9 @@ namespace StudioElevenLib.Level5.Image.IMGC
         }
 
 #if USE_SYSTEM_DRAWING
-        public (IMGCSupport.Header header, Bitmap bitmap, Color[] pixels, int width, int height, IColorFormat imageFormat) Read()
+        public (IMGCSupport.Header header, Bitmap bitmap, Color[] pixels, int width, int height, IPixelFormat imageFormat) Read()
 #elif USE_IMAGESHARP
-        public (IMGCSupport.Header header, Image<Rgba32> bitmap, Color[] pixels, int width, int height, IColorFormat imageFormat) Read()
+        public (IMGCSupport.Header header, Image<Rgba32> bitmap, Color[] pixels, int width, int height, IPixelFormat imageFormat) Read()
 #endif
         {
             BinaryDataReader data = new BinaryDataReader(_baseStream);
@@ -46,9 +46,9 @@ namespace StudioElevenLib.Level5.Image.IMGC
         }
 
 #if USE_SYSTEM_DRAWING
-        private (Bitmap bitmap, Color[] pixels) DecodeImage(byte[] tile, byte[] imageData, IColorFormat imgFormat, int width, int height, int bitDepth)
+        private (Bitmap bitmap, Color[] pixels) DecodeImage(byte[] tile, byte[] imageData, IPixelFormat imgFormat, int width, int height, int bitDepth)
 #elif USE_IMAGESHARP
-        private (Image<Rgba32> bitmap, Color[] pixels) DecodeImage(byte[] tile, byte[] imageData, IColorFormat imgFormat, int width, int height, int bitDepth)
+        private (Image<Rgba32> bitmap, Color[] pixels) DecodeImage(byte[] tile, byte[] imageData, IPixelFormat imgFormat, int width, int height, int bitDepth)
 #endif
         {
             byte[]? entryStart = null;

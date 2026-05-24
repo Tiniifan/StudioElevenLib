@@ -24,7 +24,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
         private readonly Color[] _pixels;
         private readonly int _width;
         private readonly int _height;
-        private readonly IColorFormat _imgFormat;
+        private readonly IPixelFormat _imgFormat;
 
         public IMGCWriter(IMGC imgc)
         {
@@ -123,7 +123,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
         /// <summary>
         /// Applies the IMGC swizzle and encodes each pixel with the given color format.
         /// </summary>
-        private byte[] EncodePixels(Color[] pixels, int width, int height, IColorFormat imgFormat)
+        private byte[] EncodePixels(Color[] pixels, int width, int height, IPixelFormat imgFormat)
         {
             bool isEtc1 = imgFormat.Name == "ETC1";
             bool isEtc1a4 = imgFormat.Name == "ETC1A4";

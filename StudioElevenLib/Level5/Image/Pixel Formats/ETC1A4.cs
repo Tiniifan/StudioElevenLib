@@ -8,7 +8,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace StudioElevenLib.Level5.Image.Color_Formats
 {
-    public class ETC1A4 : IColorFormat
+    public class ETC1A4 : IPixelFormat
     {
         public string Name => "ETC1A4";
 

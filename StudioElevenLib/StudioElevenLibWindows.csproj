@@ -12,7 +12,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-	<LangVersion>latest</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -100,12 +100,12 @@
     <Compile Include="Level5\Compression\NoCompression\NoCompression.cs" />
     <Compile Include="Level5\Compression\RLE\RLE.cs" />
     <Compile Include="Level5\Compression\ZLib\ZLib.cs" />
-    <Compile Include="Level5\Image\Color Formats\ETC1.cs" />
-    <Compile Include="Level5\Image\Color Formats\ETC1A4.cs" />
-    <Compile Include="Level5\Image\Color Formats\IColorFormat.cs" />
-    <Compile Include="Level5\Image\Color Formats\RBGR888.cs" />
-    <Compile Include="Level5\Image\Color Formats\RGBA4.cs" />
-    <Compile Include="Level5\Image\Color Formats\RGBA8.cs" />
+    <Compile Include="Level5\Image\IPixelFormat.cs" />
+    <Compile Include="Level5\Image\Pixel Formats\ETC1.cs" />
+    <Compile Include="Level5\Image\Pixel Formats\ETC1A4.cs" />
+    <Compile Include="Level5\Image\Pixel Formats\RBGR888.cs" />
+    <Compile Include="Level5\Image\Pixel Formats\RGBA4.cs" />
+    <Compile Include="Level5\Image\Pixel Formats\RGBA8.cs" />
     <Compile Include="Level5\Image\IMGC\IMGC.cs" />
     <Compile Include="Level5\Image\IMGC\IMGCReader.cs" />
     <Compile Include="Level5\Image\IMGC\IMGCSupport.cs" />
@@ -184,9 +184,9 @@
   <ItemGroup>
     <Content Include="Libs\SharpTriStrip\SharpTriStrip.xml" />
     <None Include="Native\win-x64\etcpak.exe">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		<TargetPath>bin\win-x64\etcpak.exe</TargetPath>
-  </None>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>bin\win-x64\etcpak.exe</TargetPath>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
