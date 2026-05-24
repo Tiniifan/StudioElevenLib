@@ -85,8 +85,10 @@ namespace StudioElevenLib.Level5.Image.IMGC
                     }
                 }
 
-                int pixelCount = width * height;
-                Color[] resultArray = new Color[pixelCount];
+                int paddedW = (width + 7) & ~7;
+                int paddedH = (height + 7) & ~7;
+                int paddedCount = paddedW * paddedH;
+                Color[] resultArray = new Color[width * height];
 
                 bool isEtc1 = imgFormat.Name == "ETC1";
                 bool isEtc1a4 = imgFormat.Name == "ETC1A4";
@@ -94,8 +96,8 @@ namespace StudioElevenLib.Level5.Image.IMGC
 
                 if (isEtc)
                 {
-                    int paddedW = (width + 7) & ~7;
-                    int paddedH = (height + 7) & ~7;
+                    paddedW = (width + 7) & ~7;
+                    paddedH = (height + 7) & ~7;
                     int blockSizeBytes = isEtc1a4 ? 16 : 8;
                     int blocksX = paddedW / 4;
 
@@ -165,7 +167,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
                     IMGCSwizzle imgcSwizzle = new IMGCSwizzle(width, height);
                     var points = imgcSwizzle.GetPointSequence().ToArray();
 
-                    for (int i = 0; i < pixelCount; i++)
+                    for (int i = 0; i < paddedCount; i++)
                     {
                         int dataIndex = i * imgFormat.Size;
                         byte[] group = new byte[imgFormat.Size];
@@ -173,9 +175,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
 
                         var pt = points[i];
                         if (pt.X < width && pt.Y < height)
-                        {
                             resultArray[pt.Y * width + pt.X] = imgFormat.Decode(group);
-                        }
                     }
                 }
 
