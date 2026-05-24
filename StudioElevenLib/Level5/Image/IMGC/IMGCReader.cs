@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.IO;
 using System.Linq;
 using StudioElevenLib.Tools;
@@ -49,7 +51,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
         private (Image<Rgba32> bitmap, Color[] pixels) DecodeImage(byte[] tile, byte[] imageData, IColorFormat imgFormat, int width, int height, int bitDepth)
 #endif
         {
-            byte[] entryStart = null;
+            byte[]? entryStart = null;
 
             using (var table = new BinaryDataReader(tile))
             using (var tex = new BinaryDataReader(imageData))
@@ -71,84 +73,136 @@ namespace StudioElevenLib.Level5.Image.IMGC
                     uint entry = (entryLength == 2) ? table.ReadValue<ushort>() : table.ReadValue<uint>();
                     if (entry == 0xFFFF || entry == 0xFFFFFFFF)
                     {
-                        for (int j = 0; j < 64 * bitDepth / 8; j++)
-                        {
-                            ms.WriteByte(0);
-                        }
+                        for (int j = 0; j < 64 * bitDepth / 8; j++) ms.WriteByte(0);
                     }
                     else
                     {
                         if (entry * (64 * bitDepth / 8) < tex.BaseStream.Length)
                         {
                             tex.BaseStream.Position = entry * (64 * bitDepth / 8);
-                            for (int j = 0; j < 64 * bitDepth / 8; j++)
-                            {
-                                ms.WriteByte(tex.ReadValue<byte>());
-                            }
+                            for (int j = 0; j < 64 * bitDepth / 8; j++) ms.WriteByte(tex.ReadValue<byte>());
                         }
                     }
                 }
 
-                byte[] pic;
-                switch (imgFormat.Name)
-                {
-                    case "ETC1A4":
-                        pic = new Compression.ETC1.ETC1(true, width, height).Decompress(ms.ToArray());
-                        break;
-                    case "ETC1":
-                        pic = new Compression.ETC1.ETC1(false, width, height).Decompress(ms.ToArray());
-                        break;
-                    default:
-                        pic = ms.ToArray();
-                        break;
-                }
-
-                IMGCSwizzle imgcSwizzle = new IMGCSwizzle(width, height);
-                var points = imgcSwizzle.GetPointSequence();
-
                 int pixelCount = width * height;
                 Color[] resultArray = new Color[pixelCount];
 
-                for (int i = 0; i < pixelCount; i++)
+                bool isEtc1 = imgFormat.Name == "ETC1";
+                bool isEtc1a4 = imgFormat.Name == "ETC1A4";
+                bool isEtc = isEtc1 || isEtc1a4;
+
+                if (isEtc)
                 {
-                    int dataIndex = i * imgFormat.Size;
-                    byte[] group = new byte[imgFormat.Size];
-                    Array.Copy(pic, dataIndex, group, 0, imgFormat.Size);
-                    resultArray[i] = imgFormat.Decode(group);
+                    int paddedW = (width + 7) & ~7;
+                    int paddedH = (height + 7) & ~7;
+                    int blockSizeBytes = isEtc1a4 ? 16 : 8;
+                    int blocksX = paddedW / 4;
+
+                    byte[] swizzledCompressed = ms.ToArray();
+                    byte[] linearCompressed = new byte[swizzledCompressed.Length];
+
+                    IMGCSwizzle swizzle = new IMGCSwizzle(width, height);
+                    var pointsArr = swizzle.GetPointSequence().ToArray();
+
+                    // Unswizzle the blocks (Reorder for etcpak)
+                    int numBlocks = swizzledCompressed.Length / blockSizeBytes;
+                    for (int i = 0; i < numBlocks; i++)
+                    {
+                        if (i * 16 >= pointsArr.Length) break;
+
+                        var pt = pointsArr[i * 16];
+                        int blockX = pt.X / 4;
+                        int blockY = pt.Y / 4;
+
+                        int linearBlockIndex = blockY * blocksX + blockX;
+
+                        if (linearBlockIndex * blockSizeBytes < linearCompressed.Length && i * blockSizeBytes < swizzledCompressed.Length)
+                        {
+                            Array.Copy(swizzledCompressed, i * blockSizeBytes, linearCompressed, linearBlockIndex * blockSizeBytes, blockSizeBytes);
+                        }
+                    }
+
+                    // Unpack linear data using etcpack
+                    byte[] rawPic = EtcpakTool.Decompress(linearCompressed, paddedW, paddedH, isEtc1a4);
+
+                    // Un-transpose the pixels
+                    for (int y = 0; y < paddedH; y++)
+                    {
+                        for (int x = 0; x < paddedW; x++)
+                        {
+                            int blockX = x / 4;
+                            int blockY = y / 4;
+                            int localX = x % 4;
+                            int localY = y % 4;
+
+                            int targetX = blockX * 4 + localY;
+                            int targetY = blockY * 4 + localX;
+
+                            if (targetX < width && targetY < height)
+                            {
+                                int srcIdx = (y * paddedW + x) * 4;
+                                int destIdx = targetY * width + targetX;
+
+                                byte r = rawPic[srcIdx];
+                                byte g = rawPic[srcIdx + 1];
+                                byte b = rawPic[srcIdx + 2];
+                                byte a = rawPic[srcIdx + 3];
+
+#if USE_SYSTEM_DRAWING
+                                resultArray[destIdx] = Color.FromArgb(a, r, g, b);
+#elif USE_IMAGESHARP
+                                resultArray[destIdx] = Color.FromRgba(r, g, b, a);
+#endif
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // Other pixel format
+                    byte[] pic = ms.ToArray();
+                    IMGCSwizzle imgcSwizzle = new IMGCSwizzle(width, height);
+                    var points = imgcSwizzle.GetPointSequence().ToArray();
+
+                    for (int i = 0; i < pixelCount; i++)
+                    {
+                        int dataIndex = i * imgFormat.Size;
+                        byte[] group = new byte[imgFormat.Size];
+                        Array.Copy(pic, dataIndex, group, 0, imgFormat.Size);
+
+                        var pt = points[i];
+                        if (pt.X < width && pt.Y < height)
+                        {
+                            resultArray[pt.Y * width + pt.X] = imgFormat.Decode(group);
+                        }
+                    }
                 }
 
 #if USE_SYSTEM_DRAWING
                 var bmp = new Bitmap(width, height);
                 var data = bmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 
-                foreach (var pair in points.Zip(resultArray, Tuple.Create))
+                for (int y = 0; y < height; y++)
                 {
-                    int x = pair.Item1.X, y = pair.Item1.Y;
-                    if (0 <= x && x < width && 0 <= y && y < height)
+                    for (int x = 0; x < width; x++)
                     {
-                        var color = pair.Item2;
                         int pixelOffset = data.Stride * y / 4 + x;
-                        int pixelValue = color.ToArgb();
+                        int pixelValue = resultArray[y * width + x].ToArgb();
                         Marshal.WriteInt32(data.Scan0 + pixelOffset * 4, pixelValue);
                     }
                 }
-
                 bmp.UnlockBits(data);
-
                 return (bmp, resultArray);
 #elif USE_IMAGESHARP
                 var bmp = new Image<Rgba32>(width, height);
-
-                foreach (var pair in points.Zip(resultArray, Tuple.Create))
+                for (int y = 0; y < height; y++)
                 {
-                    int x = pair.Item1.X, y = pair.Item1.Y;
-                    if (0 <= x && x < width && 0 <= y && y < height)
+                    for (int x = 0; x < width; x++)
                     {
-                        var color = pair.Item2;
-                        bmp[x, y] = color.ToPixel<Rgba32>();
+                        bmp[x, y] = resultArray[y * width + x].ToPixel<Rgba32>();
                     }
                 }
-
                 return (bmp, resultArray);
 #endif
             }

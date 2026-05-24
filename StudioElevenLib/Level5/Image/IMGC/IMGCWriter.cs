@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using StudioElevenLib.Tools;
 using StudioElevenLib.Level5.Compression;
-
 
 #if USE_SYSTEM_DRAWING
 using System.Drawing;
@@ -28,16 +29,16 @@ namespace StudioElevenLib.Level5.Image.IMGC
         public IMGCWriter(IMGC imgc)
         {
             if (imgc == null) throw new ArgumentNullException(nameof(imgc));
-            _pixels = imgc.Pixels;
+            _pixels = imgc.Pixels!;
             _width = imgc.Width;
             _height = imgc.Height;
-            _imgFormat = imgc.ImageFormat;
+            _imgFormat = imgc.ImageFormat!;
         }
 
         /// <summary>
         /// Encodes a pixel array into the IMGC format and saves the result to a file.
         /// </summary>
-        public void Save(string fileName, IProgress<int> progress = null)
+        public void Save(string fileName, IProgress<int>? progress = null)
         {
             if (string.IsNullOrEmpty(fileName))
                 throw new ArgumentException("File name cannot be empty", nameof(fileName));
@@ -51,7 +52,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
         /// <summary>
         /// Encodes a pixel array into the IMGC format and returns the file bytes.
         /// </summary>
-        public byte[] Save(IProgress<int> progress = null)
+        public byte[] Save(IProgress<int>? progress = null)
         {
             using (var memoryStream = new MemoryStream())
             {
@@ -60,42 +61,36 @@ namespace StudioElevenLib.Level5.Image.IMGC
             }
         }
 
-        private void WriteToStream(Stream stream, IProgress<int> progress = null)
+        private void WriteToStream(Stream stream, IProgress<int>? progress = null)
         {
             progress?.Report(0);
 
-            // Find the format key in the dictionary using LINQ
-            var formatPair = IMGCSupport.ImageFormats.FirstOrDefault(kv => kv.Value.Name == _imgFormat.Name);
-            byte formatKey = formatPair.Key; // Defaults to 0 if not found
+            var formatPair = IMGCSupport.ImageFormats.FirstOrDefault(kv => kv.Value?.Name == _imgFormat.Name);
+            byte formatKey = formatPair.Key;
 
-            int bitDepth = _imgFormat.Size * 8;
-            int bytesPerTile = _imgFormat.Size * 64;
+            bool isEtc1 = _imgFormat.Name == "ETC1";
+            bool isEtc1a4 = _imgFormat.Name == "ETC1A4";
+            int bitDepth = isEtc1 ? 4 : isEtc1a4 ? 8 : _imgFormat.Size * 8;
+            int bytesPerTile = 64 * bitDepth / 8;
 
-            // Encode pixels (swizzle + color format)
             byte[] encodedPixels = EncodePixels(_pixels, _width, _height, _imgFormat);
-
             progress?.Report(30);
 
-            // Deduplicate tiles → index table + unique image data
             Deflate(encodedPixels, bitDepth, out byte[] tileTableData, out byte[] uniqueImageData);
-
             progress?.Report(60);
 
-            // Compress both blocks
-            byte[] compressedTable = Compressor.Compress(tileTableData);
-            byte[] compressedImage = Compressor.Compress(uniqueImageData);
-
+            byte[] compressedTable = Compressor.Compress(tileTableData)!;
+            byte[] compressedImage = Compressor.Compress(uniqueImageData)!;
             progress?.Report(90);
 
             int tableSize1 = compressedTable.Length;
-            int tableSize2 = (tableSize1 + 3) & ~3;   // 4-byte alignment
+            int tableSize2 = (tableSize1 + 3) & ~3;
 
-            // Construct the file
             var bw = new BinaryDataWriter(stream);
 
             var header = new IMGCSupport.Header
             {
-                Magic = 0x43474D49u, // "IMGC"
+                Magic = 0x43474D49u,
                 UnkBlock1 = new byte[] { 0x30, 0x30, 0x00, 0x00, 0x30, 0x00 },
                 ImageFormat = formatKey,
                 Unk2 = 0x01,
@@ -113,21 +108,13 @@ namespace StudioElevenLib.Level5.Image.IMGC
                 UnkBlock5 = new byte[8]
             };
 
-            // Write the entire mapped header at once
             bw.WriteStruct(header);
-
-            // Data
             bw.Write(compressedTable);
 
-            // Padding to reach tableSize2 (aligns the table block to 4 bytes)
             if (tableSize2 > tableSize1)
-            {
                 bw.Write(new byte[tableSize2 - tableSize1]);
-            }
 
             bw.Write(compressedImage);
-
-            // Final alignment to 16 bytes
             bw.WriteAlignment(16, 0x00);
 
             progress?.Report(100);
@@ -138,35 +125,114 @@ namespace StudioElevenLib.Level5.Image.IMGC
         /// </summary>
         private byte[] EncodePixels(Color[] pixels, int width, int height, IColorFormat imgFormat)
         {
-            var swizzle = new IMGCSwizzle(width, height);
-            var points = swizzle.GetPointSequence().ToArray();
+            bool isEtc1 = imgFormat.Name == "ETC1";
+            bool isEtc1a4 = imgFormat.Name == "ETC1A4";
 
-            int paddedWidth = (width + 7) & ~7;
-            int paddedHeight = (height + 7) & ~7;
-            int pixelCount = paddedWidth * paddedHeight;
-
-            var ms = new MemoryStream(pixelCount * imgFormat.Size);
-
-            for (int i = 0; i < pixelCount; i++)
+            if (isEtc1 || isEtc1a4)
             {
-                var point = points[i];
+                int paddedW = (width + 7) & ~7;
+                int paddedH = (height + 7) & ~7;
 
+                byte[] rgbaData = new byte[paddedW * paddedH * 4];
+
+                for (int y = 0; y < paddedH; y++)
+                {
+                    for (int x = 0; x < paddedW; x++)
+                    {
+                        // Get local coordinates within the 4x4 block
+                        int blockX = x / 4;
+                        int blockY = y / 4;
+                        int localX = x % 4;
+                        int localY = y % 4;
+
+                        // Apply a local transpose (swap X and Y) to resolve the Z-order conflict 
+                        int sampleX = blockX * 4 + localY;
+                        int sampleY = blockY * 4 + localX;
+
+                        // We'll find the transposed pixel in the original image
+#if USE_SYSTEM_DRAWING
+                        Color c = (sampleX < width && sampleY < height)
+                                    ? pixels[sampleY * width + sampleX]
+                                    : Color.FromArgb(0, 0, 0, 0);
+#elif USE_IMAGESHARP
+                        Color c = (sampleX < width && sampleY < height)
+                                    ? pixels[sampleY * width + sampleX]
+                                    : Color.Transparent;
+#endif
+
+                        int idx = (y * paddedW + x) * 4;
+
+#if USE_SYSTEM_DRAWING
+                        rgbaData[idx] = c.R;
+                        rgbaData[idx + 1] = c.G;
+                        rgbaData[idx + 2] = c.B;
+                        rgbaData[idx + 3] = c.A;
+#elif USE_IMAGESHARP
+                        var px = c.ToPixel<Rgba32>();
+                        rgbaData[idx] = px.R;
+                        rgbaData[idx + 1] = px.G;
+                        rgbaData[idx + 2] = px.B;
+                        rgbaData[idx + 3] = px.A;
+#endif
+                    }
+                }
+
+                // Compress the transposed image 
+                byte[] linearCompressed = EtcpakTool.Compress(rgbaData, paddedW, paddedH, isEtc1a4)!;
+                byte[] swizzledCompressed = new byte[linearCompressed.Length];
+
+                int blockSizeBytes = isEtc1 ? 8 : 16;
+                int blocksX = paddedW / 4;
+
+                var swizzle = new IMGCSwizzle(width, height);
+                var points = swizzle.GetPointSequence().ToArray();
+
+                int numBlocks = linearCompressed.Length / blockSizeBytes;
+
+                for (int i = 0; i < numBlocks; i++)
+                {
+                    var pt = points[i * 16];
+                    int blockX = pt.X / 4;
+                    int blockY = pt.Y / 4;
+
+                    int linearBlockIndex = blockY * blocksX + blockX;
+
+                    Array.Copy(
+                        linearCompressed,
+                        linearBlockIndex * blockSizeBytes,
+                        swizzledCompressed,
+                        i * blockSizeBytes,
+                        blockSizeBytes
+                    );
+                }
+
+                return swizzledCompressed;
+            }
+
+            // Other pixel format
+            var swizzleStd = new IMGCSwizzle(width, height);
+            var pointsStd = swizzleStd.GetPointSequence().ToArray();
+
+            int paddedWidthStd = (width + 7) & ~7;
+            int paddedHeightStd = (height + 7) & ~7;
+            int count = paddedWidthStd * paddedHeightStd;
+
+            var ms = new MemoryStream(count * imgFormat.Size);
+
+            for (int i = 0; i < count; i++)
+            {
+                var point = pointsStd[i];
                 Color color;
                 if (point.X < width && point.Y < height)
-                {
                     color = pixels[point.Y * width + point.X];
-                }
                 else
-                {
-                    // Padding pixels (out of bounds areas after 8x8 alignment)
 #if USE_SYSTEM_DRAWING
                     color = Color.FromArgb(0);
 #elif USE_IMAGESHARP
-                    color = Color.FromPixel(new Rgba32(0, 0, 0, 0));
+                    color = Color.Transparent;
 #endif
-                }
 
-                byte[] encoded = imgFormat.Encode(color);
+                byte[]? encoded = imgFormat.Encode(color);
                 if (encoded != null)
                     ms.Write(encoded, 0, encoded.Length);
             }
@@ -199,12 +265,12 @@ namespace StudioElevenLib.Level5.Image.IMGC
                 int existingIndex = uniqueBlocks.FindIndex(b => b.SequenceEqual(block));
                 if (existingIndex >= 0)
                 {
-                    // Block already known → write its index
+                    // Block already known -> write its index
                     bw.Write((ushort)existingIndex);
                 }
                 else
                 {
-                    // New block → add it to the unique list and write index
+                    // New block -> add it to the unique list and write index
                     bw.Write((ushort)uniqueBlocks.Count);
                     uniqueBlocks.Add(block);
                     imageMs.Write(block, 0, blockSize);

@@ -44,6 +44,7 @@ StudioElevenLibTest/obj/
 *.obj
 *.sil
 *lkat
+*.pvr
 
 *.pbi
 *.pvb

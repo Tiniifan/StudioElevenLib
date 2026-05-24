@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿#nullable enable
+
+using System.Linq;
 using System.Drawing;
 using System.Collections.Generic;
 
@@ -54,7 +56,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
         /// <param name="init">the initial point, where the swizzle begins</param>
         /// <param name="bitFieldCoords">Array of coordinates, assigned to every bit in the macroTile</param>
         /// <param name="initPointTransformOnY">Defines a transformation array of the initial point with changing Y</param>
-        public MasterSwizzle(int imageStride, Point init, IEnumerable<(int, int)> bitFieldCoords, IEnumerable<(int, int)> initPointTransformOnY = null)
+        public MasterSwizzle(int imageStride, Point init, IEnumerable<(int, int)> bitFieldCoords, IEnumerable<(int, int)>? initPointTransformOnY = null)
         {
             _bitFieldCoords = bitFieldCoords;
             _initPointTransformOnY = initPointTransformOnY ?? Enumerable.Empty<(int, int)>();

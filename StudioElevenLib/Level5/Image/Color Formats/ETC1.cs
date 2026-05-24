@@ -1,4 +1,5 @@
-﻿#if USE_SYSTEM_DRAWING
+﻿using System;
+#if USE_SYSTEM_DRAWING
 using System.Drawing;
 #elif USE_IMAGESHARP
 using SixLabors.ImageSharp;
@@ -11,12 +12,12 @@ namespace StudioElevenLib.Level5.Image.Color_Formats
     {
         public string Name => "ETC1";
 
-        public int Size => 3;
+        public int Size => 4;
 
         public byte[] Encode(Color color)
         {
-            // Not implemented
-            return null;
+            // ETC1 encoding is handled block-level in IMGCWriter.EncodePixels, not per-pixel.
+            throw new NotSupportedException("ETC1 does not support per-pixel encoding.");
         }
 
         public Color Decode(byte[] data)

@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+	<LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -89,28 +90,40 @@
     <Compile Include="Level5\Camera\CMR1\CMR1Support.cs" />
     <Compile Include="Level5\Camera\CMR2\CMR2.cs" />
     <Compile Include="Level5\Camera\CMR2\CMR2Support.cs" />
+    <Compile Include="Level5\Compression\CompressionMethod.cs" />
     <Compile Include="Level5\Compression\Compressor.cs" />
-    <Compile Include="Level5\Compression\ETC1\ETC1.cs" />
-    <Compile Include="Level5\Compression\ETC1\ETC1Decoder.cs" />
-    <Compile Include="Level5\Compression\ETC1\RGB.cs" />
     <Compile Include="Level5\Compression\Huffman\Huffman.cs" />
     <Compile Include="Level5\Compression\Huffman\HuffmanDecoder.cs" />
+    <Compile Include="Level5\Compression\Huffman\HuffmanEncoder.cs" />
     <Compile Include="Level5\Compression\ICompression.cs" />
     <Compile Include="Level5\Compression\LZ10\LZ10.cs" />
     <Compile Include="Level5\Compression\NoCompression\NoCompression.cs" />
     <Compile Include="Level5\Compression\RLE\RLE.cs" />
     <Compile Include="Level5\Compression\ZLib\ZLib.cs" />
-    <Compile Include="Level5\Image\Color Formats\ColorFormats.cs" />
+    <Compile Include="Level5\Image\Color Formats\ETC1.cs" />
+    <Compile Include="Level5\Image\Color Formats\ETC1A4.cs" />
     <Compile Include="Level5\Image\Color Formats\IColorFormat.cs" />
-    <Compile Include="Level5\Image\IMGC.cs" />
-    <Compile Include="Level5\Image\IMGCSupport.cs" />
-    <Compile Include="Level5\Image\IMGCSwizzle.cs" />
+    <Compile Include="Level5\Image\Color Formats\RBGR888.cs" />
+    <Compile Include="Level5\Image\Color Formats\RGBA4.cs" />
+    <Compile Include="Level5\Image\Color Formats\RGBA8.cs" />
+    <Compile Include="Level5\Image\IMGC\IMGC.cs" />
+    <Compile Include="Level5\Image\IMGC\IMGCReader.cs" />
+    <Compile Include="Level5\Image\IMGC\IMGCSupport.cs" />
+    <Compile Include="Level5\Image\IMGC\IMGCSwizzle.cs" />
+    <Compile Include="Level5\Image\IMGC\IMGCWriter.cs" />
     <Compile Include="Level5\Material\MTRC.cs" />
     <Compile Include="Level5\Material\MTRCSupport.cs" />
-    <Compile Include="Level5\Mesh\Logic\Face.cs" />
-    <Compile Include="Level5\Mesh\Logic\Mesh.cs" />
-    <Compile Include="Level5\Mesh\Logic\Triangle.cs" />
-    <Compile Include="Level5\Mesh\XMPR.cs" />
+    <Compile Include="Level5\Mesh\XMPR\XMPR.cs" />
+    <Compile Include="Level5\Mesh\XMPR\XMPRReader.cs" />
+    <Compile Include="Level5\Mesh\XMPR\XMPRSupport.cs" />
+    <Compile Include="Level5\Mesh\XMPR\XMPRWriter.cs" />
+    <Compile Include="Level5\Mesh\XPVB\XPVB.cs" />
+    <Compile Include="Level5\Mesh\XPVB\XPVBReader.cs" />
+    <Compile Include="Level5\Mesh\XPVB\XPVBSupport.cs" />
+    <Compile Include="Level5\Mesh\XPVB\XPVBWriter.cs" />
+    <Compile Include="Level5\Mesh\XPVI\XPVI.cs" />
+    <Compile Include="Level5\Mesh\XPVI\XPVIReader.cs" />
+    <Compile Include="Level5\Mesh\XPVI\XPVIWriter.cs" />
     <Compile Include="Level5\Resource\IResource.cs" />
     <Compile Include="Level5\Resource\Resourcer.cs" />
     <Compile Include="Level5\Resource\ResourceHelper.cs" />
@@ -143,23 +156,37 @@
     <Compile Include="Level5\Text\Logic\StringLevel5.cs" />
     <Compile Include="Level5\Text\Logic\TextConfig.cs" />
     <Compile Include="Level5\Text\T2bþ.cs" />
+    <Compile Include="Libs\SharpTriStrip\EdgeInfo.cs" />
+    <Compile Include="Libs\SharpTriStrip\FaceInfo.cs" />
+    <Compile Include="Libs\SharpTriStrip\Stripifier.cs" />
+    <Compile Include="Libs\SharpTriStrip\StripInfo.cs" />
+    <Compile Include="Libs\SharpTriStrip\StripStartInfo.cs" />
+    <Compile Include="Libs\SharpTriStrip\TriStrip.cs" />
+    <Compile Include="Libs\SharpTriStrip\Utils.cs" />
+    <Compile Include="Libs\SharpTriStrip\VertexCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SharpTriStrip\EdgeInfo.cs" />
-    <Compile Include="SharpTriStrip\FaceInfo.cs" />
-    <Compile Include="SharpTriStrip\Stripifier.cs" />
-    <Compile Include="SharpTriStrip\StripInfo.cs" />
-    <Compile Include="SharpTriStrip\StripStartInfo.cs" />
-    <Compile Include="SharpTriStrip\TriStrip.cs" />
-    <Compile Include="SharpTriStrip\Utils.cs" />
-    <Compile Include="SharpTriStrip\VertexCache.cs" />
     <Compile Include="Tools\BinaryDataReader.cs" />
     <Compile Include="Tools\BinaryDataWriter.cs" />
     <Compile Include="Tools\Crc32.cs" />
+    <Compile Include="Tools\EtcpakTool.cs" />
+    <Compile Include="Tools\MsbBitWriter.cs" />
     <Compile Include="Tools\SubMemoryStream.cs" />
     <Compile Include="Tools\VirtualDirectory.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="bin\win-x64\" />
     <Folder Include="Level5\Resource\Types\Scene2D\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Libs\SharpTriStrip\LICENSE" />
+    <None Include="Libs\SharpTriStrip\SharpTriStrip.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Libs\SharpTriStrip\SharpTriStrip.xml" />
+    <None Include="Native\win-x64\etcpak.exe">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<TargetPath>bin\win-x64\etcpak.exe</TargetPath>
+  </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
