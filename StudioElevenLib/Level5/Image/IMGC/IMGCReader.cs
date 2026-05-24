@@ -39,7 +39,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
             byte[] tileData = Compressor.Decompress(data.GetSection((uint)header.TileOffset, header.TileSize1));
             byte[] imageData = Compressor.Decompress(data.GetSection((uint)(header.TileOffset + header.TileSize2), header.ImageSize));
 
-            var imageFormat = IMGCSupport.ImageFormats[header.ImageFormat];
+            var imageFormat = IMGCSupport.PixelFormats[header.ImageFormat];
             var decoded = DecodeImage(tileData, imageData, imageFormat, header.Width, header.Height, header.BitDepth);
 
             return (header, decoded.bitmap, decoded.pixels, header.Width, header.Height, imageFormat);

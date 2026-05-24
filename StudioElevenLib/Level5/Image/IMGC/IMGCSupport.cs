@@ -31,13 +31,21 @@ namespace StudioElevenLib.Level5.Image.IMGC
             public byte[] UnkBlock5;
         }
 
-        public static Dictionary<byte, IPixelFormat> ImageFormats = new Dictionary<byte, IPixelFormat>
+        public static Dictionary<byte, IPixelFormat> PixelFormats = new Dictionary<byte, IPixelFormat>
         {
-            {0, new RGBA8() },
-            {1, new RGBA4() },
-            {3, new RBGR888() },
-            {27, new ETC1() },
-            {28, new ETC1A4() },
+            {0x00, new RGBA8() },
+            {0x01, new RGBA4() },
+            {0x02, new RGBA5() },
+            {0x03, new RBGR888() },
+            {0x04, new RGB5() },
+            {0x0A, new LA8() },
+            {0x0B, new LA4() },
+            {0x0C, new L8() },
+            {0x0D, new L4() },
+            {0x0E, new A8() },
+            {0x0F, new A4() },
+            {0x1B, new ETC1() },
+            {0x1C, new ETC1A4() },
         };
     }
 }

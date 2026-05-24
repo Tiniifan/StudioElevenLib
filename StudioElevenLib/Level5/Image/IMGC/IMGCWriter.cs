@@ -65,7 +65,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
         {
             progress?.Report(0);
 
-            var formatPair = IMGCSupport.ImageFormats.FirstOrDefault(kv => kv.Value?.Name == _imgFormat.Name);
+            var formatPair = IMGCSupport.PixelFormats.FirstOrDefault(kv => kv.Value?.Name == _imgFormat.Name);
             byte formatKey = formatPair.Key;
 
             bool isEtc1 = _imgFormat.Name == "ETC1";
