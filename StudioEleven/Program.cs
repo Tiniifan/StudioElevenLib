@@ -12,8 +12,9 @@ namespace StudioEleven
 
         private static readonly List<IModule> RegisteredModules = new()
         {
-            new ImageModule(),
             new ArchiveModule(),
+            new ImageModule(),
+            new MeshModule(),
         };
 
         #endregion
