@@ -50,19 +50,6 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestCfgTreeNode\Charabase.cs" />
-    <Compile Include="TestClass\AreaLimiter.cs" />
-    <Compile Include="TestClass\Charaparam.cs" />
-    <Compile Include="TestClass\Funcpoint.cs" />
-    <Compile Include="TestClass\Healpoint.cs" />
-    <Compile Include="TestClass\MapEnum.cs" />
-    <Compile Include="TestClass\Mapenv.cs" />
-    <Compile Include="TestClass\MapJump.cs" />
-    <Compile Include="TestClass\NPC.cs" />
-    <Compile Include="TestClass\NPCTalk.cs" />
-    <Compile Include="TestClass\Position3D.cs" />
-    <Compile Include="TestNatClass\Charabase.cs" />
-    <Compile Include="TestNatClass\Charaparam.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
