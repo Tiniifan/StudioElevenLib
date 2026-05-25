@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 using StudioEleven.Modules;
 
 namespace StudioEleven
@@ -12,6 +13,7 @@ namespace StudioEleven
         private static readonly List<IModule> RegisteredModules = new()
         {
             new ImageModule(),
+            new ArchiveModule(),
         };
 
         #endregion
@@ -20,6 +22,8 @@ namespace StudioEleven
 
         static void Main(string[] args)
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             // Build a flat name→command dictionary from all registered modules
             var commandMap = BuildCommandMap();
 

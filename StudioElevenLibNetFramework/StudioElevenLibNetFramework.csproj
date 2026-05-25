@@ -184,6 +184,7 @@
     <Compile Include="Tools\MsbBitWriter.cs" />
     <Compile Include="Tools\SubMemoryStream.cs" />
     <Compile Include="Tools\VirtualDirectory.cs" />
+    <Compile Include="Tools\VirtualPath.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\win-x64\" />
