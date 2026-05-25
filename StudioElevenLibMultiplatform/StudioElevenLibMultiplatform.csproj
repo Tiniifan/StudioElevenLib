@@ -9,17 +9,17 @@
 		<Deterministic>true</Deterministic>
 		<LangVersion>latest</LangVersion>
 		<DefineConstants>USE_IMAGESHARP</DefineConstants>
-		<FileVersion>1.6.0.0</FileVersion>
+		<FileVersion>2.0.0.0</FileVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="../StudioElevenLib/**/*.cs"
-				 Exclude="../StudioElevenLib/Properties/**/*.cs;
-                      ../StudioElevenLib/obj/**/*.cs" />
+		<Compile Include="../StudioElevenLibNetFramework/**/*.cs"
+				 Exclude="../StudioElevenLibNetFramework/Properties/**/*.cs;
+                      ../StudioElevenLibNetFramework/obj/**/*.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="../StudioElevenLib/Native/win-x64/etcpak.exe">
+		<None Include="../StudioElevenLibNetFramework/Native/win-x64/etcpak.exe">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<TargetPath>Native\win-x64\etcpak.exe</TargetPath>
 		</None>

@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <FileVersion>2.0.0.0</FileVersion>	
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>
@@ -18,7 +19,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="StudioElevenLib">
-      <HintPath>..\StudioElevenLib\bin\Release\StudioElevenLib.dll</HintPath>
+      <HintPath>..\StudioElevenLibMultiplatform\bin\Release\net9.0\StudioElevenLib.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
