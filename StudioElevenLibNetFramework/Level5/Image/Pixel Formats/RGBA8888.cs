@@ -20,7 +20,7 @@ namespace StudioElevenLib.Level5.Image.Color_Formats
             return new byte[] { (byte)((argb >> 24) & 0xFF), (byte)(argb & 0xFF), (byte)((argb >> 8) & 0xFF), (byte)((argb >> 16) & 0xFF) };
 #elif USE_IMAGESHARP
             var pixel = color.ToPixel<Rgba32>();
-            return new byte[] { pixel.A, pixel.R, pixel.G, pixel.B };
+            return new byte[] { pixel.A, pixel.B, pixel.G, pixel.R };
 #endif
         }
 
@@ -39,7 +39,7 @@ namespace StudioElevenLib.Level5.Image.Color_Formats
             int argb = (data[0] << 24) | (data[3] << 16) | (data[2] << 8) | data[1];
             return Color.FromArgb(argb);
 #elif USE_IMAGESHARP
-            return Color.FromPixel(new Rgba32(data[1], data[2], data[3], data[0]));
+            return Color.FromPixel(new Rgba32(data[3], data[2], data[1], data[0]));
 #endif
         }
     }

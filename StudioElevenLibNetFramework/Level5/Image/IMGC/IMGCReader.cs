@@ -156,23 +156,41 @@ namespace StudioElevenLib.Level5.Image.IMGC
                     else
                         rawPic = EtcpakTool.DecompressBC(linearCompressed, paddedW, paddedH, version);
 
-                    for (int y = 0; y < height; y++)
+                    for (int y = 0; y < paddedH; y++)
                     {
-                        for (int x = 0; x < width; x++)
+                        for (int x = 0; x < paddedW; x++)
                         {
-                            int srcIdx = (y * paddedW + x) * 4;
-                            int destIdx = y * width + x;
+                            int targetX = x;
+                            int targetY = y;
 
-                            byte r = rawPic[srcIdx];
-                            byte g = rawPic[srcIdx + 1];
-                            byte b = rawPic[srcIdx + 2];
-                            byte a = rawPic[srcIdx + 3];
+                            // The 3DS needs a local transposition in the 4x4 block
+                            if (!isSwitchFile)
+                            {
+                                int blockX = x / 4;
+                                int blockY = y / 4;
+                                int localX = x % 4;
+                                int localY = y % 4;
+
+                                targetX = blockX * 4 + localY;
+                                targetY = blockY * 4 + localX;
+                            }
+
+                            if (targetX < width && targetY < height)
+                            {
+                                int srcIdx = (y * paddedW + x) * 4;
+                                int destIdx = targetY * width + targetX;
+
+                                byte r = rawPic[srcIdx];
+                                byte g = rawPic[srcIdx + 1];
+                                byte b = rawPic[srcIdx + 2];
+                                byte a = rawPic[srcIdx + 3];
 
 #if USE_SYSTEM_DRAWING
-                            resultArray[destIdx] = Color.FromArgb(a, r, g, b);
+                                resultArray[destIdx] = Color.FromArgb(a, r, g, b);
 #elif USE_IMAGESHARP
             resultArray[destIdx] = Color.FromRgba(r, g, b, a);
 #endif
+                            }
                         }
                     }
                 }
