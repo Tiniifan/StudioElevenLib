@@ -1,7 +1,8 @@
 .vs/
 *.suo
-StudioElevenLib/obj/
-StudioElevenLibTest/obj/
+StudioEleven/obj/
+StudioElevenLibNetFramework/obj/
+/StudioElevenLibMultiplatform/obj
 
 *.xi
 *.npc.bin
@@ -49,5 +50,4 @@ StudioElevenLibTest/obj/
 *.pbi
 *.pvb
 *.bin
-/StudioElevenLibMultiplatform/obj
 *.nat
