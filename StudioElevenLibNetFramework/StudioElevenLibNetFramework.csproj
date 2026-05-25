@@ -75,7 +75,9 @@
     <Compile Include="Level5\Archive\XPCK\XPCKSupport.cs" />
     <Compile Include="Level5\Armature\Logic\Bone.cs" />
     <Compile Include="Level5\Armature\MBN.cs" />
+    <Compile Include="Level5\Armature\MBNReader.cs" />
     <Compile Include="Level5\Armature\MBNSupport.cs" />
+    <Compile Include="Level5\Armature\MBNWriter.cs" />
     <Compile Include="Level5\Binary\CfgBin.cs" />
     <Compile Include="Level5\Binary\CfgBinNat.cs" />
     <Compile Include="Level5\Binary\CfgBinSupport.cs" />

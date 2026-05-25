@@ -1,8 +1,12 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace StudioElevenLib.Level5.Armature
 {
+    /// <summary>
+    /// Support structures and conversion helpers for the MBN format.
+    /// </summary>
     public class MBNSupport
     {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -59,12 +63,7 @@ namespace StudioElevenLib.Level5.Armature
 
         public static MBNVector3 Vector3ToMBNVector3(Vector3 vec)
         {
-            return new MBNVector3
-            {
-                X = vec.X,
-                Y = vec.Y,
-                Z = vec.Z
-            };
+            return new MBNVector3 { X = vec.X, Y = vec.Y, Z = vec.Z };
         }
 
         public static MBNMatrix3x3 Matrix4x4ToMBNMatrix3x3(Matrix4x4 mat)
@@ -81,6 +80,60 @@ namespace StudioElevenLib.Level5.Armature
                 M32 = mat.M32,
                 M33 = mat.M33
             };
+        }
+
+        /// <summary>
+        /// Translates a Matrix4x4 to a transposed MBNMatrix3x3 (Column-major format)
+        /// </summary>
+        public static MBNMatrix3x3 Matrix4x4ToMBNMatrix3x3Transposed(Matrix4x4 mat)
+        {
+            return new MBNMatrix3x3
+            {
+                M11 = mat.M11,
+                M12 = mat.M21,
+                M13 = mat.M31,
+                M21 = mat.M12,
+                M22 = mat.M22,
+                M23 = mat.M32,
+                M31 = mat.M13,
+                M32 = mat.M23,
+                M33 = mat.M33
+            };
+        }
+
+        /// <summary>
+        /// Translates a Matrix4x4 to MBNMatrix3x3, rounding all floats to 4 decimal places.
+        /// </summary>
+        public static MBNMatrix3x3 Matrix4x4ToMBNMatrix3x3Rounded(Matrix4x4 mat)
+        {
+            return new MBNMatrix3x3
+            {
+                M11 = Round4(mat.M11),
+                M12 = Round4(mat.M12),
+                M13 = Round4(mat.M13),
+                M21 = Round4(mat.M21),
+                M22 = Round4(mat.M22),
+                M23 = Round4(mat.M23),
+                M31 = Round4(mat.M31),
+                M32 = Round4(mat.M32),
+                M33 = Round4(mat.M33)
+            };
+        }
+
+        /// <summary>
+        /// Helper to truncate a float to 4 decimal places
+        /// </summary>
+        public static float Round4(float value)
+        {
+            return (float)Math.Round(value, 4);
+        }
+
+        /// <summary>
+        /// Helper to truncate a Vector3's floats to 4 decimal places.
+        /// </summary>
+        public static Vector3 Round4(Vector3 vec)
+        {
+            return new Vector3(Round4(vec.X), Round4(vec.Y), Round4(vec.Z));
         }
     }
 }
