@@ -97,6 +97,20 @@ namespace StudioEleven.Modules
             };
         }
 
+        public static JsonVertex Map(XPVBSupport.Vertex v)
+        {
+            return new JsonVertex
+            {
+                Position = new float[] { v.Position.X, v.Position.Y, v.Position.Z },
+                Normal = new float[] { v.Normal.X, v.Normal.Y, v.Normal.Z },
+                UV0 = new float[] { v.UV0.X, v.UV0.Y },
+                UV1 = new float[] { v.UV1.X, v.UV1.Y },
+                Weights = new float[] { v.Weights.X, v.Weights.Y, v.Weights.Z, v.Weights.W },
+                BoneIndices = new float[] { v.BoneIndices.X, v.BoneIndices.Y, v.BoneIndices.Z, v.BoneIndices.W },
+                Color = new float[] { v.Color.X, v.Color.Y, v.Color.Z, v.Color.W }
+            };
+        }
+
         private static Vector2 ToVector2(float[]? arr) => arr != null && arr.Length >= 2 ? new Vector2(arr[0], arr[1]) : default;
         private static Vector3 ToVector3(float[]? arr) => arr != null && arr.Length >= 3 ? new Vector3(arr[0], arr[1], arr[2]) : default;
         private static Vector4 ToVector4(float[]? arr) => arr != null && arr.Length >= 4 ? new Vector4(arr[0], arr[1], arr[2], arr[3]) : default;
@@ -128,6 +142,15 @@ namespace StudioEleven.Modules
             byte[] data = MeshInputHelper.ReadBinary(args, 1);
             var xmpr = new XMPR(data);
 
+            var jsonVertices = new List<JsonVertex>();
+            if (xmpr.Vertices?.Vertices != null)
+            {
+                foreach (var v in xmpr.Vertices.Vertices)
+                {
+                    jsonVertices.Add(VertexMapper.Map(v));
+                }
+            }
+
             var info = new
             {
                 xmpr.MeshName,
@@ -135,8 +158,10 @@ namespace StudioEleven.Modules
                 xmpr.SingleBind,
                 xmpr.DrawPriority,
                 xmpr.MeshType,
-                NodesCount = xmpr.Nodes.Count,
-                Nodes = xmpr.Nodes
+                NodesCount = xmpr.Nodes?.Count ?? 0,
+                Nodes = xmpr.Nodes,
+                Indices = xmpr.Triangles?.Triangles,
+                Vertices = jsonVertices
             };
 
             Console.WriteLine(JsonSerializer.Serialize(info, new JsonSerializerOptions { WriteIndented = true }));
