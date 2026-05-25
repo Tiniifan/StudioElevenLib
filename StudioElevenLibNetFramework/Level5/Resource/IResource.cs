@@ -15,5 +15,7 @@ namespace StudioElevenLib.Level5.Resource
         Dictionary<RESType, List<RESElement>> Items { get; set; }
 
         void Save(string magic, string filepath);
+
+        byte[] Save(string magic);
     }
 }

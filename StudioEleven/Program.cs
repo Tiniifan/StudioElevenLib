@@ -13,6 +13,7 @@ namespace StudioEleven
         private static readonly List<IModule> RegisteredModules = new()
         {
             new ArchiveModule(),
+            new ResourceModule(),
             new ImageModule(),
             new MeshModule(),
             new BoneModule(),
