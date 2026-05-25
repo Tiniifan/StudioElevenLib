@@ -18,6 +18,11 @@ using StudioElevenLib.Level5.Resource.RES;
 using StudioElevenLib.Level5.Resource;
 using StudioElevenLib.Level5.Resource.Types;
 using StudioElevenLibTest.TestNatClass;
+using StudioElevenLib.Level5.Image.IMGC;
+
+using System.Drawing;
+using StudioElevenLib.Level5.Image;
+using StudioElevenLib.Level5.Image.Color_Formats;
 
 namespace StudioElevenLibTest
 {
@@ -407,87 +412,25 @@ namespace StudioElevenLibTest
 
         static void Main(string[] args)
         {
-            //byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_waza_cs.bin");
-            //byte[] fileData = File.ReadAllBytes("./binder_fr_xa/RES_cs.bin");
-            //IResource resTest = Resourcer.GetResource(fileData);
+            IMGC bc1 = new IMGC(File.ReadAllBytes("whisperSBC1.xi"));
+            bc1.Bitmap.Save("whisperSBC1.png");
 
-            //foreach (KeyValuePair<RESType, List<RESElement>> item in resTest.Items)
-            //{
-            //    foreach (RESElement reselement in item.Value)
-            //    {
-            //        Console.WriteLine(reselement.Name);
-            //    }
-            //}
+            Bitmap image = new Bitmap("whisperSBC1.png");
+            IMGC bcNew = new IMGC(image, new BC1());
+            bcNew.Save("testBC1.xi", true);
 
-            //resTest.Save("CHRC00", "./test.bin");
+            IMGC bc1Back = new IMGC(File.ReadAllBytes("testBC1.xi"));
+            bc1Back.Bitmap.Save("testBC1Back.png");
 
-            // GetCondition();
+            IMGC imgcETC = new IMGC(File.ReadAllBytes("000.xi"));
+            imgcETC.Bitmap.Save("test.png");
 
-            // NoCompression();
-            // DefaultMapenv();
+            Bitmap image2 = new Bitmap("test.png");
+            IMGC imgc2 = new IMGC(image2, new ETC1());
+            imgc2.Save("testETC.xi");
 
-            // DefaultFuncpt();
-
-            // DefaultHealpt();
-
-            // DefaultNPC();
-
-            //byte[] fileData = File.ReadAllBytes("./mr01b01_funcpt.bin");
-            //test.Open(fileData);
-
-            //Console.WriteLine(test.Entries.PrintTree());
-
-            //PtreeNode MJ_mr01i51 = test.Entries.FindByHeaderAndValue("FP", "MJ_mr01i51");
-            //MapJump mapJump = MJ_mr01i51.FlattenPtreeToClass<MapJump>();
-
-            //Console.WriteLine(mapJump.FuncName);
-            //Console.WriteLine(mapJump.ID);
-            //Console.WriteLine(string.Join(", ", mapJump.Pos));
-            //Console.WriteLine((mapJump.Area as BoxLimiter).Width + " " + (mapJump.Area as BoxLimiter).Height + " " + (mapJump.Area as BoxLimiter).Angle);
-            //Console.WriteLine(mapJump.Definition.FuncName);
-            //Console.WriteLine(mapJump.Definition.ID);
-            //Console.WriteLine(mapJump.Definition.BtnCheck.Enable);
-            //Console.WriteLine(mapJump.Definition.Event.MapJumpEventJumpTo.SeName);
-            //Console.WriteLine(mapJump.Definition.Event.MapJumpEventJumpTo.FadeFrame);
-            //Console.WriteLine(mapJump.Definition.Event.MapJumpEventJumpTo.MapID);
-            //Console.WriteLine(string.Join(", ", mapJump.Definition.Event.MapJumpEventSTDPos.Pos));
-
-
-            //var test = new CfgBin<PtreeNode>();
-
-            //byte[] fileData = File.ReadAllBytes("./mr05b05_mapenv.bin");
-            //test.Open(fileData);
-
-            //Console.WriteLine(test.Entries.PrintTree());
-
-            //Mapenv mapenv = test.Entries.FlattenPtreeToClass<Mapenv>("MAP_ENV");
-
-            //Console.WriteLine(mapenv.Default);
-            //Console.WriteLine(mapenv.ParentID);
-            //Console.WriteLine(mapenv.MMModelPos.MinX + " " + mapenv.MMModelPos.MinY + " " + mapenv.MMModelPos.MaxX + " " + mapenv.MMModelPos.MaxY);
-            //Console.WriteLine(mapenv.Light.ShadowCol[0].ID);
-            //Console.WriteLine(mapenv.Light.ShadowCol[0].Color.G);
-
-            //var charaparam = new CfgBin<CfgTreeNode>();
-            //charaparam.Open(File.ReadAllBytes("./chara_param.cfg.bin"));
-
-            //Console.WriteLine(test.Entries.PrintTree());
-
-            //CfgTreeNode charaparamNode = charaparam.Entries.FindByName("CHARA_PARAM_INFO_BEGIN");
-
-            //Console.WriteLine(charaparamNode.Item.Variables[0].Value);
-
-            //var charaParams = charaparamNode.FlattenEntryToClassList<Charaparam>("CHARA_PARAM_INFO");
-
-            //Console.WriteLine(charaParams[0].ParamHash.ToString("X8"));
-            //Console.WriteLine(charaParams[0].IgnoreMe);
-            //Console.WriteLine(charaParams[0].BaseHash.ToString("X8"));
-
-            var cfg = new CfgBinNat(new[] { typeof(Charabase) });
-            cfg.Open(File.ReadAllBytes("chara_base_0.02.cfg.bin.nat"));
-
-            List<Charabase> players = cfg.GetList<Charabase>();
-            Console.WriteLine(players[1].BaseID);
+            //IMGC imgc3 = new IMGC(File.ReadAllBytes("testETC.xi"));
+            //imgc3.Bitmap.Save("testETC.png");
         }
     }
 }

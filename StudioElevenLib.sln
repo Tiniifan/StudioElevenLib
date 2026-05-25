@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioElevenLibWindows", "StudioElevenLib\StudioElevenLibWindows.csproj", "{D4944D79-C57F-4CA2-9910-B1A40D99B7A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioElevenLibZTest", "StudioElevenLibTest\StudioElevenLibZTest.csproj", "{840B2633-A559-440E-A47B-14AF7B0FF969}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudioEleven", "StudioEleven\StudioEleven.csproj", "{840B2633-A559-440E-A47B-14AF7B0FF969}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D4944D79-C57F-4CA2-9910-B1A40D99B7A3} = {D4944D79-C57F-4CA2-9910-B1A40D99B7A3}
 	EndProjectSection
