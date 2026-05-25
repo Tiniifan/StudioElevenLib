@@ -39,7 +39,15 @@ namespace StudioElevenLib.Level5.Image.IMGC
             byte[] tileData = Compressor.Decompress(data.GetSection((uint)header.TileOffset, header.TileSize1));
             byte[] imageData = Compressor.Decompress(data.GetSection((uint)(header.TileOffset + header.TileSize2), header.ImageSize));
 
-            var imageFormat = IMGCSupport.PixelFormats[header.ImageFormat];
+            bool isSwitchFile = false;
+            if (tileData.Length >= 2)
+            {
+                isSwitchFile = BitConverter.ToUInt16(tileData, 0) == 0x453;
+            }
+
+            Console.WriteLine(isSwitchFile.ToString() + " " + header.ImageFormat.ToString("X2"));
+
+            var imageFormat = isSwitchFile ? IMGCSupport.SwitchPixelFormats[header.ImageFormat] : IMGCSupport.PixelFormats3DS[header.ImageFormat];
             var decoded = DecodeImage(tileData, imageData, imageFormat, header.Width, header.Height, header.BitDepth);
 
             return (header, decoded.bitmap, decoded.pixels, header.Width, header.Height, imageFormat);
@@ -52,6 +60,7 @@ namespace StudioElevenLib.Level5.Image.IMGC
 #endif
         {
             byte[]? entryStart = null;
+            bool isSwitchFile = false; 
 
             using (var table = new BinaryDataReader(tile))
             using (var tex = new BinaryDataReader(imageData))
@@ -61,10 +70,13 @@ namespace StudioElevenLib.Level5.Image.IMGC
                 var tmp = table.ReadValue<ushort>();
                 table.BaseStream.Position = 0;
                 var entryLength = 2;
+
+                // Switch Format
                 if (tmp == 0x453)
                 {
                     entryStart = table.ReadMultipleValue<byte>(8);
                     entryLength = 4;
+                    isSwitchFile = true;
                 }
 
                 var ms = new MemoryStream();
@@ -90,73 +102,79 @@ namespace StudioElevenLib.Level5.Image.IMGC
                 int paddedCount = paddedW * paddedH;
                 Color[] resultArray = new Color[width * height];
 
-                bool isEtc1 = imgFormat.Name == "ETC1";
-                bool isEtc1a4 = imgFormat.Name == "ETC1A4";
-                bool isEtc = isEtc1 || isEtc1a4;
+                bool isEtc1 = imgFormat.Name == "ETC1" || imgFormat.Name == "ETC1A4";
+                bool hasAlpha = imgFormat.Name == "ETC1A4";
 
-                if (isEtc)
+                bool isBc = imgFormat.Name == "BC1" || imgFormat.Name == "BC5";
+                int version = imgFormat.Name == "BC1" ? 1 : imgFormat.Name == "BC5" ? 5 : 0;
+
+                bool isBlockFormat = isEtc1 || isBc;
+
+                if (isBlockFormat)
                 {
                     paddedW = (width + 7) & ~7;
                     paddedH = (height + 7) & ~7;
-                    int blockSizeBytes = isEtc1a4 ? 16 : 8;
+                    int blockSizeBytes = (hasAlpha || version >= 5) ? 16 : 8;
                     int blocksX = paddedW / 4;
 
                     byte[] swizzledCompressed = ms.ToArray();
                     byte[] linearCompressed = new byte[swizzledCompressed.Length];
 
-                    IMGCSwizzle swizzle = new IMGCSwizzle(width, height);
-                    var pointsArr = swizzle.GetPointSequence().ToArray();
-
-                    // Unswizzle the blocks (Reorder for etcpak)
-                    int numBlocks = swizzledCompressed.Length / blockSizeBytes;
-                    for (int i = 0; i < numBlocks; i++)
+                    if (isBc)
                     {
-                        if (i * 16 >= pointsArr.Length) break;
+                        // The blocks are already in linear order
+                        linearCompressed = swizzledCompressed;
+                    }
+                    else
+                    {
+                        // Z-order swizzle is required on 3ds
+                        linearCompressed = new byte[swizzledCompressed.Length];
+                        IMGCSwizzle swizzle = new IMGCSwizzle(width, height);
+                        var pointsArr = swizzle.GetPointSequence().ToArray();
 
-                        var pt = pointsArr[i * 16];
-                        int blockX = pt.X / 4;
-                        int blockY = pt.Y / 4;
-
-                        int linearBlockIndex = blockY * blocksX + blockX;
-
-                        if (linearBlockIndex * blockSizeBytes < linearCompressed.Length && i * blockSizeBytes < swizzledCompressed.Length)
+                        int numBlocks = swizzledCompressed.Length / blockSizeBytes;
+                        for (int i = 0; i < numBlocks; i++)
                         {
-                            Array.Copy(swizzledCompressed, i * blockSizeBytes, linearCompressed, linearBlockIndex * blockSizeBytes, blockSizeBytes);
+                            if (i * 16 >= pointsArr.Length) break;
+                            var pt = pointsArr[i * 16];
+                            int blockX = pt.X / 4;
+                            int blockY = pt.Y / 4;
+                            int linearBlockIndex = blockY * blocksX + blockX;
+
+                            if (linearBlockIndex * blockSizeBytes < linearCompressed.Length
+                                && i * blockSizeBytes < swizzledCompressed.Length)
+                            {
+                                Array.Copy(swizzledCompressed, i * blockSizeBytes,
+                                           linearCompressed, linearBlockIndex * blockSizeBytes,
+                                           blockSizeBytes);
+                            }
                         }
                     }
 
                     // Unpack linear data using etcpack
-                    byte[] rawPic = EtcpakTool.Decompress(linearCompressed, paddedW, paddedH, isEtc1a4);
+                    byte[] rawPic = [];
+                    if (isEtc1)
+                        rawPic = EtcpakTool.DecompressETC1(linearCompressed, paddedW, paddedH, hasAlpha);
+                    else
+                        rawPic = EtcpakTool.DecompressBC(linearCompressed, paddedW, paddedH, version);
 
-                    // Un-transpose the pixels
-                    for (int y = 0; y < paddedH; y++)
+                    for (int y = 0; y < height; y++)
                     {
-                        for (int x = 0; x < paddedW; x++)
+                        for (int x = 0; x < width; x++)
                         {
-                            int blockX = x / 4;
-                            int blockY = y / 4;
-                            int localX = x % 4;
-                            int localY = y % 4;
+                            int srcIdx = (y * paddedW + x) * 4;
+                            int destIdx = y * width + x;
 
-                            int targetX = blockX * 4 + localY;
-                            int targetY = blockY * 4 + localX;
-
-                            if (targetX < width && targetY < height)
-                            {
-                                int srcIdx = (y * paddedW + x) * 4;
-                                int destIdx = targetY * width + targetX;
-
-                                byte r = rawPic[srcIdx];
-                                byte g = rawPic[srcIdx + 1];
-                                byte b = rawPic[srcIdx + 2];
-                                byte a = rawPic[srcIdx + 3];
+                            byte r = rawPic[srcIdx];
+                            byte g = rawPic[srcIdx + 1];
+                            byte b = rawPic[srcIdx + 2];
+                            byte a = rawPic[srcIdx + 3];
 
 #if USE_SYSTEM_DRAWING
-                                resultArray[destIdx] = Color.FromArgb(a, r, g, b);
+                            resultArray[destIdx] = Color.FromArgb(a, r, g, b);
 #elif USE_IMAGESHARP
-                                resultArray[destIdx] = Color.FromRgba(r, g, b, a);
+            resultArray[destIdx] = Color.FromRgba(r, g, b, a);
 #endif
-                            }
                         }
                     }
                 }
@@ -164,19 +182,91 @@ namespace StudioElevenLib.Level5.Image.IMGC
                 {
                     // Other pixel format
                     byte[] pic = ms.ToArray();
-                    IMGCSwizzle imgcSwizzle = new IMGCSwizzle(width, height);
-                    var points = imgcSwizzle.GetPointSequence().ToArray();
 
-                    for (int i = 0; i < paddedCount; i++)
+                    if (isSwitchFile)
                     {
-                        int dataIndex = i * imgFormat.Size;
-                        byte[] group = new byte[imgFormat.Size];
-                        Array.Copy(pic, dataIndex, group, 0, imgFormat.Size);
+                        // Switch : layout column-major, pas de z-order
+                        int tileBytes = 64 * imgFormat.Size;
+                        int numTiles = pic.Length / tileBytes;
+                        int tileX = 0, tileY = 0;
 
-                        var pt = points[i];
-                        if (pt.X < width && pt.Y < height)
-                            resultArray[pt.Y * width + pt.X] = imgFormat.Decode(group);
+                        for (int i = 0; i < numTiles; i++)
+                        {
+                            for (int h = 0; h < 64; h++)
+                            {
+                                int x1 = h / 8; // column in the 8×8 tile
+                                int y1 = h % 8; // line in the 8×8 tile
+                                int px = tileX + x1;
+                                int py = tileY + y1;
+
+                                if (px < width && py < height)
+                                {
+                                    int srcOffset = i * tileBytes + h * imgFormat.Size;
+                                    byte[] group = new byte[imgFormat.Size];
+                                    Array.Copy(pic, srcOffset, group, 0, imgFormat.Size);
+                                    resultArray[py * width + px] = imgFormat.Decode(group);
+                                }
+                            }
+
+                            // Tiles: column by column (y first, then x)
+                            tileY += 8;
+                            if (tileY >= height)
+                            {
+                                tileY = 0;
+                                tileX += 8;
+                            }
+                        }
+
+
                     }
+                    else
+                    {
+                        // On 3DS we have to do Z-order swizzle
+                        IMGCSwizzle imgcSwizzle = new IMGCSwizzle(width, height);
+                        var points = imgcSwizzle.GetPointSequence().ToArray();
+
+                        for (int i = 0; i < paddedCount; i++)
+                        {
+                            int dataIndex = i * imgFormat.Size;
+                            byte[] group = new byte[imgFormat.Size];
+                            Array.Copy(pic, dataIndex, group, 0, imgFormat.Size);
+
+                            var pt = points[i];
+                            if (pt.X < width && pt.Y < height)
+                                resultArray[pt.Y * width + pt.X] = imgFormat.Decode(group);
+                        }
+                    }
+                }
+
+
+                if (isSwitchFile && !isBlockFormat)
+                {
+                    byte[] pic = ms.ToArray();
+                    var switchSwizzle = new IMGCSwitchSwizzle(width, height);
+                    var points = switchSwizzle.GetPointSequence().ToArray();
+
+                    // The output dimensions are transposed
+                    int outWidth = switchSwizzle.Width;
+                    int outHeight = switchSwizzle.Height;
+                    Color[] resultArraySwitch = new Color[outWidth * outHeight];
+
+                    int i = 0;
+                    foreach (var pt in points)
+                    {
+                        if (i * imgFormat.Size + imgFormat.Size > pic.Length) break;
+
+                        byte[] group = new byte[imgFormat.Size];
+                        Array.Copy(pic, i * imgFormat.Size, group, 0, imgFormat.Size);
+
+                        if (pt.X < outWidth && pt.Y < outHeight)
+                            resultArraySwitch[pt.Y * outWidth + pt.X] = imgFormat.Decode(group);
+
+                        i++;
+                    }
+
+                    resultArray = resultArraySwitch;
+                    width = outWidth;
+                    height = outHeight;
                 }
 
 #if USE_SYSTEM_DRAWING

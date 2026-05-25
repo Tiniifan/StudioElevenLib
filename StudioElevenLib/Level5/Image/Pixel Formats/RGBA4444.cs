@@ -7,9 +7,9 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace StudioElevenLib.Level5.Image.Color_Formats
 {
-    public class RGBA4 : IPixelFormat
+    public class RGBA4444 : IPixelFormat
     {
-        public string Name => "RGBA4";
+        public string Name => "RGBA4444";
 
         public int Size => 2;
 

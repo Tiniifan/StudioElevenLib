@@ -38,6 +38,50 @@ namespace StudioElevenLib.Level5.Image.IMGC
         }
     }
 
+    public class IMGCSwitchSwizzle
+    {
+        /// <summary> original height (after transposition)</summary>
+        public int Width { get; }
+
+        /// <summary> original width (after transpose) </summary>
+        public int Height { get; }
+
+        private readonly int _origWidth;
+        private readonly int _origHeight;
+
+        public IMGCSwitchSwizzle(int width, int height)
+        {
+            _origWidth = (width + 7) & ~7;
+            _origHeight = (height + 7) & ~7;
+
+            // 90° rotation + mirror = transpose, therefore dimensions are reversed
+            Width = _origHeight;
+            Height = _origWidth;
+        }
+
+        public IEnumerable<Point> GetPointSequence()
+        {
+            // Tiles column-major (y first, then x)
+            for (int tileX = 0; tileX < _origWidth; tileX += 8)
+            {
+                for (int tileY = 0; tileY < _origHeight; tileY += 8)
+                {
+                    for (int h = 0; h < 64; h++)
+                    {
+                        int x1 = h / 8; // column in the tile
+                        int y1 = h % 8; // line in the tile
+
+                        int origX = tileX + x1;
+                        int origY = tileY + y1;
+
+                        // Transpose : (origX, origY) -> (origY, origX)
+                        yield return new Point(origY, origX);
+                    }
+                }
+            }
+        }
+    }
+
     public class MasterSwizzle
     {
         IEnumerable<(int, int)> _bitFieldCoords;

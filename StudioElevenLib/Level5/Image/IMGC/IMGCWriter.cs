@@ -38,45 +38,82 @@ namespace StudioElevenLib.Level5.Image.IMGC
         /// <summary>
         /// Encodes a pixel array into the IMGC format and saves the result to a file.
         /// </summary>
-        public void Save(string fileName, IProgress<int>? progress = null)
+        public void Save(string fileName, bool isSwitch = false, IProgress<int>? progress = null)
         {
             if (string.IsNullOrEmpty(fileName))
                 throw new ArgumentException("File name cannot be empty", nameof(fileName));
 
             using (var stream = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None, 8192))
             {
-                WriteToStream(stream, progress);
+                WriteToStream(stream, isSwitch, progress);
             }
         }
 
         /// <summary>
         /// Encodes a pixel array into the IMGC format and returns the file bytes.
         /// </summary>
-        public byte[] Save(IProgress<int>? progress = null)
+        public byte[] Save(bool isSwitch = false, IProgress<int>? progress = null)
         {
             using (var memoryStream = new MemoryStream())
             {
-                WriteToStream(memoryStream, progress);
+                WriteToStream(memoryStream, isSwitch, progress);
                 return memoryStream.ToArray();
             }
         }
 
-        private void WriteToStream(Stream stream, IProgress<int>? progress = null)
+        private void WriteToStream(Stream stream, bool isSwitch = false, IProgress<int>? progress = null)
         {
             progress?.Report(0);
 
-            var formatPair = IMGCSupport.PixelFormats.FirstOrDefault(kv => kv.Value?.Name == _imgFormat.Name);
+            // Format verification and selection
+            KeyValuePair<byte, IPixelFormat> formatPair;
+            if (isSwitch)
+            {
+                formatPair = IMGCSupport.SwitchPixelFormats.FirstOrDefault(kv => kv.Value?.Name == _imgFormat.Name);
+                if (formatPair.Value == null)
+                {
+                    throw new InvalidOperationException($"Error: Compression format '{_imgFormat.Name}' is not supported for the Switch format.");
+                }
+            }
+            else
+            {
+                formatPair = IMGCSupport.PixelFormats3DS.FirstOrDefault(kv => kv.Value?.Name == _imgFormat.Name);
+                if (formatPair.Value == null)
+                {
+                    throw new InvalidOperationException($"Error: Format '{_imgFormat.Name}' is not recognized for the 3DS format.");
+                }
+            }
+
             byte formatKey = formatPair.Key;
 
-            bool isEtc1 = _imgFormat.Name == "ETC1";
-            bool isEtc1a4 = _imgFormat.Name == "ETC1A4";
-            int bitDepth = isEtc1 ? 4 : isEtc1a4 ? 8 : _imgFormat.Size * 8;
+            bool isEtc1 = _imgFormat.Name == "ETC1" || _imgFormat.Name == "ETC1A4";
+            bool hasAlpha = _imgFormat.Name == "ETC1A4";
+
+            bool isDxt = _imgFormat.Name == "BC1" || _imgFormat.Name == "BC5";
+            int version = _imgFormat.Name == "BC1" ? 1 : _imgFormat.Name == "BC5" ? 5 : 0;
+
+            // Calculating the bitDepth
+            int bitDepth;
+            if (isEtc1 || isDxt)
+            {
+                bitDepth = 4;
+
+                if (hasAlpha || version >= 5)
+                {
+                    bitDepth += 4;
+                }
+            }
+            else
+            {
+                bitDepth = _imgFormat.Size * 8;
+            }
+
             int bytesPerTile = 64 * bitDepth / 8;
 
-            byte[] encodedPixels = EncodePixels(_pixels, _width, _height, _imgFormat);
+            byte[] encodedPixels = EncodePixels(_pixels, _width, _height, _imgFormat, isSwitch);
             progress?.Report(30);
 
-            Deflate(encodedPixels, bitDepth, out byte[] tileTableData, out byte[] uniqueImageData);
+            Deflate(encodedPixels, bitDepth, isSwitch, out byte[] tileTableData, out byte[] uniqueImageData);
             progress?.Report(60);
 
             byte[] compressedTable = Compressor.Compress(tileTableData)!;
@@ -123,12 +160,17 @@ namespace StudioElevenLib.Level5.Image.IMGC
         /// <summary>
         /// Applies the IMGC swizzle and encodes each pixel with the given color format.
         /// </summary>
-        private byte[] EncodePixels(Color[] pixels, int width, int height, IPixelFormat imgFormat)
+        private byte[] EncodePixels(Color[] pixels, int width, int height, IPixelFormat imgFormat, bool isSwitch)
         {
-            bool isEtc1 = imgFormat.Name == "ETC1";
-            bool isEtc1a4 = imgFormat.Name == "ETC1A4";
+            bool isEtc1 = imgFormat.Name == "ETC1" || imgFormat.Name == "ETC1A4";
+            bool hasAlpha = imgFormat.Name == "ETC1A4";
 
-            if (isEtc1 || isEtc1a4)
+            bool isDxt = imgFormat.Name == "BC1" || imgFormat.Name == "BC5";
+            int version = imgFormat.Name == "BC1" ? 1 : imgFormat.Name == "BC5" ? 5 : 0;
+
+            bool isBlockFormat = isEtc1 || isDxt;
+
+            if (isBlockFormat)
             {
                 int paddedW = (width + 7) & ~7;
                 int paddedH = (height + 7) & ~7;
@@ -139,28 +181,41 @@ namespace StudioElevenLib.Level5.Image.IMGC
                 {
                     for (int x = 0; x < paddedW; x++)
                     {
-                        // Get local coordinates within the 4x4 block
-                        int blockX = x / 4;
-                        int blockY = y / 4;
-                        int localX = x % 4;
-                        int localY = y % 4;
-
-                        // Apply a local transpose (swap X and Y) to resolve the Z-order conflict 
-                        int sampleX = blockX * 4 + localY;
-                        int sampleY = blockY * 4 + localX;
-
-                        // We'll find the transposed pixel in the original image
-#if USE_SYSTEM_DRAWING
-                        Color c = (sampleX < width && sampleY < height)
-                                    ? pixels[sampleY * width + sampleX]
-                                    : Color.FromArgb(0, 0, 0, 0);
-#elif USE_IMAGESHARP
-                        Color c = (sampleX < width && sampleY < height)
-                                    ? pixels[sampleY * width + sampleX]
-                                    : Color.Transparent;
-#endif
-
                         int idx = (y * paddedW + x) * 4;
+                        Color c;
+
+                        if (isSwitch)
+                        {
+                            // The Switch's block images are linear so there is no local transposition
+                            if (x < width && y < height)
+                                c = pixels[y * width + x];
+                            else
+#if USE_SYSTEM_DRAWING
+                                c = Color.FromArgb(0, 0, 0, 0);
+#elif USE_IMAGESHARP
+                                c = Color.Transparent;
+#endif
+                        }
+                        else
+                        {
+                            // On 3DS we need local transposition (swapping X and Y) to work around the Z-order swizzle conflict
+                            int blockX = x / 4;
+                            int blockY = y / 4;
+                            int localX = x % 4;
+                            int localY = y % 4;
+
+                            int sampleX = blockX * 4 + localY;
+                            int sampleY = blockY * 4 + localX;
+
+                            if (sampleX < width && sampleY < height)
+                                c = pixels[sampleY * width + sampleX];
+                            else
+#if USE_SYSTEM_DRAWING
+                                c = Color.FromArgb(0, 0, 0, 0);
+#elif USE_IMAGESHARP
+                                c = Color.Transparent;
+#endif
+                        }
 
 #if USE_SYSTEM_DRAWING
                         rgbaData[idx] = c.R;
@@ -177,11 +232,26 @@ namespace StudioElevenLib.Level5.Image.IMGC
                     }
                 }
 
-                // Compress the transposed image 
-                byte[] linearCompressed = EtcpakTool.Compress(rgbaData, paddedW, paddedH, isEtc1a4)!;
+                // Compress the image
+                byte[] linearCompressed = [];
+                if (isEtc1)
+                {
+                    linearCompressed = EtcpakTool.CompressETC1(rgbaData, paddedW, paddedH, hasAlpha);
+                }
+                else if (isDxt)
+                {
+                    linearCompressed = EtcpakTool.CompressBC(rgbaData, paddedW, paddedH, version);
+                }
+
+                if (isSwitch)
+                {
+                    // Block-compressed formats (BC1/BC5) for the Switch do not require additional swizzling
+                    return linearCompressed;
+                }
+
                 byte[] swizzledCompressed = new byte[linearCompressed.Length];
 
-                int blockSizeBytes = isEtc1 ? 8 : 16;
+                int blockSizeBytes = (hasAlpha || version >= 5) ? 16 : 8;
                 int blocksX = paddedW / 4;
 
                 var swizzle = new IMGCSwizzle(width, height);
@@ -210,41 +280,69 @@ namespace StudioElevenLib.Level5.Image.IMGC
             }
 
             // Other pixel format
-            var swizzleStd = new IMGCSwizzle(width, height);
-            var pointsStd = swizzleStd.GetPointSequence().ToArray();
-
-            int paddedWidthStd = (width + 7) & ~7;
-            int paddedHeightStd = (height + 7) & ~7;
-            int count = paddedWidthStd * paddedHeightStd;
-
-            var ms = new MemoryStream(count * imgFormat.Size);
-
-            for (int i = 0; i < count; i++)
+            if (isSwitch)
             {
-                var point = pointsStd[i];
-                Color color;
-                if (point.X < width && point.Y < height)
-                    color = pixels[point.Y * width + point.X];
-                else
+                var switchSwizzle = new IMGCSwitchSwizzle(width, height);
+                var points = switchSwizzle.GetPointSequence().ToArray();
+                var ms = new MemoryStream();
+
+                foreach (var point in points)
+                {
+                    Color color;
+                    if (point.X < width && point.Y < height)
+                        color = pixels[point.Y * width + point.X];
+                    else
 #if USE_SYSTEM_DRAWING
-                    color = Color.FromArgb(0);
+                        color = Color.FromArgb(0, 0, 0, 0);
 #elif USE_IMAGESHARP
-                    color = Color.Transparent;
+                        color = Color.Transparent;
 #endif
 
-                byte[]? encoded = imgFormat.Encode(color);
-                if (encoded != null)
-                    ms.Write(encoded, 0, encoded.Length);
-            }
+                    byte[]? encoded = imgFormat.Encode(color);
+                    if (encoded != null)
+                        ms.Write(encoded, 0, encoded.Length);
+                }
 
-            return ms.ToArray();
+                return ms.ToArray();
+            }
+            else
+            {
+                var swizzleStd = new IMGCSwizzle(width, height);
+                var pointsStd = swizzleStd.GetPointSequence().ToArray();
+
+                int paddedWidthStd = (width + 7) & ~7;
+                int paddedHeightStd = (height + 7) & ~7;
+                int count = paddedWidthStd * paddedHeightStd;
+
+                var ms = new MemoryStream(count * imgFormat.Size);
+
+                for (int i = 0; i < count; i++)
+                {
+                    var point = pointsStd[i];
+                    Color color;
+                    if (point.X < width && point.Y < height)
+                        color = pixels[point.Y * width + point.X];
+                    else
+#if USE_SYSTEM_DRAWING
+                        color = Color.FromArgb(0, 0, 0, 0);
+#elif USE_IMAGESHARP
+                        color = Color.Transparent;
+#endif
+
+                    byte[]? encoded = imgFormat.Encode(color);
+                    if (encoded != null)
+                        ms.Write(encoded, 0, encoded.Length);
+                }
+
+                return ms.ToArray();
+            }
         }
 
         /// <summary>
         /// Breaks down encoded data into 8x8 tiles, deduplicates them,
         /// and outputs the index table and the unique image buffer without duplicates.
         /// </summary>
-        private void Deflate(byte[] encodedData, int bitDepth,
+        private void Deflate(byte[] encodedData, int bitDepth, bool isSwitch,
                                      out byte[] tileTable, out byte[] uniqueImageData)
         {
             int blockSize = 64 * bitDepth / 8;
@@ -255,6 +353,14 @@ namespace StudioElevenLib.Level5.Image.IMGC
 
             var bw = new BinaryDataWriter(tableMs);
 
+            // Writing the 8-byte magic header required by the Switch index table
+            if (isSwitch)
+            {
+                bw.Write((ushort)0x453);
+                bw.Write((ushort)0);
+                bw.Write((uint)0);
+            }
+
             for (int offset = 0; offset < encodedData.Length; offset += blockSize)
             {
                 // Extract the block (potentially partial at the end of the data)
@@ -263,15 +369,19 @@ namespace StudioElevenLib.Level5.Image.IMGC
                 Array.Copy(encodedData, offset, block, 0, copyLen);
 
                 int existingIndex = uniqueBlocks.FindIndex(b => b.SequenceEqual(block));
+
                 if (existingIndex >= 0)
                 {
                     // Block already known -> write its index
-                    bw.Write((ushort)existingIndex);
+                    if (isSwitch) bw.Write((uint)existingIndex);
+                    else bw.Write((ushort)existingIndex);
                 }
                 else
                 {
                     // New block -> add it to the unique list and write index
-                    bw.Write((ushort)uniqueBlocks.Count);
+                    if (isSwitch) bw.Write((uint)uniqueBlocks.Count);
+                    else bw.Write((ushort)uniqueBlocks.Count);
+
                     uniqueBlocks.Add(block);
                     imageMs.Write(block, 0, blockSize);
                 }

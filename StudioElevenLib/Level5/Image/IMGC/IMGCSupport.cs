@@ -31,21 +31,30 @@ namespace StudioElevenLib.Level5.Image.IMGC
             public byte[] UnkBlock5;
         }
 
-        public static Dictionary<byte, IPixelFormat> PixelFormats = new Dictionary<byte, IPixelFormat>
+        public static Dictionary<byte, IPixelFormat> PixelFormats3DS = new Dictionary<byte, IPixelFormat>
         {
-            {0x00, new RGBA8() },
-            {0x01, new RGBA4() },
-            {0x02, new RGBA5() },
-            {0x03, new RBGR888() },
-            {0x04, new RGB5() },
-            {0x0A, new LA8() },
-            {0x0B, new LA4() },
+            {0x00, new RGBA8888() },
+            {0x01, new RGBA4444() },
+            {0x02, new RGBA5551() },
+            {0x03, new BGR888() },
+            {0x04, new RGB565() },
+            {0x0A, new LA88() },
+            {0x0B, new LA44() },
             {0x0C, new L8() },
             {0x0D, new L4() },
             {0x0E, new A8() },
             {0x0F, new A4() },
             {0x1B, new ETC1() },
             {0x1C, new ETC1A4() },
+        };
+
+        public static Dictionary<byte, IPixelFormat> SwitchPixelFormats = new Dictionary<byte, IPixelFormat>
+        {
+            {0x00, new ABGR8888() },
+            {0x03, new RGB888() },
+            {0x0E, new A8() },
+            {0x1D, new BC1() },
+            {0x1F, new BC5() }
         };
     }
 }

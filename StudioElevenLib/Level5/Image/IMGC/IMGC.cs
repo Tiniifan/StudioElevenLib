@@ -105,17 +105,17 @@ namespace StudioElevenLib.Level5.Image.IMGC
         }
 
         /// <summary>Encodes and saves the image to a file.</summary>
-        public void Save(string fileName, IProgress<int>? progress = null)
+        public void Save(string fileName, bool isSwitch = false, IProgress<int>? progress = null)
         {
             var writer = new IMGCWriter(this);
-            writer.Save(fileName, progress);
+            writer.Save(fileName, isSwitch, progress);
         }
 
         /// <summary>Encodes the image and returns the bytes.</summary>
-        public byte[] Save(IProgress<int>? progress = null)
+        public byte[] Save(bool isSwitch = false, IProgress<int>? progress = null)
         {
             var writer = new IMGCWriter(this);
-            return writer.Save(progress);
+            return writer.Save(isSwitch, progress);
         }
 
         /// <summary>Releases bitmap and pixel data from memory.</summary>

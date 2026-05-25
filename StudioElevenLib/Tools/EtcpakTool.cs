@@ -17,10 +17,26 @@ using SixLabors.ImageSharp.PixelFormats;
 namespace StudioElevenLib.Tools
 {
     /// <summary>
-    /// Wraps the etcpak native binary to compress/decompress ETC1 / ETC1A4 texture data.
+    /// Wraps the etcpak native binary to compress/decompress ETC1 / ETC1A4 / DXT texture data.
     /// </summary>
     public static class EtcpakTool
     {
+        #region Constants
+
+        private const ulong PVR_ETC1 = 6;
+        private const ulong PVR_ETC2_RGBA = 23;
+
+        // PVR3 Pixel format constants for DXT/BCn formats
+        private const ulong PVR_BC1 = 7;  // BC1 / DXT1
+        private const ulong PVR_BC3 = 11; // BC3 / DXT5
+        private const ulong PVR_BC4 = 12; // BC4
+        private const ulong PVR_BC5 = 13; // BC5
+        private const ulong PVR_BC7 = 15; // BC7
+
+        #endregion
+
+        #region Platform Initialization
+
         /// <summary>
         /// Resolved path to the etcpak binary for the current OS.
         /// </summary>
@@ -64,13 +80,14 @@ namespace StudioElevenLib.Tools
             return fullPath;
         }
 
-        private const ulong PVR_ETC1 = 6;
-        private const ulong PVR_ETC2_RGBA = 23;
+        #endregion
+
+        #region ETC1 Compression
 
         /// <summary>
         /// Decompresses raw ETC data into linear RGBA8.
         /// </summary>
-        public static byte[] Decompress(byte[] etcData, int width, int height, bool hasAlpha)
+        public static byte[] DecompressETC1(byte[] etcData, int width, int height, bool hasAlpha)
         {
             string tmpPvr = Path.ChangeExtension(Path.GetTempFileName(), ".pvr");
             string tmpPng = Path.ChangeExtension(Path.GetTempFileName(), ".png");
@@ -158,7 +175,7 @@ namespace StudioElevenLib.Tools
         /// <summary>
         /// Compresses linear RGBA8 data into raw ETC1 / ETC1A4.
         /// </summary>
-        public static byte[] Compress(byte[] rgbaData, int width, int height, bool hasAlpha)
+        public static byte[] CompressETC1(byte[] rgbaData, int width, int height, bool hasAlpha)
         {
             string tmpPng = Path.ChangeExtension(Path.GetTempFileName(), ".png");
             string tmpPvr = Path.ChangeExtension(Path.GetTempFileName(), ".pvr");
@@ -225,6 +242,219 @@ namespace StudioElevenLib.Tools
                 TryDelete(tmpPvr);
             }
         }
+
+        #endregion
+
+        #region DXT Compression
+
+        /// <summary>
+        /// Decompresses raw BC data into linear RGBA8.
+        /// </summary>
+        /// <summary>
+        public static byte[] DecompressBC(byte[] dxtData, int width, int height, int version)
+        {
+            if (version == 1)
+            {
+                return DecompressBC1(dxtData, width, height);
+            }
+            else if (version == 5)
+            {
+                return DecompressBC5(dxtData, width, height);
+            }
+            else
+            {
+                throw new NotSupportedException($"Decompression for BC{version} is not implemented.");
+            }
+        }
+
+        private static byte[] DecompressBC1(byte[] data, int width, int height)
+        {
+            byte[] rgba = new byte[width * height * 4];
+            int blocksX = width / 4;
+            int blocksY = height / 4;
+            int offset = 0;
+
+            for (int by = 0; by < blocksY; by++)
+            {
+                for (int bx = 0; bx < blocksX; bx++)
+                {
+                    if (offset + 8 > data.Length) break;
+
+                    ushort color0 = BitConverter.ToUInt16(data, offset);
+                    ushort color1 = BitConverter.ToUInt16(data, offset + 2);
+                    uint indices = BitConverter.ToUInt32(data, offset + 4);
+                    offset += 8;
+
+                    // Conversion from RGB565 to RGB888
+                    int r0 = ((color0 >> 11) & 0x1F) * 255 / 31;
+                    int g0 = ((color0 >> 5) & 0x3F) * 255 / 63;
+                    int b0 = (color0 & 0x1F) * 255 / 31;
+
+                    int r1 = ((color1 >> 11) & 0x1F) * 255 / 31;
+                    int g1 = ((color1 >> 5) & 0x3F) * 255 / 63;
+                    int b1 = (color1 & 0x1F) * 255 / 31;
+
+                    for (int i = 0; i < 16; i++)
+                    {
+                        int px = (bx * 4) + (i % 4);
+                        int py = (by * 4) + (i / 4);
+
+                        if (px >= width || py >= height) continue;
+
+                        int idx = (int)((indices >> (i * 2)) & 3);
+                        int r = 0, g = 0, b = 0, a = 255;
+
+                        if (color0 > color1)
+                        {
+                            switch (idx)
+                            {
+                                case 0: r = r0; g = g0; b = b0; break;
+                                case 1: r = r1; g = g1; b = b1; break;
+                                case 2: r = (2 * r0 + r1) / 3; g = (2 * g0 + g1) / 3; b = (2 * b0 + b1) / 3; break;
+                                case 3: r = (r0 + 2 * r1) / 3; g = (g0 + 2 * g1) / 3; b = (b0 + 2 * b1) / 3; break;
+                            }
+                        }
+                        else
+                        {
+                            switch (idx)
+                            {
+                                case 0: r = r0; g = g0; b = b0; break;
+                                case 1: r = r1; g = g1; b = b1; break;
+                                case 2: r = (r0 + r1) / 2; g = (g0 + g1) / 2; b = (b0 + b1) / 2; break;
+                                case 3: r = 0; g = 0; b = 0; a = 255; break;
+                            }
+                        }
+
+                        int pIdx = (py * width + px) * 4;
+                        rgba[pIdx] = (byte)r;
+                        rgba[pIdx + 1] = (byte)g;
+                        rgba[pIdx + 2] = (byte)b;
+                        rgba[pIdx + 3] = (byte)a;
+                    }
+                }
+            }
+            return rgba;
+        }
+
+        private static byte[] DecompressBC5(byte[] data, int width, int height)
+        {
+            byte[] rgba = new byte[width * height * 4];
+            int blocksX = width / 4;
+            int blocksY = height / 4;
+            int offset = 0;
+
+            for (int by = 0; by < blocksY; by++)
+            {
+                for (int bx = 0; bx < blocksX; bx++)
+                {
+                    if (offset + 16 > data.Length) break;
+
+                    // Decodes the Red channel (first 8 bytes)
+                    DecodeBC4Block(data, offset, rgba, width, height, bx, by, 0);
+
+                    // Decode the Green channel (next 8 bytes)
+                    DecodeBC4Block(data, offset + 8, rgba, width, height, bx, by, 1);
+
+                    for (int i = 0; i < 16; i++)
+                    {
+                        int px = (bx * 4) + (i % 4);
+                        int py = (by * 4) + (i / 4);
+
+                        if (px >= width || py >= height) continue;
+
+                        int pIdx = (py * width + px) * 4;
+
+                        // Set Blue and Alpha to 255
+                        rgba[pIdx + 2] = 255;
+                        rgba[pIdx + 3] = 255;
+                    }
+                    offset += 16;
+                }
+            }
+            return rgba;
+        }
+
+        private static void DecodeBC4Block(byte[] data, int offset, byte[] rgba, int width, int height, int bx, int by, int channelOffset)
+        {
+            byte r0 = data[offset];
+            byte r1 = data[offset + 1];
+
+            // Reads the 6 index bytes (48 bits) cleanly
+            ulong indices = 0;
+            for (int b = 0; b < 6; b++)
+            {
+                indices |= ((ulong)data[offset + 2 + b]) << (b * 8);
+            }
+
+            byte[] palette = new byte[8];
+            palette[0] = r0;
+            palette[1] = r1;
+
+            if (r0 > r1)
+            {
+                palette[2] = (byte)((6 * r0 + 1 * r1) / 7);
+                palette[3] = (byte)((5 * r0 + 2 * r1) / 7);
+                palette[4] = (byte)((4 * r0 + 3 * r1) / 7);
+                palette[5] = (byte)((3 * r0 + 4 * r1) / 7);
+                palette[6] = (byte)((2 * r0 + 5 * r1) / 7);
+                palette[7] = (byte)((1 * r0 + 6 * r1) / 7);
+            }
+            else
+            {
+                palette[2] = (byte)((4 * r0 + 1 * r1) / 5);
+                palette[3] = (byte)((3 * r0 + 2 * r1) / 5);
+                palette[4] = (byte)((2 * r0 + 3 * r1) / 5);
+                palette[5] = (byte)((1 * r0 + 4 * r1) / 5);
+                palette[6] = 0;
+                palette[7] = 255;
+            }
+
+            for (int i = 0; i < 16; i++)
+            {
+                int px = (bx * 4) + (i % 4);
+                int py = (by * 4) + (i / 4);
+                if (px >= width || py >= height) continue;
+
+                int idx = (int)((indices >> (i * 3)) & 7);
+                int pIdx = (py * width + px) * 4;
+                rgba[pIdx + channelOffset] = palette[idx];
+            }
+        }
+
+        /// <summary>
+        /// Compresses linear RGBA8 data into raw BC format.
+        /// </summary>
+        public static byte[] CompressBC(byte[] rgbaData, int width, int height, int version)
+        {
+            string tmpPng = Path.ChangeExtension(Path.GetTempFileName(), ".png");
+            string tmpPvr = Path.ChangeExtension(Path.GetTempFileName(), ".pvr");
+
+            try
+            {
+                // Ensure version is supported
+                if (version != 1 && version != 3 && version != 4 && version != 5 && version != 7)
+                    throw new ArgumentException("Version must be 1, 3, 4, 5, or 7", nameof(version));
+
+                WriteRgbaAsPng(rgbaData, width, height, tmpPng);
+
+                // Build argument for etcpak (e.g., "bc1", "bc3")
+                string formatArg = $"bc{version}";
+
+                // Run etcpak using standard compression parameters
+                RunEtcpak($"-c {formatArg} \"{tmpPng}\" \"{tmpPvr}\"");
+
+                return ReadPvrPayload(tmpPvr);
+            }
+            finally
+            {
+                TryDelete(tmpPng);
+                TryDelete(tmpPvr);
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
 
         private static void WritePvr(string path, byte[] data, int width, int height, ulong pixelFormat)
         {
@@ -371,5 +601,7 @@ namespace StudioElevenLib.Tools
                 /* ignored */
             }
         }
+
+        #endregion
     }
 }
