@@ -143,7 +143,9 @@
     <Compile Include="Level5\Resource\ResourceHelper.cs" />
     <Compile Include="Level5\Resource\RESType.cs" />
     <Compile Include="Level5\Resource\RES\RES.cs" />
+    <Compile Include="Level5\Resource\RES\RESReader.cs" />
     <Compile Include="Level5\Resource\RES\RESSupport.cs" />
+    <Compile Include="Level5\Resource\RES\RESWriter.cs" />
     <Compile Include="Level5\Resource\Types\RESElement.cs" />
     <Compile Include="Level5\Resource\Types\RESImageEntry.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationIMMINF.cs" />

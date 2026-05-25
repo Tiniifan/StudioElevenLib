@@ -4,6 +4,9 @@ using StudioElevenLib.Level5.Resource;
 
 namespace StudioElevenLib.Level5.Resource.RES
 {
+    /// <summary>
+    /// Contains supporting structures and definitions for RES files.
+    /// </summary>
     public class RESSupport
     {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
