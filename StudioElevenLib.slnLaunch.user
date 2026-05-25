@@ -3,8 +3,9 @@
     "Name": "Nouveau profil",
     "Projects": [
       {
-        "Path": "StudioElevenLibTest\\StudioEleven.csproj",
-        "Action": "Start"
+        "Path": "StudioEleven\\StudioEleven.csproj",
+        "Action": "Start",
+        "DebugTarget": "StudioEleven"
       }
     ]
   }
