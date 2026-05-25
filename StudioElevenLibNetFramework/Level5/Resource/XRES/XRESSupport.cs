@@ -4,6 +4,9 @@ using StudioElevenLib.Level5.Resource;
 
 namespace StudioElevenLib.Level5.Resource.XRES
 {
+    /// <summary>
+    /// Contains supporting structures and definitions for XRES files.
+    /// </summary>
     public class XRESSupport
     {
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
