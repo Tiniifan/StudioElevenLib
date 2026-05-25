@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using StudioElevenLib.Tools;
-using StudioElevenLib.Level5.Compression.LZ10;
 using StudioElevenLib.Level5.Resource.Types;
 using StudioElevenLib.Level5.Resource.Types.Scene3D;
+using StudioElevenLib.Level5.Compression;
 
 namespace StudioElevenLib.Level5.Resource.RES
 {
@@ -106,7 +106,7 @@ namespace StudioElevenLib.Level5.Resource.RES
                     }
 
                     // Compress
-                    writerComp.Write(new LZ10().Compress(memoryStream.ToArray()));
+                    writerComp.Write(Compressor.Compress(memoryStream.ToArray()));
                 }
 
                 return fileStream.ToArray();

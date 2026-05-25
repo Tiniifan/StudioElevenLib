@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using StudioElevenLib.Level5.Compression.NoCompression;
 using StudioElevenLib.Level5.Compression;
 using StudioElevenLib.Tools;
 
@@ -128,23 +127,23 @@ namespace StudioElevenLib.Level5.Archive.ARC0
 
             writer.Seek(0x48);
             long directoryEntriesOffset = 0x48;
-            writer.Write(CompressBlockTo(directoryEntries.ToArray(), new NoCompression()));
+            writer.Write(CompressBlockTo(directoryEntries.ToArray()));
             writer.WriteAlignment(4);
             progress?.Report(35);
 
             long directoryHashOffset = stream.Position;
-            writer.Write(CompressBlockTo(directoryHashes, new NoCompression()));
+            writer.Write(CompressBlockTo(directoryHashes));
             writer.WriteAlignment(4);
             progress?.Report(40);
 
             long fileEntriesOffset = stream.Position;
-            writer.Write(CompressBlockTo(fileEntries.ToArray(), new NoCompression()));
+            writer.Write(CompressBlockTo(fileEntries.ToArray()));
             writer.WriteAlignment(4);
             progress?.Report(45);
 
             long fileNameTableOffset = stream.Position;
             byte[] tableNameArray = ConcatenateByteArrays(tableName);
-            writer.Write(CompressBlockTo(tableNameArray, new NoCompression()));
+            writer.Write(CompressBlockTo(tableNameArray));
             writer.WriteAlignment(4);
             progress?.Report(50);
 
@@ -190,10 +189,10 @@ namespace StudioElevenLib.Level5.Archive.ARC0
             progress?.Report(100);
         }
 
-        private byte[] CompressBlockTo<T>(T[] data, ICompression compression)
+        private byte[] CompressBlockTo<T>(T[] data)
         {
             byte[] serializedData = SerializeData(data);
-            return compression.Compress(serializedData);
+            return Compressor.Compress(serializedData);
         }
 
         private byte[] SerializeData<T>(T[] data)

@@ -5,9 +5,6 @@ using System.Text;
 using System.Collections.Generic;
 using StudioElevenLib.Tools;
 using StudioElevenLib.Level5.Compression;
-using StudioElevenLib.Level5.Compression.NoCompression;
-using StudioElevenLib.Level5.Compression.ZLib;
-using StudioElevenLib.Level5.Compression.LZ10;
 using StudioElevenLib.Level5.Archive.XPCK;
 
 namespace StudioElevenLib.Level5.Archive.XFSP
@@ -170,7 +167,7 @@ namespace StudioElevenLib.Level5.Archive.XFSP
 
                 // Write name table
                 fileNameTableOffset = stream.Position;
-                byte[] tableNameData = CompressBlockTo<byte>(tableName.SelectMany(bytes => bytes).ToArray(), new LZ10());
+                byte[] tableNameData = CompressBlockTo<byte>(tableName.SelectMany(bytes => bytes).ToArray());
                 fileNameTableSize = tableNameData.Length;
                 writer.Write(tableNameData);
                 writer.WriteAlignment(16);
@@ -299,7 +296,7 @@ namespace StudioElevenLib.Level5.Archive.XFSP
 
                     // Write name table
                     fileNameTableOffset = stream.Position;
-                    byte[] tableNameData = CompressBlockTo<byte>(tableName.SelectMany(bytes => bytes).ToArray(), new LZ10());
+                    byte[] tableNameData = CompressBlockTo<byte>(tableName.SelectMany(bytes => bytes).ToArray());
                     int paddingSize = 4 - (tableNameData.Length % 4);
                     if (paddingSize != 4)
                     {
@@ -343,10 +340,10 @@ namespace StudioElevenLib.Level5.Archive.XFSP
             }
         }
 
-        private byte[] CompressBlockTo<T>(T[] data, ICompression compression)
+        private byte[] CompressBlockTo<T>(T[] data)
         {
             byte[] serializedData = SerializeData<T>(data);
-            return compression.Compress(serializedData);
+            return Compressor.Compress(serializedData);
         }
 
         private byte[] SerializeData<T>(T[] data)

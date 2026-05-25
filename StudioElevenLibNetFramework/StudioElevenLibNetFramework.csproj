@@ -168,7 +168,9 @@
     <Compile Include="Level5\Resource\Types\Scene3D\RESTextproj.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESTextureData.cs" />
     <Compile Include="Level5\Resource\XRES\XRES.cs" />
+    <Compile Include="Level5\Resource\XRES\XRESReader.cs" />
     <Compile Include="Level5\Resource\XRES\XRESSupport.cs" />
+    <Compile Include="Level5\Resource\XRES\XRESWriter.cs" />
     <Compile Include="Level5\Text\Logic\StringLevel5.cs" />
     <Compile Include="Level5\Text\Logic\TextConfig.cs" />
     <Compile Include="Level5\Text\T2bþ.cs" />

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using StudioElevenLib.Tools;
-using StudioElevenLib.Level5.Compression.NoCompression;
+using StudioElevenLib.Level5.Compression;
 using StudioElevenLib.Level5.Resource.Types;
 using StudioElevenLib.Level5.Resource.Types.Scene3D;
 
@@ -130,8 +130,8 @@ namespace StudioElevenLib.Level5.Resource.XRES
                         writerDecomp.WriteAlignment(4);
                     }
 
-                    // Compress with NoCompression
-                    writerComp.Write(new NoCompression().Compress(memoryStream.ToArray()));
+                    // Compress
+                    writerComp.Write(Compressor.Compress(memoryStream.ToArray()));
                 }
 
                 return fileStream.ToArray();
