@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<DefineConstants>USE_IMAGESHARP</DefineConstants>
     <FileVersion>2.0.0.0</FileVersion>	
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -31,5 +32,9 @@
       <Link>bin\linux-x64\etcpak</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>  
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+	</ItemGroup>	
 </Project>
