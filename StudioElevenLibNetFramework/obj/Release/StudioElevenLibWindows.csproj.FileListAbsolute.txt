@@ -1,0 +1,7 @@
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\bin\Release\bin\win-x64\etcpak.exe
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\bin\Release\StudioElevenLib.dll
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\bin\Release\StudioElevenLib.pdb
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\obj\Release\StudioElevenLibWindows.csproj.AssemblyReference.cache
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\obj\Release\StudioElevenLibWindows.csproj.CoreCompileInputs.cache
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\obj\Release\StudioElevenLib.dll
+C:\Users\Tinifan\source\repos\StudioElevenLib\StudioElevenLib\obj\Release\StudioElevenLib.pdb
