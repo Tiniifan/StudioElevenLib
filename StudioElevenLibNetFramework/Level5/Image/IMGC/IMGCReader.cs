@@ -45,8 +45,6 @@ namespace StudioElevenLib.Level5.Image.IMGC
                 isSwitchFile = BitConverter.ToUInt16(tileData, 0) == 0x453;
             }
 
-            Console.WriteLine(isSwitchFile.ToString() + " " + header.ImageFormat.ToString("X2"));
-
             var imageFormat = isSwitchFile ? IMGCSupport.SwitchPixelFormats[header.ImageFormat] : IMGCSupport.PixelFormats3DS[header.ImageFormat];
             var decoded = DecodeImage(tileData, imageData, imageFormat, header.Width, header.Height, header.BitDepth);
 
