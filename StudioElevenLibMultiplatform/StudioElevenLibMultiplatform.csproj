@@ -13,9 +13,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="../StudioElevenLibNetFramework/**/*.cs"
-				 Exclude="../StudioElevenLibNetFramework/Properties/**/*.cs;
-                      ../StudioElevenLibNetFramework/obj/**/*.cs" />
+		<Compile Include="../StudioElevenLibNetFramework/**/*.cs" Exclude="../StudioElevenLibNetFramework/Properties/**/*.cs;&#xD;&#xA;                      ../StudioElevenLibNetFramework/obj/**/*.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -31,5 +29,15 @@
 
 	<ItemGroup>
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Native\linux-arm64\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Native\linux-arm64\etcpak">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>

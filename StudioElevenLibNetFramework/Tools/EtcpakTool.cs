@@ -51,9 +51,23 @@ namespace StudioElevenLib.Tools
                              ?? AppContext.BaseDirectory;
 
             // Determine the correct executable based on the operating system
-            string relativePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? Path.Combine("bin", "win-x64", "etcpak.exe")
-                : Path.Combine("bin", "linux-x64", "etcpak");
+            string relativePath;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // Windows
+                relativePath = Path.Combine("bin", "win-x64", "etcpak.exe");
+            }
+            else
+            {
+                // Linux
+                relativePath = RuntimeInformation.OSArchitecture switch
+                {
+                    Architecture.Arm64 => Path.Combine("bin", "linux-arm64", "etcpak"),
+                    Architecture.X64 => Path.Combine("bin", "linux-x64", "etcpak"),
+                    _ => throw new PlatformNotSupportedException(
+                        $"Unsupported Linux architecture: {RuntimeInformation.OSArchitecture}")
+                };
+            }
 
             string fullPath = Path.Combine(baseDir, relativePath);
 
