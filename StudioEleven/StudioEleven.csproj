@@ -73,7 +73,7 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
   </ItemGroup>	
 
-  <Target Name="PublishAllArchitectures" AfterTargets="Build" Condition="'$(IsPublishing)' != 'true'">
+  <Target Name="PublishAllArchitectures" AfterTargets="Build" Condition="'$(IsPublishing)' != 'true' And '$(Configuration)' == 'Release'">
     <Exec Command="dotnet publish -c $(Configuration) -r win-x64 -p:IsPublishing=true" />
     <Exec Command="dotnet publish -c $(Configuration) -r linux-x64 -p:IsPublishing=true" />
     <Exec Command="dotnet publish -c $(Configuration) -r linux-arm64 -p:IsPublishing=true" />
