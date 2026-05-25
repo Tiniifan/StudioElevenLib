@@ -22,7 +22,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\StudioElevenLib\Native\win-x64\etcpak.exe">
+    <None Include="..\StudioElevenLibNetFramework\Native\win-x64\etcpak.exe">
       <Link>bin\win-x64\etcpak.exe</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
