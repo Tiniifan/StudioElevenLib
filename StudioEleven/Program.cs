@@ -15,6 +15,7 @@ namespace StudioEleven
             new ArchiveModule(),
             new ImageModule(),
             new MeshModule(),
+            new BoneModule(),
         };
 
         #endregion
