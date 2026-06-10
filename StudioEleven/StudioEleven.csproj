@@ -1,90 +1,97 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <DefineConstants>USE_IMAGESHARP</DefineConstants>
-    <FileVersion>2.0.0.0</FileVersion>	
-    <FileUpgradeFlags></FileUpgradeFlags>
-    <OldToolsVersion>2.0</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <ProjectGuid>{34B2F44C-2DA1-476C-A1EA-60B49B8D2883}</ProjectGuid>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<DefineConstants>USE_IMAGESHARP</DefineConstants>
+		<FileVersion>2.0.0.0</FileVersion>
+		<FileUpgradeFlags></FileUpgradeFlags>
+		<OldToolsVersion>2.0</OldToolsVersion>
+		<UpgradeBackupLocation />
+		<ProjectGuid>{34B2F44C-2DA1-476C-A1EA-60B49B8D2883}</ProjectGuid>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsPublishing)' == 'true'">
-    <OutputPath>$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\temp_build\$(RuntimeIdentifier)</OutputPath>
-    <PublishDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\$(RuntimeIdentifier)</PublishDir>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(IsPublishing)' == 'true'">
+		<OutputPath>$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\temp_build\$(RuntimeIdentifier)</OutputPath>
+		<PublishDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\net9.0\$(RuntimeIdentifier)</PublishDir>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' != 'win-x64' And '$(RuntimeIdentifier)' != '' And '$(IsPublishing)' == 'true'">
-    <SelfContained>true</SelfContained>
-    <PublishSingleFile>true</PublishSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <DebugType>None</DebugType>
-    <DebugSymbols>false</DebugSymbols>
-    <PublishTrimmed>true</PublishTrimmed>
-    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(RuntimeIdentifier)' != 'win-x64' And '$(RuntimeIdentifier)' != '' And '$(IsPublishing)' == 'true'">
+		<SelfContained>true</SelfContained>
+		<PublishSingleFile>true</PublishSingleFile>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<DebugType>None</DebugType>
+		<DebugSymbols>false</DebugSymbols>
+		<PublishTrimmed>true</PublishTrimmed>
+		<CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="StudioElevenLib">
-      <HintPath>..\StudioElevenLibMultiplatform\bin\Release\net9.0\StudioElevenLib.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+	<ItemGroup>
+		<Reference Include="StudioElevenLib">
+			<HintPath>..\StudioElevenLibMultiplatform\bin\Release\net9.0\StudioElevenLib.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' Or ('$(RuntimeIdentifier)' == '' And '$(IsPublishing)' != 'true')">
-    <None Include="..\StudioElevenLibNetFramework\Native\win-x64\etcpak.exe">
-      <Link>bin\win-x64\etcpak.exe</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </None>
-  </ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' Or ('$(RuntimeIdentifier)' == '' And '$(IsPublishing)' != 'true')">
+		<None Include="..\StudioElevenLibNetFramework\Native\win-x64\etcpak.exe">
+			<Link>bin\win-x64\etcpak.exe</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
-    <None Include="..\StudioElevenLibMultiplatform\Native\linux-x64\etcpak">
-      <Link>bin\linux-x64\etcpak</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </None>
-  </ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+		<None Include="..\StudioElevenLibMultiplatform\Native\linux-x64\etcpak">
+			<Link>bin\linux-x64\etcpak</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-arm64'">
-    <None Include="..\StudioElevenLibMultiplatform\Native\linux-arm64\etcpak">
-      <Link>bin\linux-arm64\etcpak</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </None>
-  </ItemGroup>
+	<ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-arm64'">
+		<None Include="..\StudioElevenLibMultiplatform\Native\linux-arm64\etcpak">
+			<Link>bin\linux-arm64\etcpak</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		</None>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
-  </ItemGroup>	
+	<ItemGroup>
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+	</ItemGroup>
 
-  <Target Name="PublishAllArchitectures" AfterTargets="Build" Condition="'$(IsPublishing)' != 'true' And '$(Configuration)' == 'Release'">
-    <Exec Command="dotnet publish -c $(Configuration) -r win-x64 -p:IsPublishing=true" />
-    <Exec Command="dotnet publish -c $(Configuration) -r linux-x64 -p:IsPublishing=true" />
-    <Exec Command="dotnet publish -c $(Configuration) -r linux-arm64 -p:IsPublishing=true" />
-    <Exec Command="dotnet publish -c $(Configuration) -r osx-x64 -p:IsPublishing=true" />
-    <Exec Command="dotnet publish -c $(Configuration) -r osx-arm64 -p:IsPublishing=true" />
+	<Target Name="BuildDependenciesBeforeDebug" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Debug'">
+		<Exec Command="dotnet build ..\StudioElevenLibMultiplatform -c Debug" />
+		<Exec Command="dotnet build ..\StudioElevenLibMultiplatform -c Release" />
+		<Exec Command="dotnet build ..\StudioElevenLibNetFramework -c Debug" />
+		<Exec Command="dotnet build ..\StudioElevenLibNetFramework -c Release" />
+	</Target>
 
-    <ItemGroup>
-      <RootBuildFiles Include="$(TargetDir)*.*" />
-    </ItemGroup>
-    <Delete Files="@(RootBuildFiles)" />
-    <RemoveDir Directories="$(TargetDir)temp_build" />
-    <RemoveDir Directories="$(TargetDir)bin" />
-  </Target>
+	<Target Name="PublishAllArchitectures" AfterTargets="Build" Condition="'$(IsPublishing)' != 'true' And '$(Configuration)' == 'Release'">
+		<Exec Command="dotnet publish -c $(Configuration) -r win-x64 -p:IsPublishing=true" />
+		<Exec Command="dotnet publish -c $(Configuration) -r linux-x64 -p:IsPublishing=true" />
+		<Exec Command="dotnet publish -c $(Configuration) -r linux-arm64 -p:IsPublishing=true" />
+		<Exec Command="dotnet publish -c $(Configuration) -r osx-x64 -p:IsPublishing=true" />
+		<Exec Command="dotnet publish -c $(Configuration) -r osx-arm64 -p:IsPublishing=true" />
+
+		<ItemGroup>
+			<RootBuildFiles Include="$(TargetDir)*.*" />
+		</ItemGroup>
+		<Delete Files="@(RootBuildFiles)" />
+		<RemoveDir Directories="$(TargetDir)temp_build" />
+		<RemoveDir Directories="$(TargetDir)bin" />
+	</Target>
 </Project>

@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using StudioElevenLib.Level5.Compression;
+
+using StudioElevenLib.Common.Imaging;
 
 #if USE_SYSTEM_DRAWING
 using System.Drawing;
@@ -92,6 +92,44 @@ namespace StudioElevenLib.Tools
             }
 
             return fullPath;
+        }
+
+        #endregion
+
+        #region Warper
+
+        public static byte[] Decompress(IPixelFormat pixelFormat, byte[] etcData, int width, int height)
+        {
+            switch(pixelFormat.Name)
+            {
+                case "ETC1":
+                    return DecompressETC1(etcData, width, height, false);
+                case "ETC1A4":
+                    return DecompressETC1(etcData, width, height, true);
+                case "BC1":
+                    return DecompressBC(etcData, width, height, 1);
+                case "BC5":
+                    return DecompressBC(etcData, width, height, 5);
+                default:
+                    throw new NotSupportedException($"{pixelFormat.Name} is not PixelBlock format or is not implemented.");
+            }
+        }
+
+        public static byte[] Compress(IPixelFormat pixelFormat, byte[] etcData, int width, int height)
+        {
+            switch (pixelFormat.Name)
+            {
+                case "ETC1":
+                    return CompressETC1(etcData, width, height, false);
+                case "ETC1A4":
+                    return CompressETC1(etcData, width, height, true);
+                case "BC1":
+                    return CompressBC(etcData, width, height, 1);
+                case "BC5":
+                    return CompressBC(etcData, width, height, 5);
+                default:
+                    throw new NotSupportedException($"{pixelFormat.Name} is not PixelBlock format or is not implemented.");
+            }
         }
 
         #endregion
