@@ -48,6 +48,26 @@ namespace StudioElevenLib.Level5.Text
             LoadBinary();
         }
 
+        private static string EscapeNewLines(string text)
+        {
+            // Converts every real line break (\r\n, \n or \r) into the literal two-character sequence "\n"
+
+            if (text == null)
+                return text;
+
+            return text.Replace("\r\n", "\\n").Replace("\n", "\\n").Replace("\r", "\\n");
+        }
+
+        private static string UnescapeNewLines(string text)
+        {
+            // Converts every literal "\n" sequence back into a real line break
+
+            if (text == null)
+                return text;
+
+            return text.Replace("\\n", "\n");
+        }
+
         private void LoadBinary()
         {
             // Get faces
@@ -92,7 +112,8 @@ namespace StudioElevenLib.Level5.Text
                             }
                         }
 
-                        string text = y.Item.Variables[2].Value as string;
+                        // Convert literal "\n" back to real line breaks when reading
+                        string text = UnescapeNewLines(y.Item.Variables[2].Value as string);
                         int textNumber = Convert.ToInt32(y.Item.Variables[1].Value);
                         int varianceKey = 0;
 
@@ -133,8 +154,9 @@ namespace StudioElevenLib.Level5.Text
                     {
                         List<StringLevel5> strings = new List<StringLevel5>();
 
-                        string text = y.Item.Variables[2].Value as string;
-                        string textDebug = y.Item.Variables.Count > 3 ? y.Item.Variables[3].Value as string : "";
+                        // Convert literal "\n" back to real line breaks when reading
+                        string text = UnescapeNewLines(y.Item.Variables[2].Value as string);
+                        string textDebug = y.Item.Variables.Count > 3 ? UnescapeNewLines(y.Item.Variables[3].Value as string) : "";
                         int textNumber = Convert.ToInt32(y.Item.Variables[1].Value);
 
                         if (text != null)
@@ -171,7 +193,8 @@ namespace StudioElevenLib.Level5.Text
 
                         if (y.Item.Variables.Count > 5)
                         {
-                            string text = y.Item.Variables[5].Value as string;
+                            // Convert literal "\n" back to real line breaks when reading
+                            string text = UnescapeNewLines(y.Item.Variables[5].Value as string);
                             int varianceKey = Convert.ToInt32(y.Item.Variables[1].Value);
 
                             if (text != null)
@@ -221,6 +244,8 @@ namespace StudioElevenLib.Level5.Text
 
         public T2bþ(string xmlData) : base()
         {
+            Encoding = Encoding.UTF8;
+
             Texts = new Dictionary<int, TextConfig>();
             Nouns = new Dictionary<int, TextConfig>();
             TextsDebug = new Dictionary<int, TextConfig>();
@@ -251,7 +276,8 @@ namespace StudioElevenLib.Level5.Text
 
                 foreach (XmlNode stringNode in stringNodes)
                 {
-                    string value = stringNode.Attributes.GetNamedItem("value").Value;
+                    // Convert literal "\n" back to real line breaks when reading
+                    string value = UnescapeNewLines(stringNode.Attributes.GetNamedItem("value").Value);
                     int textNumber = 0;
                     int varianceKey = 0;
                     string textDebug = null;
@@ -268,7 +294,7 @@ namespace StudioElevenLib.Level5.Text
 
                     if (stringNode.Attributes.GetNamedItem("textDebug") != null)
                     {
-                        textDebug = stringNode.Attributes.GetNamedItem("textDebug").Value;
+                        textDebug = UnescapeNewLines(stringNode.Attributes.GetNamedItem("textDebug").Value);
                     }
 
                     strings.Add(new StringLevel5(textNumber, value, varianceKey, textDebug));
@@ -291,6 +317,8 @@ namespace StudioElevenLib.Level5.Text
 
         public T2bþ(string[] lines)
         {
+            Encoding = Encoding.UTF8;
+
             Texts = new Dictionary<int, TextConfig>();
             Nouns = new Dictionary<int, TextConfig>();
             TextsDebug = new Dictionary<int, TextConfig>();
@@ -343,17 +371,20 @@ namespace StudioElevenLib.Level5.Text
                     {
                         int textNumber = int.Parse(entryMatch.Groups[1].Value);
                         int varianceKey = int.Parse(entryMatch.Groups[2].Value);
-                        string text = entryMatch.Groups[3].Value;
+                        // Convert literal "\n" back to real line breaks when reading
+                        string text = UnescapeNewLines(entryMatch.Groups[3].Value);
 
                         currentTextConfig.Strings.Add(new StringLevel5(textNumber, text, varianceKey));
                     }
                     else if (currentTextConfig != null)
                     {
-                        currentTextConfig.Strings.Add(new StringLevel5(currentTextConfig.Strings.Count, line, 0));
+                        // Convert literal "\n" back to real line breaks when reading
+                        currentTextConfig.Strings.Add(new StringLevel5(currentTextConfig.Strings.Count, UnescapeNewLines(line), 0));
                     }
                     else
                     {
-                        Texts.Add(currentIndex, new TextConfig(new List<StringLevel5>() { new StringLevel5(0, line, 0) }, -1));
+                        // Convert literal "\n" back to real line breaks when reading
+                        Texts.Add(currentIndex, new TextConfig(new List<StringLevel5>() { new StringLevel5(0, UnescapeNewLines(line), 0) }, -1));
                         currentTextConfig = null;
                     }
                 }
@@ -430,7 +461,7 @@ namespace StudioElevenLib.Level5.Text
                     {
                         new Variable(CfgValueType.Int, textItem.Key),
                         new Variable(CfgValueType.Int, textValue.TextNumber),
-                        new Variable(CfgValueType.String, textValue.Text),
+                        new Variable(CfgValueType.String, EscapeNewLines(textValue.Text)),
                     };
 
                     // Add variance only if variance = true
@@ -466,8 +497,8 @@ namespace StudioElevenLib.Level5.Text
                     {
                         new Variable(CfgValueType.Int, textItem.Key),
                         new Variable(CfgValueType.Int, textValue.TextNumber),
-                        new Variable(CfgValueType.String, textValue.Text),
-                        new Variable(CfgValueType.String, textValue.TextDebug),
+                        new Variable(CfgValueType.String, EscapeNewLines(textValue.Text)),
+                        new Variable(CfgValueType.String, EscapeNewLines(textValue.TextDebug)),
                     });
 
                     debugTextBeginNode.AddChild(new CfgTreeNode(textItemEntry, 1));
@@ -552,7 +583,7 @@ namespace StudioElevenLib.Level5.Text
                         new Variable(CfgValueType.String, null),
                         new Variable(CfgValueType.String, null),
                         new Variable(CfgValueType.String, null),
-                        new Variable(CfgValueType.String, textValue.Text),
+                        new Variable(CfgValueType.String, EscapeNewLines(textValue.Text)),
                         new Variable(CfgValueType.String, null),
                         new Variable(CfgValueType.String, null),
                         new Variable(CfgValueType.String, null),
@@ -664,11 +695,12 @@ namespace StudioElevenLib.Level5.Text
 
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
-                    string escapedText = stringLevel5.Text.Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
+                    // Convert real line breaks to literal "\n" when saving, then escape XML-sensitive characters
+                    string escapedText = EscapeNewLines(stringLevel5.Text).Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
 
                     if (!string.IsNullOrEmpty(stringLevel5.TextDebug))
                     {
-                        string escapedDebugText = stringLevel5.TextDebug.Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
+                        string escapedDebugText = EscapeNewLines(stringLevel5.TextDebug).Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
                         xmlBuilder.AppendLine($"  <String textNumber=\"{stringLevel5.TextNumber}\" varianceKey=\"{stringLevel5.VarianceKey}\" value=\"{escapedText}\" textDebug=\"{escapedDebugText}\" />");
                     }
                     else
@@ -743,7 +775,8 @@ namespace StudioElevenLib.Level5.Text
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
                     string formattedPrefix = $"[{stringLevel5.TextNumber}; {stringLevel5.VarianceKey}]".PadRight(maxPrefixWidth);
-                    textBuilder.AppendLine($"{formattedPrefix} {stringLevel5.Text}");
+                    // Convert real line breaks to literal "\n" when saving
+                    textBuilder.AppendLine($"{formattedPrefix} {EscapeNewLines(stringLevel5.Text)}");
                 }
 
                 txtStrings.Add(textBuilder.ToString());
@@ -762,8 +795,9 @@ namespace StudioElevenLib.Level5.Text
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
                     string formattedPrefix = $"[{stringLevel5.TextNumber}; 0]".PadRight(maxPrefixWidth);
-                    string debugInfo = !string.IsNullOrEmpty(stringLevel5.TextDebug) ? $" [DEBUG: {stringLevel5.TextDebug}]" : "";
-                    textBuilder.AppendLine($"{formattedPrefix} {stringLevel5.Text}{debugInfo}");
+                    // Convert real line breaks to literal "\n" when saving
+                    string debugInfo = !string.IsNullOrEmpty(stringLevel5.TextDebug) ? $" [DEBUG: {EscapeNewLines(stringLevel5.TextDebug)}]" : "";
+                    textBuilder.AppendLine($"{formattedPrefix} {EscapeNewLines(stringLevel5.Text)}{debugInfo}");
                 }
 
                 txtStrings.Add(textBuilder.ToString());
@@ -782,7 +816,8 @@ namespace StudioElevenLib.Level5.Text
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
                     string formattedPrefix = $"[{stringLevel5.TextNumber}; {stringLevel5.VarianceKey}]".PadRight(maxPrefixWidth);
-                    textBuilder.AppendLine($"{formattedPrefix} {stringLevel5.Text}");
+                    // Convert real line breaks to literal "\n" when saving
+                    textBuilder.AppendLine($"{formattedPrefix} {EscapeNewLines(stringLevel5.Text)}");
                 }
 
                 txtStrings.Add(textBuilder.ToString());
