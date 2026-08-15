@@ -9,6 +9,7 @@ using StudioElevenLib.Level5.Binary;
 using StudioElevenLib.Level5.Binary.Logic;
 using StudioElevenLib.Level5.Text.Logic;
 using StudioElevenLib.Level5.Binary.Collections;
+using StudioElevenLib.Tools;
 
 namespace StudioElevenLib.Level5.Text
 {
@@ -17,12 +18,14 @@ namespace StudioElevenLib.Level5.Text
         public Dictionary<int, TextConfig> Texts { get; set; }
         public Dictionary<int, TextConfig> Nouns { get; set; }
         public Dictionary<int, TextConfig> TextsDebug { get; set; }
+        public Dictionary<int, string> Keys { get; set; }
 
         public T2bþ()
         {
             Texts = new Dictionary<int, TextConfig>();
             Nouns = new Dictionary<int, TextConfig>();
             TextsDebug = new Dictionary<int, TextConfig>();
+            Keys = new Dictionary<int, string>();
         }
 
         public T2bþ(Stream stream)
@@ -30,6 +33,7 @@ namespace StudioElevenLib.Level5.Text
             Texts = new Dictionary<int, TextConfig>();
             Nouns = new Dictionary<int, TextConfig>();
             TextsDebug = new Dictionary<int, TextConfig>();
+            Keys = new Dictionary<int, string>();
             Open(stream);
             LoadBinary();
         }
@@ -39,6 +43,7 @@ namespace StudioElevenLib.Level5.Text
             Texts = new Dictionary<int, TextConfig>();
             Nouns = new Dictionary<int, TextConfig>();
             TextsDebug = new Dictionary<int, TextConfig>();
+            Keys = new Dictionary<int, string>();
             Open(data);
             LoadBinary();
         }
@@ -100,7 +105,8 @@ namespace StudioElevenLib.Level5.Text
                         if (text != null)
                         {
                             strings.Add(new StringLevel5(textNumber, text, varianceKey));
-                        } else
+                        }
+                        else
                         {
                             strings.Add(new StringLevel5(textNumber, "", varianceKey));
                         }
@@ -134,7 +140,8 @@ namespace StudioElevenLib.Level5.Text
                         if (text != null)
                         {
                             strings.Add(new StringLevel5(textNumber, text, 0, textDebug));
-                        } else
+                        }
+                        else
                         {
                             strings.Add(new StringLevel5(textNumber, "", 0, textDebug));
                         }
@@ -170,7 +177,8 @@ namespace StudioElevenLib.Level5.Text
                             if (text != null)
                             {
                                 strings.Add(new StringLevel5(0, text, varianceKey));
-                            } else
+                            }
+                            else
                             {
                                 strings.Add(new StringLevel5(0, "", varianceKey));
                             }
@@ -187,6 +195,28 @@ namespace StudioElevenLib.Level5.Text
                         return new TextConfig(mergedStrings, group.First().WashaID);
                     }
                 );
+
+            // Get Keys
+            var keyInfoNodes = Entries.FindNodes(node => node.Name == "KEY_INFO");
+
+            foreach (var keyNode in keyInfoNodes)
+            {
+                if (keyNode.Item.Variables.Count < 2)
+                    continue;
+
+                int keyCrc32 = Convert.ToInt32(keyNode.Item.Variables[0].Value);
+
+                // The key must exist in Texts, Nouns, or TextsDebug; otherwise, it is skipped.
+                if (!Texts.ContainsKey(keyCrc32) && !Nouns.ContainsKey(keyCrc32) && !TextsDebug.ContainsKey(keyCrc32))
+                    continue;
+
+                // If the key does not already exist in Keys, it is added.
+                if (!Keys.ContainsKey(keyCrc32))
+                {
+                    string keyValue = keyNode.Item.Variables[1].Value as string;
+                    Keys[keyCrc32] = keyValue;
+                }
+            }
         }
 
         public T2bþ(string xmlData) : base()
@@ -194,6 +224,7 @@ namespace StudioElevenLib.Level5.Text
             Texts = new Dictionary<int, TextConfig>();
             Nouns = new Dictionary<int, TextConfig>();
             TextsDebug = new Dictionary<int, TextConfig>();
+            Keys = new Dictionary<int, string>();
 
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(xmlData);
@@ -202,8 +233,18 @@ namespace StudioElevenLib.Level5.Text
 
             foreach (XmlNode textNode in textConfigNodes)
             {
-                int crc32 = int.Parse(textNode.Attributes.GetNamedItem("crc32").Value.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
-                int washa = int.Parse(textNode.Attributes.GetNamedItem("washa").Value.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
+                string crc32Attr = textNode.Attributes.GetNamedItem("crc32").Value;
+                string washaAttr = textNode.Attributes.GetNamedItem("washa").Value;
+
+                // The key and the washa can now be either in 0x format or plain text (in which case the crc32 is calculated).
+                int crc32 = ParseKeyOrCrc32(crc32Attr);
+                int washa = ParseKeyOrCrc32(washaAttr);
+
+                //If the key is text (not 0x, not -1), it is saved in Keys.
+                if (!crc32Attr.StartsWith("0x") && crc32Attr != "-1" && !Keys.ContainsKey(crc32))
+                {
+                    Keys[crc32] = crc32Attr;
+                }
 
                 XmlNodeList stringNodes = textNode.SelectNodes("String");
                 List<StringLevel5> strings = new List<StringLevel5>();
@@ -253,6 +294,7 @@ namespace StudioElevenLib.Level5.Text
             Texts = new Dictionary<int, TextConfig>();
             Nouns = new Dictionary<int, TextConfig>();
             TextsDebug = new Dictionary<int, TextConfig>();
+            Keys = new Dictionary<int, string>();
 
             int currentIndex = 0;
             TextConfig currentTextConfig = null;
@@ -264,11 +306,17 @@ namespace StudioElevenLib.Level5.Text
                 if (match != null)
                 {
                     string type = match.Groups[1].Value;
-                    int crc32 = int.Parse(match.Groups[2].Value, System.Globalization.NumberStyles.HexNumber);
-                    int washa = -1;
-                    if (match.Groups[3].Value != "-1")
+                    string keyPart = match.Groups[2].Value.Trim();
+                    string washaPart = match.Groups[3].Value.Trim();
+
+                    // The key and the washa can now be in either 0x format, -1 format, or plain text (in which case the crc32 is calculated).
+                    int crc32 = ParseKeyOrCrc32(keyPart);
+                    int washa = ParseKeyOrCrc32(washaPart);
+
+                    // If the key is text (not 0x, not -1), it is saved in Keys.
+                    if (!keyPart.StartsWith("0x") && keyPart != "-1" && !Keys.ContainsKey(crc32))
                     {
-                        washa = int.Parse(match.Groups[3].Value, System.Globalization.NumberStyles.HexNumber);
+                        Keys[crc32] = keyPart;
                     }
 
                     currentTextConfig = new TextConfig(new List<StringLevel5>(), washa);
@@ -316,18 +364,28 @@ namespace StudioElevenLib.Level5.Text
 
         private Match GetMatch(string line)
         {
-            if (Regex.IsMatch(line, @"\[(\w+)/0x([A-Fa-f0-9]+)/0x([A-Fa-f0-9]+)\]"))
+            // The format is now [Type/key/washa] where key and washa can be 0xHEX, -1, or plain text
+            Match match = Regex.Match(line, @"\[(\w+)/([^/\]]+)/([^\]]+)\]");
+
+            if (match.Success)
+                return match;
+
+            return null;
+        }
+
+        private int ParseKeyOrCrc32(string value)
+        {
+            // Parses a key or a washa: "-1" -> -1, "0x..." -> hexadecimal, otherwise -> CRC32 of the text
+
+            if (value == "-1")
+                return -1;
+
+            if (value.StartsWith("0x"))
             {
-                return Regex.Match(line, @"\[(\w+)/0x([A-Fa-f0-9]+)/0x([A-Fa-f0-9]+)\]");
+                return int.Parse(value.Replace("0x", ""), System.Globalization.NumberStyles.HexNumber);
             }
-            else if (Regex.IsMatch(line, @"\[(\w+)/0x([A-Fa-f0-9]+)/(-1)\]"))
-            {
-                return Regex.Match(line, @"\[(\w+)/0x([A-Fa-f0-9]+)/(-1)\]");
-            }
-            else
-            {
-                return null;
-            }
+
+            return unchecked((int)Crc32.Compute(Encoding.GetBytes(value)));
         }
 
         private string[] GetStrings()
@@ -512,6 +570,29 @@ namespace StudioElevenLib.Level5.Text
             return nounNode;
         }
 
+        private CfgTreeNode GetKeyEntry()
+        {
+            var keyBeginEntry = new Entry("KEY_INFO_BEGIN", new List<Variable>()
+            {
+                new Variable(CfgValueType.Int, Keys.Count)
+            });
+
+            var keyBeginNode = new CfgTreeNode(keyBeginEntry, 0);
+
+            foreach (KeyValuePair<int, string> keyItem in Keys)
+            {
+                Entry keyItemEntry = new Entry("KEY_INFO", new List<Variable>()
+                {
+                    new Variable(CfgValueType.Int, keyItem.Key),
+                    new Variable(CfgValueType.String, keyItem.Value),
+                });
+
+                keyBeginNode.AddChild(new CfgTreeNode(keyItemEntry, 1));
+            }
+
+            return keyBeginNode;
+        }
+
         private void AddSection(string beginKey, string endKey, Func<CfgTreeNode> createNode)
         {
             if (Entries.Exists(beginKey))
@@ -525,7 +606,7 @@ namespace StudioElevenLib.Level5.Text
             Entries.AddChild(new CfgTreeNode(new Entry(endKey)));
         }
 
-        public void Save(string fileName, bool iego, bool variance)
+        public void Save(string fileName, bool iego, bool variance, bool saveKey = false)
         {
             if (Texts.Count > 0)
                 AddSection("TEXT_INFO_BEGIN", "TEXT_INFO_END", () => GetTextEntry(variance));
@@ -542,10 +623,13 @@ namespace StudioElevenLib.Level5.Text
                 AddSection("TEXT_WASHA_BEGIN", "TEXT_WASHA_END", () => GetTextWashaEntry());
             }
 
+            if (saveKey && Keys.Count > 0)
+                AddSection("KEY_INFO_BEGIN", "KEY_INFO_END", () => GetKeyEntry());
+
             Save(fileName);
         }
 
-        public new byte[] Save()
+        public new byte[] Save(bool saveKey = false)
         {
             if (Texts.Count > 0)
                 AddSection("TEXT_INFO_BEGIN", "TEXT_INFO_END", () => GetTextEntry(true));
@@ -555,6 +639,9 @@ namespace StudioElevenLib.Level5.Text
 
             if (Nouns.Count > 0)
                 AddSection("NOUN_INFO_BEGIN", "NOUN_INFO_END", () => GetNounEntry(true));
+
+            if (saveKey && Keys.Count > 0)
+                AddSection("KEY_INFO_BEGIN", "KEY_INFO_END", () => GetKeyEntry());
 
             return base.Save();
         }
@@ -570,7 +657,10 @@ namespace StudioElevenLib.Level5.Text
                 int crc32 = kvp.Key;
                 string washa = "0x" + kvp.Value.WashaID.ToString("X8");
 
-                xmlBuilder.AppendLine($" <TextConfig crc32=\"0x{crc32.ToString("X8")}\" washa=\"{washa}\">");
+                // If we have the corresponding text key in Keys, we write it as is; otherwise, we keep the 0x format
+                string crc32Attr = Keys.ContainsKey(crc32) ? Keys[crc32] : "0x" + crc32.ToString("X8");
+
+                xmlBuilder.AppendLine($" <TextConfig crc32=\"{crc32Attr}\" washa=\"{washa}\">");
 
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
@@ -644,8 +734,11 @@ namespace StudioElevenLib.Level5.Text
                 int crc32 = kvp.Key;
                 string washa = "0x" + kvp.Value.WashaID.ToString("X8");
 
+                // If we have the corresponding text key in Keys, we write it as is; otherwise, we keep the 0x format
+                string crc32Str = Keys.ContainsKey(crc32) ? Keys[crc32] : "0x" + crc32.ToString("X8");
+
                 StringBuilder textBuilder = new StringBuilder();
-                textBuilder.AppendFormat("[Texts/0x{0:X8}/{1}] {2}", crc32, washa, Environment.NewLine);
+                textBuilder.AppendFormat("[Texts/{0}/{1}] {2}", crc32Str, washa, Environment.NewLine);
 
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
@@ -660,8 +753,11 @@ namespace StudioElevenLib.Level5.Text
             {
                 int crc32 = kvp.Key;
 
+                // If we have the corresponding text key in Keys, we write it as is; otherwise, we keep the 0x format
+                string crc32Str = Keys.ContainsKey(crc32) ? Keys[crc32] : "0x" + crc32.ToString("X8");
+
                 StringBuilder textBuilder = new StringBuilder();
-                textBuilder.AppendFormat("[TextsDebug/0x{0:X8}/-1] {1}", crc32, Environment.NewLine);
+                textBuilder.AppendFormat("[TextsDebug/{0}/-1] {1}", crc32Str, Environment.NewLine);
 
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
@@ -677,8 +773,11 @@ namespace StudioElevenLib.Level5.Text
             {
                 int crc32 = kvp.Key;
 
+                // If we have the corresponding text key in Keys, we write it as is; otherwise, we keep the 0x format
+                string crc32Str = Keys.ContainsKey(crc32) ? Keys[crc32] : "0x" + crc32.ToString("X8");
+
                 StringBuilder textBuilder = new StringBuilder();
-                textBuilder.AppendFormat("[Nouns/0x{0:X8}/-1] {1}", crc32, Environment.NewLine);
+                textBuilder.AppendFormat("[Nouns/{0}/-1] {1}", crc32Str, Environment.NewLine);
 
                 foreach (var stringLevel5 in kvp.Value.Strings)
                 {
