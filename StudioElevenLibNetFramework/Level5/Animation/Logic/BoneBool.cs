@@ -2,16 +2,16 @@
 
 namespace StudioElevenLib.Level5.Animation.Logic
 {
-    public class Unk
+    public class BoneBool
     {
         public int Enable { get; set; }
 
-        public Unk()
+        public BoneBool()
         {
 
         }
 
-        public Unk(int enable)
+        public BoneBool(int enable)
         {
             Enable = enable;
         }
@@ -25,7 +25,7 @@ namespace StudioElevenLib.Level5.Animation.Logic
 
         public override bool Equals(object obj)
         {
-            if (obj is Unk other)
+            if (obj is BoneBool other)
             {
                 return Enable == other.Enable;
             }

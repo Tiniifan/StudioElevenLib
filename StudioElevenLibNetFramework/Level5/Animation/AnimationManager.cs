@@ -698,15 +698,15 @@ namespace StudioElevenLib.Level5.Animation
             }
             else if (type == 7)
             {
-                return new TextureBrightness((float)animData[0]);
+                return new MaterialTransparency((float)animData[0]);
             }
             else if (type == 8)
             {
-                return new TextureUnk((float)animData[0], (float)animData[1], (float)animData[2]);
+                return new MaterialAttribute((float)animData[0], (float)animData[1], (float)animData[2]);
             }
             else if (type == 9)
             {
-                return new Unk(Convert.ToInt32(animData[0]));
+                return new BoneBool(Convert.ToInt32(animData[0]));
             } else
             {
                 throw new NotImplementedException($"Data Type {type} not implemented");
@@ -745,19 +745,19 @@ namespace StudioElevenLib.Level5.Animation
                 UVScale uvScale = (UVScale)value;
                 return uvScale.ToByte();
             }
-            else if (type == "TextureBrightness")
+            else if (type == "MaterialTransparency")
             {
-                TextureBrightness textureBrightness = (TextureBrightness)value;
+                MaterialTransparency textureBrightness = (MaterialTransparency)value;
                 return textureBrightness.ToByte();
             }
-            else if (type == "TextureUnk")
+            else if (type == "MaterialAttribute")
             {
-                TextureUnk textureUnk = (TextureUnk)value;
+                MaterialAttribute textureUnk = (MaterialAttribute)value;
                 return textureUnk.ToByte();
             }
-            else if (type == "Unk")
+            else if (type == "BoneBool")
             {
-                Unk enableUnk = (Unk)value;
+                BoneBool enableUnk = (BoneBool)value;
                 return enableUnk.ToByte();
             }
             else

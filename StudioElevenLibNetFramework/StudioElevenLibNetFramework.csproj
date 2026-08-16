@@ -78,10 +78,10 @@
     <Compile Include="Level5\Animation\Logic\BoneScale.cs" />
     <Compile Include="Level5\Animation\Logic\Frame.cs" />
     <Compile Include="Level5\Animation\Logic\Node.cs" />
-    <Compile Include="Level5\Animation\Logic\TextureBrightness.cs" />
-    <Compile Include="Level5\Animation\Logic\TextureUnk.cs" />
+    <Compile Include="Level5\Animation\Logic\MaterialTransparency.cs" />
+    <Compile Include="Level5\Animation\Logic\MaterialAttribute.cs" />
     <Compile Include="Level5\Animation\Logic\Track.cs" />
-    <Compile Include="Level5\Animation\Logic\Unk.cs" />
+    <Compile Include="Level5\Animation\Logic\BoneBool.cs" />
     <Compile Include="Level5\Animation\Logic\UVMove.cs" />
     <Compile Include="Level5\Animation\Logic\UVRotation.cs" />
     <Compile Include="Level5\Animation\Logic\UVScale.cs" />
