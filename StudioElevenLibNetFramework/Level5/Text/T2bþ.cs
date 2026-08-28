@@ -365,14 +365,22 @@ namespace StudioElevenLib.Level5.Text
                 else if (!string.IsNullOrWhiteSpace(line))
                 {
                     // Check for [textNumber; varianceKey] format
-                    Match entryMatch = Regex.Match(line.Trim(), @"^\[(\d+);\s*(\d+)\]\s*(.*)$");
+                    Match entryMatch = Regex.Match(line, @"^\[(\d+);\s*(\d+)\](.*)$");
 
                     if (entryMatch.Success && currentTextConfig != null)
                     {
                         int textNumber = int.Parse(entryMatch.Groups[1].Value);
                         int varianceKey = int.Parse(entryMatch.Groups[2].Value);
+
+                        string rawText = entryMatch.Groups[3].Value;
+
+                        // Only one space (the separator) is removed if it is present
+                        // all additional spaces belong to the text
+                        if (rawText.StartsWith(" "))
+                            rawText = rawText.Substring(1);
+
                         // Convert literal "\n" back to real line breaks when reading
-                        string text = UnescapeNewLines(entryMatch.Groups[3].Value);
+                        string text = UnescapeNewLines(rawText);
 
                         currentTextConfig.Strings.Add(new StringLevel5(textNumber, text, varianceKey));
                     }
