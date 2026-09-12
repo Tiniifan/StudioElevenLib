@@ -111,6 +111,24 @@ namespace StudioElevenLib.Tools
             _stream.WriteByte((byte)value);
         }
 
+        /// <summary>
+        /// Writes the low 24 bits of an integer value to the underlying stream.
+        /// </summary>
+        /// <param name="value">The value whose low 24 bits are written.</param>
+        public void WriteInt24(int value)
+        {
+            byte[] bytes = new byte[4];
+
+            BitConverter.GetBytes(value).CopyTo(bytes, 0);
+
+            if (BigEndian)
+            {
+                Array.Reverse(bytes, 0, 3);
+            }
+
+            _stream.Write(bytes, 0, 3);
+        }
+
         public void WriteAlignment(int alignment = 16, byte alignmentByte = 0x0)
         {
             var remainder = BaseStream.Position % alignment;

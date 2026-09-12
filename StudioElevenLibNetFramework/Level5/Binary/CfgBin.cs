@@ -347,6 +347,11 @@ namespace StudioElevenLib.Level5.Binary
                     {
                         if (currentNode.Parent != null)
                             currentNode = (TNode)currentNode.Parent; // cast explicite si Parent est TreeNode<Entry>
+
+                        // Keep the closing marker in the tree so it survives a read/write round trip.
+                        // _PTREE is excluded because CollectEntries re-emits it from the PTREE node itself.
+                        if (entryName != "_PTREE")
+                            currentNode.AddChild((TNode)CreateNode(entry, currentNode.Level + 1));
                     }
                     else
                     {

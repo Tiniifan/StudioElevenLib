@@ -183,6 +183,25 @@ namespace StudioElevenLib.Tools
             return Enumerable.Range(0, count).Select(x => ReadStruct<T>()).ToArray();
         }
 
+        /// <summary>
+        /// Reads a 24-bit integer from the underlying stream.
+        /// </summary>
+        /// <returns>The 24-bit integer read from the stream.</returns>
+        public int ReadInt24()
+        {
+            byte[] bytes = new byte[4];
+
+            // Read the 3 bytes and store them in the first 3 bytes of the 4-byte array
+            _stream.Read(bytes, 0, 3);
+
+            if (BigEndian)
+            {
+                Array.Reverse(bytes, 0, 3);
+            }
+
+            return BitConverter.ToInt32(bytes, 0);
+        }
+
         public byte[] ReadBytes(int count)
         {
             byte[] bytes = new byte[count];

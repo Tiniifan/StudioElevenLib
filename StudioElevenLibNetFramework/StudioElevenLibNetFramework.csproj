@@ -125,6 +125,7 @@
     <Compile Include="Level5\Compression\NoCompression\NoCompression.cs" />
     <Compile Include="Level5\Compression\RLE\RLE.cs" />
     <Compile Include="Level5\Compression\ZLib\ZLib.cs" />
+    <Compile Include="Level5\Compression\XORShift\XORShift.cs" />
     <Compile Include="Level5\Image\Image5.cs" />
     <Compile Include="Level5\Image\Image5Support.cs" />
     <Compile Include="Level5\Image\Imager.cs" />

@@ -17,6 +17,10 @@ namespace StudioElevenLib.Level5.Binary.Mapper
     /// </summary>
     public static class CfgBinMapper
     {
+        private static readonly Dictionary<Type, PropertyInfo[]> MappablePropertiesCache =
+            new Dictionary<Type, PropertyInfo[]>();
+
+
         /// <summary>
         /// Flattens a TreeNode structure into a list of class instances of the specified type.
         /// Only processes nodes that match the specified entry name and ignores properties marked with CfgbinIgnoreAttribute.
@@ -39,9 +43,9 @@ namespace StudioElevenLib.Level5.Binary.Mapper
             // Find all nodes with the target entry name
             FindTargetNodes(rootNode, targetEntryName, targetNodes);
 
-            // Get properties that should be mapped (excluding ignored ones)
-            var targetType = typeof(T);
-            var properties = GetMappableProperties(targetType);
+            // Get properties that should be mapped (excluding ignored ones). Reading always
+            // instantiates T itself, so typeof(T) is the right type here.
+            var properties = GetMappableProperties(typeof(T));
 
             // Convert each target node to a class instance
             foreach (var node in targetNodes)
@@ -77,13 +81,12 @@ namespace StudioElevenLib.Level5.Binary.Mapper
             var rootEntry = new Entry(parentEntryName);
             var rootNode = new CfgTreeNode(rootEntry, 1);
 
-            // Get properties that should be mapped (excluding ignored ones)
-            var targetType = typeof(T);
-            var properties = GetMappableProperties(targetType);
-
-            // Create child nodes for each instance
+            // Create child nodes for each instance. Properties are resolved per instance from its
+            // runtime type: a List<IFoo> holds concrete records whose property set is the one stored
+            // in the file, and typeof(T) would only expose the interface's subset.
             foreach (var instance in instances)
             {
+                var properties = GetMappableProperties(instance.GetType());
                 var childNode = CreateNodeFromInstance(instance, childEntryName, properties, 2);
                 rootNode.AddChild(childNode);
             }
@@ -121,10 +124,20 @@ namespace StudioElevenLib.Level5.Binary.Mapper
         /// <returns>An array of PropertyInfo objects for mappable properties</returns>
         private static PropertyInfo[] GetMappableProperties(Type type)
         {
-            return type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                      .Where(prop => prop.CanRead && prop.CanWrite &&
-                            !prop.GetCustomAttributes(typeof(CfgBinIgnoreAttribute), true).Any())
-                      .ToArray();
+            lock (MappablePropertiesCache)
+            {
+                if (MappablePropertiesCache.TryGetValue(type, out var cached))
+                    return cached;
+
+                var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                          .Where(prop => prop.CanRead && prop.CanWrite &&
+                                !prop.GetCustomAttributes(typeof(CfgBinIgnoreAttribute), true).Any())
+                          .ToArray();
+
+                MappablePropertiesCache[type] = properties;
+
+                return properties;
+            }
         }
 
         /// <summary>
@@ -313,7 +326,7 @@ namespace StudioElevenLib.Level5.Binary.Mapper
             if (instance == null)
                 throw new ArgumentNullException(nameof(instance));
 
-            var properties = GetMappableProperties(typeof(T));
+            var properties = GetMappableProperties(instance.GetType());
             var variables = new List<Variable>();
 
             foreach (var property in properties)

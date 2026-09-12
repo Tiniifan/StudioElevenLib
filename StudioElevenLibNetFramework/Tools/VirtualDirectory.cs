@@ -195,6 +195,34 @@ namespace StudioElevenLib.Tools
         }
 
         /// <summary>
+        /// Checks whether a file exists at the specified full path.
+        /// </summary>
+        /// <param name="path">The full path of the file, using '/' as a separator.</param>
+        /// <returns>True if the file exists; otherwise, false.</returns>
+        public bool IsFullPathExists(string path)
+        {
+            var pathSplit = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (pathSplit.Length == 0)
+                return false;
+
+            var fileName = pathSplit[pathSplit.Length - 1];
+            var current = this;
+
+            for (int i = 0; i < pathSplit.Length - 1; i++)
+            {
+                current = current.GetFolder(pathSplit[i]);
+
+                if (current == null)
+                {
+                    return false;
+                }
+            }
+
+            return current.Files.ContainsKey(fileName);
+        }
+
+        /// <summary>
         /// Gets a list of all direct subfolders within the current directory.
         /// </summary>
         /// <returns>A new list containing all direct subfolders.</returns>
