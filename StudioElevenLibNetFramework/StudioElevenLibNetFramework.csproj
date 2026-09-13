@@ -166,7 +166,9 @@
     <Compile Include="Level5\Resource\Types\RESImageEntry.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationIMMINF.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationIMN2.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationIMN3.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTM2.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTM3.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTMINF.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTN2.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESAnimationMTN3.cs" />

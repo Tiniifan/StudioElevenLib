@@ -83,6 +83,27 @@ namespace StudioElevenLib.Level5.Animation
             public int DataLength;
         }
 
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct HeaderV3
+        {
+            public int Magic;
+            public short TrackOffset;
+            public short TableOffset;
+            public int DataOffset;
+            public int NameOffset;
+            public int DataLength;
+            public int DecompOffset;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct NodeTableV3
+        {
+            public int FlagOffset;
+            public int KeyFrameOffset;
+            public int KeyDataOffset;
+            public int EmptyValue;
+        }
+
         public static Dictionary<int, string> TrackType = new Dictionary<int, string>
         {
             {0, "None" },
@@ -134,6 +155,26 @@ namespace StudioElevenLib.Level5.Animation
             {"MaterialTransparency", 4 },
             {"MaterialAttribute", 4 },
             {"BoneBool", 1 },
+        };
+
+        public static Dictionary<string, int> TrackDataTypeV3 = new Dictionary<string, int>
+        {
+            {"BoneLocation", 2 },
+            {"BoneRotation", 1 },
+            {"BoneScale", 2 },
+            {"UVMove", 2 },
+            {"UVScale", 2 },
+            {"UVRotation", 3 },
+            {"MaterialTransparency", 2 },
+            {"MaterialAttribute", 2 },
+            {"BoneBool", 4 },
+        };
+
+        public static Dictionary<string, int> TrackCountV3 = new Dictionary<string, int>
+        {
+            {"XMTN", 4 },
+            {"XIMA", 4 },
+            {"XMTM", 2 },
         };
 
         public static Header ReadHeader(BinaryDataReader reader, out string format)

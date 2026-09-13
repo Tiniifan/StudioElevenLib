@@ -253,12 +253,21 @@ namespace StudioElevenLib.Level5.Resource.RES
                 case RESType.AnimationMTN2:
                     return ReadTypedElements<ResElementStruct>(reader, count,
                         (s, st) => RESAnimationMTN2.FromStruct(s, st));
+                case RESType.AnimationMTN3:
+                    return ReadTypedElements<ResElementStruct>(reader, count,
+                        (s, st) => RESAnimationMTN3.FromStruct(s, st));
                 case RESType.AnimationIMN2:
                     return ReadTypedElements<ResElementStruct>(reader, count,
                         (s, st) => RESAnimationIMN2.FromStruct(s, st));
+                case RESType.AnimationIMN3:
+                    return ReadTypedElements<ResElementStruct>(reader, count,
+                        (s, st) => RESAnimationIMN3.FromStruct(s, st));
                 case RESType.AnimationMTM2:
                     return ReadTypedElements<ResElementStruct>(reader, count,
                         (s, st) => RESAnimationMTM2.FromStruct(s, st));
+                case RESType.AnimationMTM3:
+                    return ReadTypedElements<ResElementStruct>(reader, count,
+                        (s, st) => RESAnimationMTM3.FromStruct(s, st));
                 case RESType.MTNINF:
                     return ReadTypedElements<ResElementStruct>(reader, count,
                         (s, st) => RESAnimationMTNINF.FromStruct(s, st));
