@@ -71,8 +71,12 @@
     <Compile Include="Common\Imaging\PixelFormats\RGBA4444.cs" />
     <Compile Include="Common\Imaging\PixelFormats\RGBA5551.cs" />
     <Compile Include="Common\Imaging\PixelFormats\RGBA8888.cs" />
-    <Compile Include="Level5\Animation\AnimationManager.cs" />
+    <Compile Include="Level5\Animation\AnimationManagerV1.cs" />
+    <Compile Include="Level5\Animation\AnimationManagerV2.cs" />
+    <Compile Include="Level5\Animation\AnimationManagerV3.cs" />
     <Compile Include="Level5\Animation\AnimationSupport.cs" />
+    <Compile Include="Level5\Animation\Animator.cs" />
+    <Compile Include="Level5\Animation\IAnimationManager.cs" />
     <Compile Include="Level5\Animation\Logic\BoneLocation.cs" />
     <Compile Include="Level5\Animation\Logic\BoneRotation.cs" />
     <Compile Include="Level5\Animation\Logic\BoneScale.cs" />
