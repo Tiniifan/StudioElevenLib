@@ -14,6 +14,80 @@ namespace StudioElevenLib.Level5.Camera.CMR1
 {
     public class CMR1
     {
+        public uint HashName;
+
+        public int FrameCount;
+
+        public float CameraSpeed;
+
+        // 0: location, 1: aim, 2: focal length, 3: roll, 4: unk
+        public Dictionary<int, Dictionary<int, float[]>> CamValues;
+
+        public CMR1()
+        {
+            CamValues = new Dictionary<int, Dictionary<int, float[]>>();
+
+            for (int i = 0; i < 4; i++)
+            {
+                CamValues.Add(i, new Dictionary<int, float[]>());
+            }
+        }
+
+        public CMR1(byte[] data) : this()
+        {
+            using (MemoryStream stream = new MemoryStream(data))
+            using (BinaryDataReader reader = new BinaryDataReader(stream))
+            {
+                CMR1Support.Header header = reader.ReadStruct<CMR1Support.Header>();
+
+                HashName = header.AnimationHash;
+                FrameCount = header.FrameCount;
+                CameraSpeed = header.CamSpeed;
+
+                // The header stores the number of tracks of each camera type
+                int[] trackCounts = new int[] { header.Unk1, header.Unk2, header.Unk3, header.Unk4, header.Unk5 };
+                long blockOffset = header.DataOffset + header.DataSkipOffset;
+
+                for (int type = 0; type < trackCounts.Length; type++)
+                {
+                    if (!CamValues.ContainsKey(type))
+                    {
+                        CamValues.Add(type, new Dictionary<int, float[]>());
+                    }
+
+                    for (int i = 0; i < trackCounts[type]; i++)
+                    {
+                        reader.Seek(blockOffset);
+                        CMR1Support.CameraHeader cameraHeader = reader.ReadStruct<CMR1Support.CameraHeader>();
+
+                        reader.Seek(blockOffset + cameraHeader.CameraOffset);
+                        byte[] cameraMotion = Compressor.Decompress(reader.GetSection(cameraHeader.BlockLength - cameraHeader.CameraOffset));
+
+                        using (BinaryDataReader motionReader = new BinaryDataReader(cameraMotion))
+                        {
+                            CMR1Support.CameraDataHeader cameraDataHeader = motionReader.ReadStruct<CMR1Support.CameraDataHeader>();
+
+                            if (cameraDataHeader.DataSize != 4)
+                            {
+                                throw new NotImplementedException($"Camera value size {cameraDataHeader.DataSize} not implemented");
+                            }
+
+                            motionReader.Seek(cameraHeader.FrameOffset);
+                            short[] framesIndexes = motionReader.ReadMultipleStruct<short>(cameraDataHeader.DataCount);
+
+                            motionReader.Seek(cameraHeader.DataOffset);
+                            for (int k = 0; k < cameraDataHeader.DataCount; k++)
+                            {
+                                CamValues[type][framesIndexes[k]] = motionReader.ReadMultipleStruct<float>(cameraDataHeader.DataByteLength);
+                            }
+                        }
+
+                        blockOffset += cameraHeader.BlockLength;
+                    }
+                }
+            }
+        }
+
         private static int[] FillArray(int[] inputArray, int size)
         {
             int[] result = new int[size];
@@ -42,6 +116,11 @@ namespace StudioElevenLib.Level5.Camera.CMR1
             }
 
             return result;
+        }
+
+        public byte[] Save()
+        {
+            return Save(HashName, CamValues, FrameCount, CameraSpeed);
         }
 
         public byte[] Save(uint hashName, Dictionary<int, Dictionary<int, float[]>> CamValues, int frameCount, float camSpeed)
@@ -102,16 +181,16 @@ namespace StudioElevenLib.Level5.Camera.CMR1
                                 DataByteLength = CamValues[i].ElementAt(0).Value.Length,
                                 DataBlockSize = CamValues[i].ElementAt(0).Value.Length * 4,
                                 GhostFrameLength = (frameCount + 1) * 2,
-                                FrameLength = (frameCount) * 2,
-                                DataLength = CamValues[i].Values.Count() * CamValues[i].ElementAt(0).Value.Length,
+                                FrameLength = CamValues[i].Values.Count() * 2,
+                                DataLength = CamValues[i].Values.Count() * CamValues[i].ElementAt(0).Value.Length * 4,
                             };
 
                             writerCameraMotion.WriteStruct(cameraDataHeader);
                             writerCameraMotion.Write(FillArray(CamValues[i].Keys.Select(x => x).ToArray(), frameCount + 1).SelectMany(x => BitConverter.GetBytes((short)x)).ToArray());
-                            writerCameraMotion.WriteAlignment();
+                            writerCameraMotion.WriteAlignment(4, 0x00);
                             cameraHeader.FrameOffset = (int)writerCameraMotion.Position;
                             writerCameraMotion.Write(CamValues[i].Select(x => x.Key).SelectMany(x => BitConverter.GetBytes((short)x)).ToArray());
-                            writerCameraMotion.WriteAlignment();
+                            writerCameraMotion.WriteAlignment(4, 0x00);
                             cameraHeader.DataOffset = (int)writerCameraMotion.Position;
 
                             foreach (float[] camDataValues in CamValues[i].Select(x => x.Value))
@@ -123,10 +202,12 @@ namespace StudioElevenLib.Level5.Camera.CMR1
                             }
 
                             byte[] compressedCameraMotion = new LZ10().Compress(memoryStream.ToArray());
-                            cameraHeader.BlockLength = 0x14 + compressedCameraMotion.Length;
+                            int padding = (4 - compressedCameraMotion.Length % 4) % 4;
+                            cameraHeader.BlockLength = 0x14 + compressedCameraMotion.Length + padding;
 
                             writer.WriteStruct(cameraHeader);
                             writer.Write(compressedCameraMotion);
+                            writer.Write(new byte[padding]);
                         }
                     }
                 }
