@@ -141,6 +141,8 @@
     <Compile Include="Level5\Image\Swizzles\IMGCSwizzle.cs" />
     <Compile Include="Level5\Image\Swizzles\IMGNSwizzle.cs" />
     <Compile Include="Level5\Image\Swizzles\MasterSwizzle.cs" />
+    <Compile Include="Level5\Material\ATRC.cs" />
+    <Compile Include="Level5\Material\ATRCSupport.cs" />
     <Compile Include="Level5\Material\MTRC.cs" />
     <Compile Include="Level5\Material\MTRCSupport.cs" />
     <Compile Include="Level5\Mesh\XMPR\XMPR.cs" />
