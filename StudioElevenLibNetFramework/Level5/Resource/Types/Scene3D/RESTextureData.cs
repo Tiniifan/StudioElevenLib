@@ -3,6 +3,104 @@
 namespace StudioElevenLib.Level5.Resource.Types.Scene3D
 {
     /// <summary>
+    /// How the GPU repeats a texture past its edges.
+    /// </summary>
+    public enum TextureWrapMode
+    {
+        Clamp = 0,
+        Border = 1,
+        Repeat = 2,
+        Mirror = 3
+    }
+
+    /// <summary>
+    /// How the GPU samples a texture.
+    /// </summary>
+    public enum TextureFilterMode
+    {
+        Nearest = 0,
+        Linear = 1
+    }
+
+    /// <summary>
+    /// The PICA200 sampler settings packed in the two bytes following the name offset of a texture entry,
+    /// the first one holding the filters and the second one the wrap modes. Both the RES and the XRES
+    /// containers store and read them the same way.
+    /// </summary>
+    public struct TextureSampler
+    {
+        public TextureWrapMode WrapS { get; set; }
+        public TextureWrapMode WrapT { get; set; }
+        public TextureFilterMode MagFilter { get; set; }
+        public TextureFilterMode MinFilter { get; set; }
+        public TextureFilterMode MipFilter { get; set; }
+
+        /// <summary>
+        /// The sampler every texture exported without any specific setting uses.
+        /// </summary>
+        public static TextureSampler Default => new TextureSampler
+        {
+            WrapS = TextureWrapMode.Repeat,
+            WrapT = TextureWrapMode.Repeat,
+            MagFilter = TextureFilterMode.Linear,
+            MinFilter = TextureFilterMode.Linear,
+            MipFilter = TextureFilterMode.Nearest
+        };
+
+        /// <summary>
+        /// Decodes the filter and wrap bytes into a <see cref="TextureSampler"/>.
+        /// </summary>
+        /// <param name="filterByte">The byte holding the three filter flags.</param>
+        /// <param name="wrapByte">The byte holding the two wrap modes.</param>
+        /// <returns>The decoded sampler.</returns>
+        public static TextureSampler Decode(byte filterByte, byte wrapByte)
+        {
+            return new TextureSampler
+            {
+                WrapS = (TextureWrapMode)(wrapByte & 3),
+                WrapT = (TextureWrapMode)((wrapByte >> 2) & 3),
+                MagFilter = (TextureFilterMode)(filterByte & 1),
+                MinFilter = (TextureFilterMode)((filterByte >> 1) & 1),
+                MipFilter = (TextureFilterMode)((filterByte >> 2) & 1)
+            };
+        }
+
+        /// <summary>
+        /// Encodes this sampler back into its filter and wrap bytes.
+        /// </summary>
+        /// <param name="filterByte">The byte holding the three filter flags.</param>
+        /// <param name="wrapByte">The byte holding the two wrap modes.</param>
+        public void Encode(out byte filterByte, out byte wrapByte)
+        {
+            filterByte = (byte)(((int)MagFilter & 1) | (((int)MinFilter & 1) << 1) | (((int)MipFilter & 1) << 2));
+            wrapByte = (byte)(((int)WrapS & 3) | (((int)WrapT & 3) << 2));
+        }
+
+        /// <summary>
+        /// Decodes the sampler out of the int following the name offset of a texture entry.
+        /// </summary>
+        /// <param name="packed">The int holding the filter byte, the wrap byte and two unused ones.</param>
+        /// <returns>The decoded sampler.</returns>
+        public static TextureSampler FromPacked(int packed)
+        {
+            return Decode((byte)(packed & 0xFF), (byte)((packed >> 8) & 0xFF));
+        }
+
+        /// <summary>
+        /// Writes this sampler into the int following the name offset of a texture entry, leaving the two
+        /// bytes the sampler doesn't use untouched.
+        /// </summary>
+        /// <param name="packed">The int to update.</param>
+        /// <returns>The updated int.</returns>
+        public int ToPacked(int packed)
+        {
+            Encode(out byte filterByte, out byte wrapByte);
+
+            return (int)((packed & 0xFFFF0000) | (uint)(wrapByte << 8) | filterByte);
+        }
+    }
+
+    /// <summary>
     /// Represents the raw texture data structure for the modern RES format (post-2011).
     /// </summary>
     public struct RESTextureDataStruct
@@ -43,6 +141,15 @@ namespace StudioElevenLib.Level5.Resource.Types.Scene3D
         public int Unk1 { get; set; }
         public int Unk2 { get; set; }
         public int Unk3 { get; set; }
+
+        /// <summary>
+        /// The sampler settings held by the low bytes of <see cref="Unk1"/>.
+        /// </summary>
+        public TextureSampler Sampler
+        {
+            get => TextureSampler.FromPacked(Unk1);
+            set => Unk1 = value.ToPacked(Unk1);
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="RESTextureData"/>.
@@ -118,6 +225,15 @@ namespace StudioElevenLib.Level5.Resource.Types.Scene3D
         public int Unk4 { get; set; }
         public int Unk5 { get; set; }
         public int Unk6 { get; set; }
+
+        /// <summary>
+        /// The sampler settings held by the low bytes of <see cref="Unk1"/>.
+        /// </summary>
+        public TextureSampler Sampler
+        {
+            get => TextureSampler.FromPacked(Unk1);
+            set => Unk1 = value.ToPacked(Unk1);
+        }
 
         /// <summary>
         /// Initializes a new empty instance of <see cref="XRESTextureData"/>.
