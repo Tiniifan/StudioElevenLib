@@ -12,6 +12,7 @@ namespace StudioElevenLib.Level5.Mesh.XPVB
         public struct Vertex
         {
             public Vector3 Position;
+            public Vector4 Tint;
             public Vector3 Normal;
             public Vector2 UV0;
             public Vector2 UV1;

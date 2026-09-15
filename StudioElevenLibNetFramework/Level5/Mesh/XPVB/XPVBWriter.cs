@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using StudioElevenLib.Level5.Compression;
@@ -20,8 +21,15 @@ namespace StudioElevenLib.Level5.Mesh.XPVB
 
         public byte[] Save(IProgress<int> progress = null)
         {
+            const byte TYPE_FIXED = 1;
             const byte TYPE_FLOAT = 2;
             int vertexCount = _xpvb.Vertices.Count;
+
+            // A tint that doesn't change over the mesh is stored once as a fixed attribute, white being the engine default
+            var white = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+            var tints = _xpvb.Vertices.Select(v => v.Tint == default(Vector4) ? white : v.Tint).ToList();
+            bool tintStreamed = tints.Any(t => t != tints[0]);
+            Vector4 tint = tintStreamed || tints.Count == 0 ? white : tints[0];
 
             // Detect which attributes are actually used by the vertices
             bool hasNormal = _xpvb.Vertices.Any(v => v.Normal != default);
@@ -45,8 +53,19 @@ namespace StudioElevenLib.Level5.Mesh.XPVB
                 currentOffset += byteSize;
             }
 
+            // Helper to populate a fixed attribute, it takes no room in a vertex
+            void AddFixedAttribute(int slot, int count, int byteSize)
+            {
+                attTable[slot * 4 + 0] = (byte)count;
+                attTable[slot * 4 + 1] = 0;
+                attTable[slot * 4 + 2] = (byte)byteSize;
+                attTable[slot * 4 + 3] = TYPE_FIXED;
+            }
+
             // Register present attributes into their specific slots
             AddAttribute(0, 3, 12);                                  // Slot 0: Position
+            if (tintStreamed) AddAttribute(1, 4, 16);                // Slot 1: Tint
+            else if (tint != white) AddFixedAttribute(1, 4, 16);     // Slot 1: Tint
             if (hasNormal) AddAttribute(2, 3, 12);                   // Slot 2: Normal
             if (hasUV0) AddAttribute(4, 2, 8);                       // Slot 4: UV0
             if (hasUV1) AddAttribute(5, 2, 8);                       // Slot 5: UV1
@@ -65,9 +84,12 @@ namespace StudioElevenLib.Level5.Mesh.XPVB
             using (var msGeom = new MemoryStream())
             using (var geomWriter = new BinaryDataWriter(msGeom))
             {
-                foreach (var v in _xpvb.Vertices)
+                for (int i = 0; i < _xpvb.Vertices.Count; i++)
                 {
+                    var v = _xpvb.Vertices[i];
+
                     if (attTable[0 * 4] > 0) { geomWriter.Write(v.Position.X); geomWriter.Write(v.Position.Y); geomWriter.Write(v.Position.Z); }
+                    if (attTable[1 * 4 + 3] == TYPE_FLOAT) { geomWriter.Write(tints[i].X); geomWriter.Write(tints[i].Y); geomWriter.Write(tints[i].Z); geomWriter.Write(tints[i].W); }
                     if (attTable[2 * 4] > 0) { geomWriter.Write(v.Normal.X); geomWriter.Write(v.Normal.Y); geomWriter.Write(v.Normal.Z); }
                     // Note: UV Y-axis is inverted (1.0 - Y)
                     if (attTable[4 * 4] > 0) { geomWriter.Write(v.UV0.X); geomWriter.Write(1.0f - v.UV0.Y); }
@@ -82,8 +104,18 @@ namespace StudioElevenLib.Level5.Mesh.XPVB
             // Compress the full vertex geometry buffer
             byte[] compressGeometrie = Compressor.Compress(dataGeometrie);
 
-            // Fixed metadata block required by the format
+            // Fixed metadata block required by the format, it holds the value of a fixed attribute
             byte[] unkBytes = { 0x81, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x80, 0x3F, 0x90, 0x03, 0x00 };
+
+            if (attTable[1 * 4 + 3] == TYPE_FIXED)
+            {
+                var fixedValue = new byte[16];
+                BitConverter.GetBytes(tint.X).CopyTo(fixedValue, 0);
+                BitConverter.GetBytes(tint.Y).CopyTo(fixedValue, 4);
+                BitConverter.GetBytes(tint.Z).CopyTo(fixedValue, 8);
+                BitConverter.GetBytes(tint.W).CopyTo(fixedValue, 12);
+                unkBytes = Compressor.Compress(fixedValue);
+            }
 
             // Calculate file offsets for the header
             ushort attBufferOffset = 16;

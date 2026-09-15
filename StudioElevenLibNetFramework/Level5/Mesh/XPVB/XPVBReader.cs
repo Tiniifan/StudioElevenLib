@@ -63,6 +63,15 @@ namespace StudioElevenLib.Level5.Mesh.XPVB
                     }
                 }
 
+                // Read the block holding the value of every fixed attribute
+                byte[] fixedDecoded = new byte[0];
+                if (vertexBufferOffset > unkOffset)
+                {
+                    reader.Seek(unkOffset);
+                    byte[] fixedCompressed = reader.ReadMultipleValue<byte>(vertexBufferOffset - unkOffset);
+                    fixedDecoded = Compressor.Decompress(fixedCompressed);
+                }
+
                 // Read Vertex Buffer
                 reader.Seek(vertexBufferOffset);
                 byte[] vtxCompressed = reader.ReadMultipleValue<byte>((int)(reader.Length - vertexBufferOffset));
@@ -71,6 +80,41 @@ namespace StudioElevenLib.Level5.Mesh.XPVB
                 using (var vtxStream = new MemoryStream(vtxDecoded))
                 using (var vtxReader = new BinaryDataReader(vtxStream))
                 {
+                    float[] ReadAttribute(int index, int slot)
+                    {
+                        var values = new float[4];
+
+                        if (aCount[slot] == 0)
+                        {
+                            return values;
+                        }
+
+                        if (aType[slot] == 1)
+                        {
+                            // A fixed attribute is one value for the whole mesh, always 4 floats at a 4 bytes aligned offset
+                            int fixedOffset = aOffset[slot] & 0xFC;
+
+                            if (fixedDecoded.Length >= fixedOffset + 16)
+                            {
+                                for (int c = 0; c < 4; c++)
+                                {
+                                    values[c] = BitConverter.ToSingle(fixedDecoded, fixedOffset + c * 4);
+                                }
+                            }
+                        }
+                        else if (aType[slot] == 2)
+                        {
+                            vtxReader.Seek(index * stride + aOffset[slot]);
+
+                            for (int c = 0; c < aCount[slot] && c < 4; c++)
+                            {
+                                values[c] = vtxReader.ReadValue<float>();
+                            }
+                        }
+
+                        return values;
+                    }
+
                     for (int i = 0; i < vertexCount; i++)
                     {
                         var vertex = new XPVBSupport.Vertex();
@@ -78,75 +122,68 @@ namespace StudioElevenLib.Level5.Mesh.XPVB
                         // Pos (j=0)
                         if (aCount[0] > 0)
                         {
-                            vtxReader.Seek(i * stride + aOffset[0]);
-                            vertex.Position.X = vtxReader.ReadValue<float>();
-                            vertex.Position.Y = vtxReader.ReadValue<float>();
-                            vertex.Position.Z = vtxReader.ReadValue<float>();
+                            float[] position = ReadAttribute(i, 0);
+                            vertex.Position = new System.Numerics.Vector3(position[0], position[1], position[2]);
+                        }
+
+                        // Tint (j=1)
+                        if (aCount[1] > 0)
+                        {
+                            float[] tint = ReadAttribute(i, 1);
+                            vertex.Tint = new System.Numerics.Vector4(tint[0], tint[1], tint[2], tint[3]);
                         }
 
                         // Normal (j=2)
                         if (aCount[2] > 0)
                         {
-                            vtxReader.Seek(i * stride + aOffset[2]);
-                            vertex.Normal.X = vtxReader.ReadValue<float>();
-                            vertex.Normal.Y = vtxReader.ReadValue<float>();
-                            vertex.Normal.Z = vtxReader.ReadValue<float>();
+                            float[] normal = ReadAttribute(i, 2);
+                            vertex.Normal = new System.Numerics.Vector3(normal[0], normal[1], normal[2]);
                         }
 
                         // UV0 (j=4) - Reverse Y axis
                         if (aCount[4] > 0)
                         {
-                            vtxReader.Seek(i * stride + aOffset[4]);
-                            vertex.UV0.X = vtxReader.ReadValue<float>();
-                            vertex.UV0.Y = 1.0f - vtxReader.ReadValue<float>();
+                            float[] uv0 = ReadAttribute(i, 4);
+                            vertex.UV0 = new System.Numerics.Vector2(uv0[0], 1.0f - uv0[1]);
                         }
 
                         // UV1 (j=5)
                         if (aCount[5] > 0)
                         {
-                            vtxReader.Seek(i * stride + aOffset[5]);
-                            vertex.UV1.X = vtxReader.ReadValue<float>();
-                            vertex.UV1.Y = 1.0f - vtxReader.ReadValue<float>();
+                            float[] uv1 = ReadAttribute(i, 5);
+                            vertex.UV1 = new System.Numerics.Vector2(uv1[0], 1.0f - uv1[1]);
                         }
 
                         // Weights (j=7)
                         if (aCount[7] > 0)
                         {
-                            vtxReader.Seek(i * stride + aOffset[7]);
-                            vertex.Weights.X = vtxReader.ReadValue<float>();
-                            vertex.Weights.Y = aCount[7] > 1 ? vtxReader.ReadValue<float>() : 0;
-                            vertex.Weights.Z = aCount[7] > 2 ? vtxReader.ReadValue<float>() : 0;
-                            vertex.Weights.W = aCount[7] > 3 ? vtxReader.ReadValue<float>() : 0;
+                            float[] weights = ReadAttribute(i, 7);
+                            vertex.Weights = new System.Numerics.Vector4(weights[0], weights[1], weights[2], weights[3]);
                         }
 
                         // Bone Indices (j=8)
                         if (aCount[8] > 0)
                         {
-                            vtxReader.Seek(i * stride + aOffset[8]);
-                            float b0 = vtxReader.ReadValue<float>();
-                            float b1 = aCount[8] > 1 ? vtxReader.ReadValue<float>() : 0;
-                            float b2 = aCount[8] > 2 ? vtxReader.ReadValue<float>() : 0;
-                            float b3 = aCount[8] > 3 ? vtxReader.ReadValue<float>() : 0;
+                            float[] boneIndices = ReadAttribute(i, 8);
 
                             if (_nodeTable != null && _nodeTable.Count > 0)
                             {
                                 vertex.BoneIndices = new System.Numerics.Vector4(
-                                    _nodeTable[(int)b0], _nodeTable[(int)b1], _nodeTable[(int)b2], _nodeTable[(int)b3]);
+                                    _nodeTable[(int)boneIndices[0]], _nodeTable[(int)boneIndices[1]],
+                                    _nodeTable[(int)boneIndices[2]], _nodeTable[(int)boneIndices[3]]);
                             }
                             else
                             {
-                                vertex.BoneIndices = new System.Numerics.Vector4(b0, b1, b2, b3);
+                                vertex.BoneIndices = new System.Numerics.Vector4(
+                                    boneIndices[0], boneIndices[1], boneIndices[2], boneIndices[3]);
                             }
                         }
 
                         // Color (j=9)
                         if (aCount[9] > 0)
                         {
-                            vtxReader.Seek(i * stride + aOffset[9]);
-                            vertex.Color.X = vtxReader.ReadValue<float>();
-                            vertex.Color.Y = aCount[9] > 1 ? vtxReader.ReadValue<float>() : 0;
-                            vertex.Color.Z = aCount[9] > 2 ? vtxReader.ReadValue<float>() : 0;
-                            vertex.Color.W = aCount[9] > 3 ? vtxReader.ReadValue<float>() : 0;
+                            float[] color = ReadAttribute(i, 9);
+                            vertex.Color = new System.Numerics.Vector4(color[0], color[1], color[2], color[3]);
                         }
 
                         vertices.Add(vertex);
