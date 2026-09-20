@@ -252,7 +252,7 @@ namespace StudioElevenLib.Level5.Animation
                 decompReader.Seek(tableHeader.DataOffset + j * node.DataVectorSize * node.DataByteSize);
 
                 // Decode animation data
-                object[] animData = AnimationSupport.ReadAnimData(decompReader, node.DataType, node.DataVectorSize);
+                object[] animData = AnimationSupport.ReadAnimData(decompReader, node.DataType, node.DataVectorSize, node.DataByteSize);
 
                 frames.Add(new Frame(frame, AnimationSupport.ConvertAnimDataToObject(animData, node.NodeType)));
             }

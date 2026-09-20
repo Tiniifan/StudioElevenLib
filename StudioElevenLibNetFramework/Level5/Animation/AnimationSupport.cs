@@ -268,17 +268,18 @@ namespace StudioElevenLib.Level5.Animation
             }
         }
 
-        public static object[] ReadAnimData(BinaryDataReader reader, int dataType, int dataCount)
+        public static object[] ReadAnimData(BinaryDataReader reader, int dataType, int dataCount, int dataByteSize = 0)
         {
             object[] animData = Enumerable.Range(0, dataCount).Select(c => new object()).ToArray();
 
             for (int i = 0; i < dataCount; i++)
             {
-                if (dataType == 1)
+                // V1 rotations have data type 1 but are stored as floats, the byte size tells them apart from shorts
+                if (dataType == 1 && dataByteSize != 4)
                 {
                     animData[i] = reader.ReadValue<short>() / (float)0x7FFF;
                 }
-                else if (dataType == 2)
+                else if (dataType == 2 || dataType == 1)
                 {
                     animData[i] = reader.ReadValue<float>();
                 }
