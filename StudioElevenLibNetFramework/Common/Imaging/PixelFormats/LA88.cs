@@ -25,7 +25,8 @@ namespace StudioElevenLib.Common.Imaging.PixelFormats
             byte l = (byte)((pixel.R + pixel.G + pixel.B) / 3);
             byte a = pixel.A;
 #endif
-            return new byte[] { l, a };
+            // The alpha is the low byte of the texel, the luminance the high byte
+            return new byte[] { a, l };
         }
 
         public Color Decode(byte[] data)
@@ -39,8 +40,8 @@ namespace StudioElevenLib.Common.Imaging.PixelFormats
 #endif
             }
 
-            byte l = data[0];
-            byte a = data[1];
+            byte a = data[0];
+            byte l = data[1];
 
 #if USE_SYSTEM_DRAWING
             return Color.FromArgb(a, l, l, l);

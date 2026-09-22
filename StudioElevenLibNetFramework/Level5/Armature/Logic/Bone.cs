@@ -14,6 +14,12 @@ namespace StudioElevenLib.Level5.Armature.Logic
         public Vector3 Tail { get; set; }
         public Matrix4x4 Matrix { get; set; }
 
+        /// <summary>
+        /// Inverse bind matrix of the skinning as the game reads it (floats 15..26 of the MBN): the vertices of a skinned mesh are in the bind pose,
+        /// which is not always the rest pose built from Location / Rotation / Scale.
+        /// </summary>
+        public Matrix4x4 InverseBind { get; set; } = Matrix4x4.Identity;
+
         public Bone(string name, Vector3 location, Quaternion rotation, Vector3 scale, bool useDeform = false, Bone parent = null)
         {
             Name = name;
