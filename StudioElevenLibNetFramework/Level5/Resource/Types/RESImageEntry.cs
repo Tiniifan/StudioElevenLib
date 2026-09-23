@@ -3,6 +3,20 @@
 namespace StudioElevenLib.Level5.Resource.Types
 {
     /// <summary>
+    /// How the game reads the texture of a material slot: the texture type of its texture unit (bits 28-30 of GPUREG_TEXUNIT0_PARAM).
+    /// Every shipped material uses <see cref="Texture2D"/>, the other targets only exist on the first slot (texture unit 0).
+    /// </summary>
+    public enum RESTextureMode
+    {
+        Disabled = 0,
+        Texture2D = 1,
+        CubeMap = 2,
+        Shadow2D = 3,
+        ShadowCube = 4,
+        Projection = 5
+    }
+
+    /// <summary>
     /// Represents the raw data structure of an image entry in a RES file.
     /// </summary>
     public struct RESImageEntryStruct
@@ -13,9 +27,9 @@ namespace StudioElevenLib.Level5.Resource.Types
         public uint NameCrc32 { get; set; }
 
         /// <summary>
-        /// Indicates whether the image entry is enabled (0 = false, non-zero = true).
+        /// Texture mode of the slot (<see cref="RESTextureMode"/>), the game only reads its first byte.
         /// </summary>
-        public int Enabled { get; set; }
+        public int Mode { get; set; }
 
         public float Unk1 { get; set; }
         public float Unk2 { get; set; }
@@ -41,9 +55,19 @@ namespace StudioElevenLib.Level5.Resource.Types
         public string Name { get; set; }
 
         /// <summary>
-        /// Indicates whether the image entry is enabled.
+        /// How the game reads the texture, <see cref="RESTextureMode.Disabled"/> makes it ignore the slot.
         /// </summary>
-        public bool Enabled { get; set; }
+        public RESTextureMode Mode { get; set; }
+
+        /// <summary>
+        /// Indicates whether the game reads the texture of this slot.
+        /// Setting it to true on a disabled slot makes it a <see cref="RESTextureMode.Texture2D"/>.
+        /// </summary>
+        public bool Enabled
+        {
+            get => Mode != RESTextureMode.Disabled;
+            set => Mode = value ? (Mode == RESTextureMode.Disabled ? RESTextureMode.Texture2D : Mode) : RESTextureMode.Disabled;
+        }
 
         public float Unk1 { get; set; }
         public float Unk2 { get; set; }
@@ -78,7 +102,7 @@ namespace StudioElevenLib.Level5.Resource.Types
             return new RESImageEntry
             {
                 Name = name,
-                Enabled = imageStruct.Enabled != 0,
+                Mode = (RESTextureMode)(imageStruct.Mode & 0xFF),
                 Unk1 = imageStruct.Unk1,
                 Unk2 = imageStruct.Unk2,
                 Unk3 = imageStruct.Unk3,
@@ -109,7 +133,7 @@ namespace StudioElevenLib.Level5.Resource.Types
             return new RESImageEntryStruct
             {
                 NameCrc32 = crc32,
-                Enabled = Enabled ? 1 : 0,
+                Mode = (int)Mode,
                 Unk1 = Unk1,
                 Unk2 = Unk2,
                 Unk3 = Unk3,
