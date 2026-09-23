@@ -35,16 +35,12 @@ namespace StudioElevenLib.Level5.Mesh.XMPR
                 matWriter.Write(Crc32.Compute(Encoding.GetEncoding("Shift-JIS").GetBytes(_xmpr.MeshName)));
                 matWriter.Write(Crc32.Compute(Encoding.GetEncoding("Shift-JIS").GetBytes(_xmpr.MaterialName)));
 
-                if (_xmpr.SingleBind.HasValue)
-                {
-                    matWriter.Write(new byte[] { 0xF1, 0x69, 0x7E, 0x54 });
-                    matWriter.Write(_xmpr.SingleBind.Value);
-                }
-                else
-                {
-                    matWriter.Write(new byte[] { 0x00, 0x00, 0x00, 0x00 }); // Mode fallback
-                    matWriter.Write(0);
-                }
+                // A model that only sets SingleBind keeps the previous behavior: #FIX_IMG and the bone as parent node
+                uint renderProgramHash = _xmpr.RenderProgramHash != 0 ? _xmpr.RenderProgramHash : (_xmpr.SingleBind.HasValue ? 0x547E69F1u : 0u);
+                uint parentNodeHash = _xmpr.ParentNodeHash != 0 ? _xmpr.ParentNodeHash : (_xmpr.SingleBind ?? 0u);
+
+                matWriter.Write(renderProgramHash);
+                matWriter.Write(parentNodeHash);
 
                 matWriter.Write(new byte[8]); // Zeros
                 matWriter.Write(0.0f); matWriter.Write(0.0f); matWriter.Write(0.0f); // texspace_loc

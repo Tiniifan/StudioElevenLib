@@ -32,8 +32,8 @@ namespace StudioElevenLib.Level5.Mesh.XMPR
                 reader.Seek(header.PropertiesOffset);
                 uint meshNameHash = reader.ReadValue<uint>();
                 uint matNameHash = reader.ReadValue<uint>();
-                uint unkHash = reader.ReadValue<uint>();
-                uint meshNameSplitHash = reader.ReadValue<uint>();
+                xmpr.RenderProgramHash = reader.ReadValue<uint>();
+                xmpr.ParentNodeHash = reader.ReadValue<uint>();
                 reader.Seek(reader.Position + 32); // Skip 32 unk bytes
                 xmpr.DrawPriority = reader.ReadValue<uint>();
                 xmpr.MeshType = reader.ReadValue<ushort>();
@@ -52,7 +52,7 @@ namespace StudioElevenLib.Level5.Mesh.XMPR
 
                 if (header.NodesLength == 0)
                 {
-                    xmpr.SingleBind = meshNameSplitHash;
+                    xmpr.SingleBind = xmpr.ParentNodeHash;
                 }
 
                 // Names

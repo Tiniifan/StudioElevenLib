@@ -41,6 +41,11 @@ namespace StudioElevenLib.Level5.Armature
                 // Initialize the bone. (Bone constructor automatically handles Quaternion inversion)
                 Bone bone = new Bone(name, location, rotation, scale, false, parent);
 
+                // The inverse bind: three column vectors then the translation, stored the way System.Numerics reads its rows
+                Matrix4x4 inverseBind = MBNSupport.MBNMatrix3x3ToMatrix4x4(header.LocalMatrixRotation);
+                inverseBind.Translation = MBNSupport.MBNVector3ToVector3(header.LocationXhead);
+                bone.InverseBind = inverseBind;
+
                 // Manually overwrite Head and Tail
                 bone.Head = MBNSupport.MBNVector3ToVector3(header.Head);
 

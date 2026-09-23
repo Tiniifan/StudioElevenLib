@@ -21,6 +21,8 @@ namespace StudioElevenLib.Level5.Mesh.XMPR
         public string MeshName { get; set; }
         public string MaterialName { get; set; }
         public uint? SingleBind { get; set; }
+        public uint RenderProgramHash { get; set; }
+        public uint ParentNodeHash { get; set; }
         public uint DrawPriority { get; set; }
         public ushort MeshType { get; set; }
 
@@ -42,6 +44,8 @@ namespace StudioElevenLib.Level5.Mesh.XMPR
             MeshName = result.MeshName;
             MaterialName = result.MaterialName;
             SingleBind = result.SingleBind;
+            RenderProgramHash = result.RenderProgramHash;
+            ParentNodeHash = result.ParentNodeHash;
             DrawPriority = result.DrawPriority;
             MeshType = result.MeshType;
         }
@@ -59,6 +63,8 @@ namespace StudioElevenLib.Level5.Mesh.XMPR
                 MeshName = result.MeshName;
                 MaterialName = result.MaterialName;
                 SingleBind = result.SingleBind;
+                RenderProgramHash = result.RenderProgramHash;
+                ParentNodeHash = result.ParentNodeHash;
                 DrawPriority = result.DrawPriority;
                 MeshType = result.MeshType;
             }

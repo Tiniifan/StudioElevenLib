@@ -18,11 +18,12 @@ namespace StudioElevenLib.Common.Imaging.PixelFormats
 
         public byte[] Encode(Color color)
         {
+            // The texel bytes are B, G, R
 #if USE_SYSTEM_DRAWING
-            return new byte[] { color.R, color.G, color.B };
+            return new byte[] { color.B, color.G, color.R };
 #elif USE_IMAGESHARP
             var pixel = color.ToPixel<Rgba32>();
-            return new byte[] { pixel.R, pixel.G, pixel.B };
+            return new byte[] { pixel.B, pixel.G, pixel.R };
 #endif
         }
 
@@ -38,9 +39,9 @@ namespace StudioElevenLib.Common.Imaging.PixelFormats
             }
 
 #if USE_SYSTEM_DRAWING
-            return Color.FromArgb(255, data[0], data[1], data[2]);
+            return Color.FromArgb(255, data[2], data[1], data[0]);
 #elif USE_IMAGESHARP
-            return Color.FromPixel(new Rgba32(data[0], data[1], data[2], 255));
+            return Color.FromPixel(new Rgba32(data[2], data[1], data[0], 255));
 #endif
         }
     }
