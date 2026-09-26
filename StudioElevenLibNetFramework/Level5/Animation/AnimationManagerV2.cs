@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using StudioElevenLib.Tools;
 using StudioElevenLib.Level5.Compression;
 using StudioElevenLib.Level5.Animation.Logic;
@@ -70,7 +71,23 @@ namespace StudioElevenLib.Level5.Animation
                 }
 
                 // Write animation hash, name and frame count
-                AnimationSupport.WriteAnimationInfo(writer, AnimationName, FrameCount);
+                if (Format == "XMTN")
+                {
+                    // XMTN stores the number of names of the location, rotation and scale nodes at 0x24, the name and the data are 4 bytes further
+                    header.NameOffset = 0x28;
+                    header.CompDataOffset = 0x58;
+
+                    writer.Seek(0x24);
+                    writer.Write(GetNameHashes().Count);
+                    writer.Write(unchecked((int)Crc32.Compute(Encoding.GetEncoding("Shift-JIS").GetBytes(AnimationName))));
+                    writer.Write(Encoding.GetEncoding("Shift-JIS").GetBytes(AnimationName));
+                    writer.Write(Enumerable.Repeat((byte)0, (int)(0x54 - writer.Position)).ToArray());
+                    writer.Write(FrameCount);
+                }
+                else
+                {
+                    AnimationSupport.WriteAnimationInfo(writer, AnimationName, FrameCount);
+                }
 
                 // Write animation data
                 SaveAnimationData(ref header, writer);
@@ -180,8 +197,11 @@ namespace StudioElevenLib.Level5.Animation
                 BinaryDataWriter writerDecomp = new BinaryDataWriter(memoryStream);
 
                 int hashCount = AnimationSupport.CountHashes(Tracks);
-                int hashCountDistinct = AnimationSupport.GetDistincHashes(Tracks);
-                List<int> nameHashes = AnimationSupport.GetNameHashes(Tracks);
+
+                // The BoneBool nodes index a second list of names, after the names of the other tracks
+                List<int> nameHashes = GetNameHashes();
+                List<int> boolHashes = GetBoolHashes();
+                int hashCountDistinct = nameHashes.Count + boolHashes.Count;
 
                 // Write data header
                 writerDecomp.Write(0x0C);
@@ -191,14 +211,14 @@ namespace StudioElevenLib.Level5.Animation
                 // Write name hash
                 if (hashCountDistinct > 0)
                 {
-                    writerDecomp.WriteMultipleStruct<int>(nameHashes);
+                    writerDecomp.WriteMultipleStruct<int>(nameHashes.Concat(boolHashes).ToList());
                 }
 
                 // Store position
                 int trackOffset = (int)writerDecomp.Position + 4 * 2;
                 int trackDataOffset = (int)writerDecomp.Position + 4 * 2;
                 int tableOffset = (0x0C + hashCountDistinct * 4) + 4 * 10;
-                int dataOffset = (int)(0x0C + hashCount * 4) + 4 * 10 + hashCount * 16;
+                int dataOffset = tableOffset + hashCount * 16;
 
                 // Loop in tracks
                 for (int i = 0; i < 4; i++)
@@ -242,7 +262,14 @@ namespace StudioElevenLib.Level5.Animation
 
                                 // Write data
                                 writerDecomp.Seek(dataOffset);
-                                writerDecomp.Write((short)nameHashes.IndexOf(Convert.ToInt32(node.Name, 16)));
+                                if (myTrack.Name == "BoneBool")
+                                {
+                                    writerDecomp.Write((short)boolHashes.IndexOf(Convert.ToInt32(node.Name, 16)));
+                                }
+                                else
+                                {
+                                    writerDecomp.Write((short)nameHashes.IndexOf(Convert.ToInt32(node.Name, 16)));
+                                }
 
                                 // Key count on 13 bits, mode on the 3 high bits: 0 holds the keys, 1 interpolates
                                 int mode = node.IsInMainTrack ? 1 : 0;
@@ -260,6 +287,9 @@ namespace StudioElevenLib.Level5.Animation
                                 {
                                     writerDecomp.Write(AnimationSupport.ValueToByteArray(myTrack.Name, value));
                                 }
+
+                                // The next node starts on 4 bytes (the bool values are 1 byte)
+                                writerDecomp.WriteAlignment(4, 0);
 
                                 // Update dataOffset
                                 dataOffset = (int)writerDecomp.Position;
@@ -279,9 +309,45 @@ namespace StudioElevenLib.Level5.Animation
                     trackDataOffset += 8;
                 }
 
-                header.DecompSize = (int)memoryStream.Length * 2;
+                // Memory the game reserves: the decompressed data and 84 bytes per node
+                header.DecompSize = (int)memoryStream.Length + 84 * hashCount;
                 writer.Write(new LZ10().Compress(memoryStream.ToArray()));
             }
+        }
+
+        private List<int> GetNameHashes()
+        {
+            List<int> nameHashes = new List<int>();
+
+            foreach (Track track in Tracks.Where(x => x.Name != "BoneBool"))
+            {
+                foreach (Node node in track.Nodes)
+                {
+                    int name = Convert.ToInt32(node.Name, 16);
+
+                    if (!nameHashes.Contains(name))
+                    {
+                        nameHashes.Add(name);
+                    }
+                }
+            }
+
+            return nameHashes;
+        }
+
+        private List<int> GetBoolHashes()
+        {
+            List<int> boolHashes = new List<int>();
+
+            foreach (Track track in Tracks.Where(x => x.Name == "BoneBool"))
+            {
+                foreach (Node node in track.Nodes)
+                {
+                    boolHashes.Add(Convert.ToInt32(node.Name, 16));
+                }
+            }
+
+            return boolHashes;
         }
 
         private void ReadFrameData(BinaryDataReader data, int offset, int count, int dataOffset, int[] nameHashes, AnimationSupport.Track track, int trackIndex)

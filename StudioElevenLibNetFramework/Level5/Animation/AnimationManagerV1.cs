@@ -283,7 +283,8 @@ namespace StudioElevenLib.Level5.Animation
                     }
                 }
 
-                header.DecompSize = (int)memoryStream.Length * 2;
+                // Memory the game reserves: the decompressed data and 88 bytes per node
+                header.DecompSize = (int)memoryStream.Length + 88 * hashCount;
                 writer.Write(new LZ10().Compress(memoryStream.ToArray()));
             }
         }
