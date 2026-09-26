@@ -10,6 +10,7 @@ namespace StudioElevenLib.Level5.Animation.Logic
     {
         public string Name { get; set; }
 
+        // True when the game interpolates the keys, false when it holds them (V2 node mode, V1 group 3)
         public bool IsInMainTrack { get; set; }
 
         public List<Frame> Frames { get; set; }

@@ -244,19 +244,9 @@ namespace StudioElevenLib.Level5.Animation
                                 writerDecomp.Seek(dataOffset);
                                 writerDecomp.Write((short)nameHashes.IndexOf(Convert.ToInt32(node.Name, 16)));
 
-                                // Frame count
-                                if (node.Frames.Count() < 255)
-                                {
-                                    writerDecomp.Write((byte)node.Frames.Count());
-                                    writerDecomp.Write((byte)0x00);
-                                }
-                                else
-                                {
-                                    int lowFrameCount = (short)node.Frames.Count() & 0xFF;
-                                    int hightFrameCount = 32 + ((short)node.Frames.Count() >> 8) & 0xFF;
-                                    writerDecomp.Write((byte)lowFrameCount);
-                                    writerDecomp.Write((byte)hightFrameCount);
-                                }
+                                // Key count on 13 bits, mode on the 3 high bits: 0 holds the keys, 1 interpolates
+                                int mode = node.IsInMainTrack ? 1 : 0;
+                                writerDecomp.Write((ushort)((node.Frames.Count() & 0x1FFF) | (mode << 13)));
 
                                 // Write frames
                                 writerDecomp.WriteMultipleStruct<short>(node.Frames.Select(x => Convert.ToInt16(x.Key)).ToArray());
@@ -298,7 +288,6 @@ namespace StudioElevenLib.Level5.Animation
         {
             for (int i = offset; i < offset + count; i++)
             {
-                bool isMainTrack = true;
                 data.Seek(dataOffset + 4 * 4 * i);
 
                 int flagOffset = data.ReadValue<int>();
@@ -309,20 +298,10 @@ namespace StudioElevenLib.Level5.Animation
                 int index = data.ReadValue<short>();
                 string nameHash = nameHashes[index].ToString("X8");
 
-                int lowFrameCount = data.ReadValue<byte>();
-                int highFrameCount = data.ReadValue<byte>();
-                int keyFrameCount = 0;
-
-                if (highFrameCount == 0)
-                {
-                    isMainTrack = false;
-                    keyFrameCount = lowFrameCount;
-                }
-                else
-                {
-                    highFrameCount -= 32;
-                    keyFrameCount = (highFrameCount << 8) | lowFrameCount;
-                }
+                // Key count on 13 bits, mode on the 3 high bits: 0 holds the keys, any other mode interpolates
+                int keyFrameCountFlag = data.ReadValue<ushort>();
+                int keyFrameCount = keyFrameCountFlag & 0x1FFF;
+                bool isMainTrack = (keyFrameCountFlag >> 13) != 0;
 
                 data.Seek(keyDataOffset);
                 List<Frame> frames = new List<Frame>();

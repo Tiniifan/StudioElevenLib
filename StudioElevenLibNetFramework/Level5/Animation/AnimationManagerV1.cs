@@ -53,7 +53,10 @@ namespace StudioElevenLib.Level5.Animation
             {
                 BinaryDataWriter writer = new BinaryDataWriter(stream);
 
-                AnimationSupport.Header header = AnimationSupport.CreateHeader(Format, Tracks);
+                // V1 writes its nodes by group, the group decides the interpolation
+                List<Track> groups = GetGroups();
+
+                AnimationSupport.Header header = AnimationSupport.CreateHeader(Format, groups);
 
                 // Don't exceed 40 characters
                 if (AnimationName.Length > 40)
@@ -66,10 +69,10 @@ namespace StudioElevenLib.Level5.Animation
 
                 // Write animation data
                 //Tracks.RemoveAll(x => x.Name == "Unk");
-                SaveAnimationData(ref header, writer);
+                SaveAnimationData(ref header, writer, groups);
 
                 // Write header
-                AnimationSupport.WriteHeader(writer, header, Format, Tracks);
+                AnimationSupport.WriteHeader(writer, header, Format, groups);
 
                 return stream.ToArray();
             }
@@ -121,7 +124,75 @@ namespace StudioElevenLib.Level5.Animation
             }
         }
 
-        private void SaveAnimationData(ref AnimationSupport.Header header, BinaryDataWriter writer)
+        private List<Track> GetGroups()
+        {
+            List<Track> groups = new List<Track>();
+
+            for (int i = 0; i < 4; i++)
+            {
+                groups.Add(new Track(null, i));
+            }
+
+            foreach (Track track in Tracks)
+            {
+                foreach (Node node in track.Nodes)
+                {
+                    int group = TrackGroup[track.Name];
+                    Node groupNode = node;
+
+                    if (!node.IsInMainTrack)
+                    {
+                        if (track.Name == "UVMove" || track.Name == "BoneBool")
+                        {
+                            group = 3;
+                        }
+                        else
+                        {
+                            // V1 only holds the keys of group 3, the other nodes jump from a key to the next one in one frame
+                            groupNode = new Node(node.Name, true, GetStepFrames(node.Frames));
+                        }
+                    }
+
+                    groups[group].Name = track.Name;
+                    groups[group].Nodes.Add(groupNode);
+                }
+            }
+
+            return groups;
+        }
+
+        private static List<Frame> GetStepFrames(List<Frame> frames)
+        {
+            List<Frame> stepFrames = new List<Frame>();
+
+            for (int i = 0; i < frames.Count; i++)
+            {
+                if (i > 0 && frames[i].Key - frames[i - 1].Key > 1)
+                {
+                    stepFrames.Add(new Frame(frames[i].Key - 1, frames[i - 1].Value));
+                }
+
+                stepFrames.Add(frames[i]);
+            }
+
+            return stepFrames;
+        }
+
+        // V1 has 4 node groups, group 3 holds its keys (UV move and bool only)
+        private static readonly Dictionary<string, int> TrackGroup = new Dictionary<string, int>
+        {
+            { "BoneLocation", 0 },
+            { "BoneRotation", 1 },
+            { "BoneScale", 2 },
+            { "BoneBool", 3 },
+            { "UVMove", 0 },
+            { "UVRotate", 1 },
+            { "UVScale", 2 },
+            { "MaterialTransparency", 0 },
+            { "MaterialAttribute", 1 },
+        };
+
+        private void SaveAnimationData(ref AnimationSupport.Header header, BinaryDataWriter writer, List<Track> groups)
         {
             if (Tracks == null || Tracks.Count() == 0) return;
 
@@ -136,10 +207,12 @@ namespace StudioElevenLib.Level5.Animation
 
                 for (int i = 0; i < 4; i++)
                 {
-                    if (i < Tracks.Count)
+                    if (i < groups.Count)
                     {
-                        Track track = Tracks.ElementAt(i);
-                        FixNode(track.Nodes, FrameCount);
+                        Track track = groups.ElementAt(i);
+
+                        // After the last key the game interpolates toward the first key, a key on the last frame stops it
+                        FixNode(track.Nodes.Where(x => x.IsInMainTrack).ToList(), FrameCount);
 
                         if (track.Nodes.Count() > 0)
                         {
@@ -258,7 +331,8 @@ namespace StudioElevenLib.Level5.Animation
             }
 
             // Create node
-            Tracks[trackIndex].Nodes.Add(new Node(node.BoneNameHash.ToString("X8"), node.IsInMainTrack == 1, frames));
+            // The group decides the interpolation, the game never reads the byte of the node
+            Tracks[trackIndex].Nodes.Add(new Node(node.BoneNameHash.ToString("X8"), trackNum != 3, frames));
         }
 
         private static int[] FillArray(int[] inputArray, int size)

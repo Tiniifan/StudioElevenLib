@@ -70,6 +70,9 @@ namespace StudioElevenLib.Level5.Mesh.XPVI
 
                     xpviWriter.Write(compressTriangle);
 
+                    // The next block of the prm must start 4 bytes aligned
+                    xpviWriter.WriteAlignment(4);
+
                     return finalMs.ToArray();
                 }
             }

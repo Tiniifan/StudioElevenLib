@@ -117,6 +117,11 @@ namespace StudioElevenLib.Level5.Mesh.XPVB
                 unkBytes = Compressor.Compress(fixedValue);
             }
 
+            // The game decompresses the blocks where they are, its Huffman decoder needs them 4 bytes aligned
+            attCompressed = AlignTo4(attCompressed);
+            unkBytes = AlignTo4(unkBytes);
+            compressGeometrie = AlignTo4(compressGeometrie);
+
             // Calculate file offsets for the header
             ushort attBufferOffset = 16;
             ushort unkOffset = (ushort)(attBufferOffset + attCompressed.Length);
@@ -141,6 +146,13 @@ namespace StudioElevenLib.Level5.Mesh.XPVB
 
                 return finalMs.ToArray();
             }
+        }
+
+        private static byte[] AlignTo4(byte[] data)
+        {
+            byte[] aligned = new byte[(data.Length + 3) & ~3];
+            Array.Copy(data, aligned, data.Length);
+            return aligned;
         }
     }
 }
