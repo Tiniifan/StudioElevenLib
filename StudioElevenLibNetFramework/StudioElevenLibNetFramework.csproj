@@ -145,6 +145,7 @@
     <Compile Include="Level5\Material\ATRCSupport.cs" />
     <Compile Include="Level5\Material\MTRC.cs" />
     <Compile Include="Level5\Material\MTRCSupport.cs" />
+    <Compile Include="Level5\Material\SHDC.cs" />
     <Compile Include="Level5\Mesh\XMPR\XMPR.cs" />
     <Compile Include="Level5\Mesh\XMPR\XMPRReader.cs" />
     <Compile Include="Level5\Mesh\XMPR\XMPRSupport.cs" />
@@ -184,6 +185,7 @@
     <Compile Include="Level5\Resource\Types\Scene3D\RESMesh.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESProperty.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESRef.cs" />
+    <Compile Include="Level5\Resource\Types\Scene3D\RESRenderLibrary.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESShading.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESTextproj.cs" />
     <Compile Include="Level5\Resource\Types\Scene3D\RESTextureData.cs" />
