@@ -100,7 +100,7 @@ namespace StudioElevenLib.Level5.Binary
             byte[] keyTableBlob = reader.GetSection((uint)keyTableOffset, keyTableSize);
             Dictionary<uint, string> keyTable = ParseKeyTable(keyTableBlob);
 
-            List<Entry> entries = ParseEntries(header.EntriesCount, entriesBuffer, keyTable);
+            List<Entry> entries = ParseEntries(header.EntriesCount, entriesBuffer, stringTableBuffer, keyTable);
 
             Entries = ProcessEntries(entries);
         }
@@ -240,13 +240,29 @@ namespace StudioElevenLib.Level5.Binary
         }
 
         /// <summary>
+        /// Reads a string at its stored offset, including offsets into a shared string.
+        /// </summary>
+        private string GetStringAtOffset(byte[] stringTableBuffer, int offset)
+        {
+            if (offset < 0 || offset >= stringTableBuffer.Length)
+                return null;
+
+            int end = Array.IndexOf(stringTableBuffer, (byte)0, offset);
+            if (end < 0)
+                return null;
+
+            return Encoding.GetString(stringTableBuffer, offset, end - offset);
+        }
+
+        /// <summary>
         /// Parses the entries from the buffer.
         /// </summary>
         /// <param name="entriesCount">The number of entries to parse.</param>
         /// <param name="entriesBuffer">The buffer containing the entries.</param>
+        /// <param name="stringTableBuffer">The buffer containing the string table.</param>
         /// <param name="keyTable">A dictionary of keys used for resolving entry names.</param>
         /// <returns>A list of parsed entries.</returns>
-        private List<Entry> ParseEntries(int entriesCount, byte[] entriesBuffer, Dictionary<uint, string> keyTable)
+        private List<Entry> ParseEntries(int entriesCount, byte[] entriesBuffer, byte[] stringTableBuffer, Dictionary<uint, string> keyTable)
         {
             var temp = new List<Entry>();
             using (var reader = new BinaryDataReader(entriesBuffer))
@@ -297,7 +313,7 @@ namespace StudioElevenLib.Level5.Binary
                         if (paramTypes[j] == CfgValueType.String)
                         {
                             int offset = reader.ReadValue<int>();
-                            string text = offset != -1 && Strings.ContainsKey(offset) ? Strings[offset] : null;
+                            string text = GetStringAtOffset(stringTableBuffer, offset);
                             variables.Add(new Variable(CfgValueType.String, text));
                         }
                         else if (paramTypes[j] == CfgValueType.Int)
